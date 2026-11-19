@@ -1,3 +1,5 @@
+import { AUDIO_TYPES, IMAGE_TYPES, MAX_AUDIO_BYTES } from '@repo/shared';
+
 /**
  * Where uploaded files live. The API never receives file bytes: it hands the browser a one-time signed upload
  * URL and later checks that the object really is there. Supabase Storage is the implementation; tests use a fake.
@@ -43,9 +45,13 @@ export class SupabaseObjectStorage implements ObjectStorage {
 
   async ensureBucket() {
     if (this.ready) return;
-    const res = await fetch(`${this.base}/bucket`, { method: 'POST', headers: this.headers(true), body: JSON.stringify({ id: this.bucket, name: this.bucket, public: true }) });
-    // "already exists" comes back as a 4xx; anything else that fails is a real problem.
-    if (!res.ok && !/exist|duplicate/i.test(await res.text())) throw new StorageError(`Could not prepare the "${this.bucket}" bucket (${res.status})`);
+    // The bucket itself caps size and type, so a signed upload link cannot be used to store anything else or anything bigger
+    // (the confirm step re-checks, but unconfirmed uploads would otherwise sit in storage unlimited).
+    const body = JSON.stringify({ id: this.bucket, name: this.bucket, public: true, file_size_limit: MAX_AUDIO_BYTES, allowed_mime_types: [...IMAGE_TYPES, ...AUDIO_TYPES] });
+    let res = await fetch(`${this.base}/bucket`, { method: 'POST', headers: this.headers(true), body });
+    // Already there (maybe created earlier without limits): bring it to the same settings.
+    if (!res.ok && /exist|duplicate/i.test(await res.text())) res = await fetch(`${this.base}/bucket/${this.bucket}`, { method: 'PUT', headers: this.headers(true), body });
+    if (!res.ok) throw new StorageError(`Could not prepare the "${this.bucket}" bucket (${res.status})`);
     this.ready = true;
   }
 

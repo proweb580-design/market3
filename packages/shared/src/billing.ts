@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import { currencyCode } from './money.js';
 import { paginationQuerySchema } from './pagination.js';
 import { PLAN_FEATURES, type PlanFeatureKey } from './plans.js';
 
 /** Billing request contracts (API validation + dashboard/admin forms). */
 
 const planCode = z.string().regex(/^[A-Z][A-Z0-9_]{1,29}$/, 'UPPER_SNAKE_CASE, 2–30 chars');
-const currency = z.string().regex(/^[A-Z]{3}$/, 'ISO 4217, e.g. USD');
+const currency = currencyCode;
 
 /** { "products.max": { enabled: true, limit: 100 }, "api_access": { enabled: true } } — limit null = unlimited. */
 export const planFeaturesSchema = z

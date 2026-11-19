@@ -7,4 +7,5 @@ export * from './schemas.js';
 export * from './billing.js';
 export * from './storefront.js';
 export * from './media.js';
+export * from './money.js';
 export * from './orders.js';

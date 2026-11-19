@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { currencyCode } from './money.js';
 import { paginationQuerySchema } from './pagination.js';
 import { PERMISSION_KEYS } from './permissions.js';
 
@@ -40,7 +41,7 @@ export const createOrganizationSchema = z
   .object({
     slug: orgSlug,
     name: z.string().trim().min(2).max(80),
-    currency: z.string().regex(/^[A-Z]{3}$/).default('USD'),
+    currency: currencyCode.default('USD'),
   })
   .strict();
 

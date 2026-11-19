@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { createContext, use, useRef, useState, type ReactNode } from 'react';
 import { AUDIO_TYPES, IMAGE_TYPES, maxBytesFor } from '@repo/shared';
 import { Button } from '@repo/ui/components/ui/button';
 import { api } from '../../lib/api';
@@ -17,6 +17,21 @@ export interface MediaItem {
   url: string | null;
   /** Vector demo art (demo store only). */
   art: unknown;
+}
+
+type Library = ReturnType<typeof useLoad<{ items: MediaItem[]; total: number }>>;
+const LibraryContext = createContext<Library | null>(null);
+
+/** Loads the store's media library once for the whole dashboard; every picker and the media page share it. */
+export function LibraryProvider({ orgId, children }: { orgId: string; children: ReactNode }) {
+  const lib = useLoad<{ items: MediaItem[]; total: number }>(`/organizations/${orgId}/media?pageSize=100`);
+  return <LibraryContext value={lib}>{children}</LibraryContext>;
+}
+
+export function useLibrary() {
+  const lib = use(LibraryContext);
+  if (!lib) throw new Error('useLibrary must be used inside <LibraryProvider>');
+  return lib;
 }
 
 const isImage = (m: MediaItem) => m.mimeType.startsWith('image/') && !!m.url;
@@ -88,7 +103,7 @@ export function Thumb({ media, className = 'size-16' }: { media: MediaItem; clas
 
 /** The store's media library as a list you can pick from (single or several), with upload built in. */
 export function MediaPicker({ orgId, selected, onChange, multiple = true, kind = 'image', max = 20 }: { orgId: string; selected: string[]; onChange: (ids: string[]) => void; multiple?: boolean; kind?: 'image' | 'audio'; max?: number }) {
-  const lib = useLoad<{ items: MediaItem[] }>(`/organizations/${orgId}/media?pageSize=100`);
+  const lib = useLibrary();
   const [open, setOpen] = useState(false);
   const items = (lib.data?.items ?? []).filter((m) => (kind === 'audio' ? m.mimeType.startsWith('audio/') : !m.mimeType.startsWith('audio/')));
   const byId = new Map((lib.data?.items ?? []).map((m) => [m.id, m]));
@@ -124,7 +139,7 @@ export function MediaPicker({ orgId, selected, onChange, multiple = true, kind =
       </ul>
       <div className="flex flex-wrap items-start gap-2">
         <Button type="button" variant="outline" size="sm" onClick={() => setOpen(!open)}>{open ? 'Close library' : kind === 'audio' ? 'Choose audio' : 'Choose from library'}</Button>
-        <UploadButton orgId={orgId} accept={kind} onUploaded={(m) => { lib.setData((d) => ({ items: [m, ...(d?.items ?? [])] })); toggle(m.id); }} />
+        <UploadButton orgId={orgId} accept={kind} onUploaded={(m) => { lib.setData((d) => ({ items: [m, ...(d?.items ?? [])], total: (d?.total ?? 0) + 1 })); toggle(m.id); }} />
       </div>
       {open && (lib.loading ? <Loading /> : items.length === 0 ? <p className="text-xs text-muted-foreground">The library is empty — upload a file.</p> : (
         <ul className="flex max-h-60 flex-wrap gap-2 overflow-y-auto rounded-md border border-border p-2">

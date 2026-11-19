@@ -166,7 +166,7 @@ export function ProductForm({ product }: { product: ProductDto | null }) {
           {options.map((o, i) => (
             <div key={i} className="grid items-start gap-3 sm:grid-cols-[10rem_1fr_auto]">
               <TextField label="Name" value={o.name} onChange={(v) => changeOptions(options.map((x, j) => (j === i ? { ...x, name: v } : x)))} maxLength={40} />
-              <TextArea label="Values (one per line)" rows={3} value={o.valuesText} onChange={(v) => changeOptions(options.map((x, j) => (j === i ? { ...x, valuesText: v } : x)))} />
+              <TextArea label="Values (one per line)" hint="Renaming or removing a value resets that variant’s price and stock." rows={3} value={o.valuesText} onChange={(v) => changeOptions(options.map((x, j) => (j === i ? { ...x, valuesText: v } : x)))} />
               <Button type="button" variant="ghost" size="sm" className="mt-5" onClick={() => changeOptions(options.filter((_, j) => j !== i))}>Remove</Button>
             </div>
           ))}

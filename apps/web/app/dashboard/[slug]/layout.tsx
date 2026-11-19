@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { ErrorLine, Loading, useLoad } from '../kit';
+import { LibraryProvider } from '../media-lib';
 import { OrgProvider, type Org } from '../org-context';
 
 interface Me {
@@ -54,6 +55,7 @@ export default function OrgLayout({ children }: { children: ReactNode }) {
     <WithDetails org={org}>
       {(full) => (
     <OrgProvider value={full}>
+      <LibraryProvider orgId={full.id}>
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-8 md:flex-row">
         <nav aria-label="Store sections" className="flex shrink-0 flex-row flex-wrap gap-x-4 gap-y-1 text-xs md:w-44 md:flex-col md:gap-1">
           <p className="label-xs mb-2 w-full font-bold">{org.name}</p>
@@ -70,6 +72,7 @@ export default function OrgLayout({ children }: { children: ReactNode }) {
         </nav>
         <main className="min-w-0 flex-1">{children}</main>
       </div>
+      </LibraryProvider>
     </OrgProvider>
       )}
     </WithDetails>

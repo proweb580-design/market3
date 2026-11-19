@@ -2,13 +2,13 @@
 
 import { Button } from '@repo/ui/components/ui/button';
 import { api } from '../../../../lib/api';
-import { ActionButton, Async, PageHead, useLoad } from '../../kit';
-import { Thumb, UploadButton, type MediaItem } from '../../media-lib';
+import { ActionButton, Async, PageHead } from '../../kit';
+import { Thumb, UploadButton, useLibrary } from '../../media-lib';
 import { useOrg } from '../../org-context';
 
 export default function MediaPage() {
   const org = useOrg();
-  const lib = useLoad<{ items: MediaItem[]; total: number }>(`/organizations/${org.id}/media?pageSize=100`);
+  const lib = useLibrary();
 
   return (
     <>

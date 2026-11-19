@@ -5,7 +5,7 @@ import { storefrontContentSchema, type Panel, type StorefrontContent } from '@re
 import { Button } from '@repo/ui/components/ui/button';
 import { api } from '../../../../lib/api';
 import { Async, Card, Check, ErrorLine, PageHead, Select, TextArea, TextField, errText, fromMinor, toMinor, useLoad } from '../../kit';
-import { MediaPicker, type MediaItem } from '../../media-lib';
+import { MediaPicker, useLibrary } from '../../media-lib';
 import { useOrg } from '../../org-context';
 
 type Doc = StorefrontContent;
@@ -56,7 +56,7 @@ function Block({ title, enabled, onEnabled, children }: { title: string; enabled
 /** One editorial picture slot: shows what is there and lets the brand replace it with an uploaded image. */
 function PanelEditor({ panel, onChange, onRemove }: { panel: Panel; onChange: (p: Panel) => void; onRemove?: () => void }) {
   const org = useOrg();
-  const lib = useLoad<{ items: MediaItem[] }>(`/organizations/${org.id}/media?pageSize=100`);
+  const lib = useLibrary();
   return (
     <div className="flex items-start gap-3">
       {panel.type === 'image' ? <img src={panel.src} alt={panel.alt} className="size-16 rounded-sm object-cover" /> : <span className="size-16 rounded-sm" style={{ background: `linear-gradient(${panel.from}, ${panel.to})` }} title="Placeholder artwork" />} {/* eslint-disable-line @next/next/no-img-element */}
@@ -280,8 +280,7 @@ function Editor({ initial }: { initial: Doc }) {
 }
 
 function NewLookbookItem({ orgId, onAdd }: { orgId: string; onAdd: (mediaId: string) => void }) {
-  const lib = useLoad<{ items: MediaItem[] }>(`/organizations/${orgId}/media?pageSize=100`);
-  return <MediaPicker orgId={orgId} selected={[]} multiple={false} onChange={([id]) => { if (id && lib.data?.items.some((m) => m.id === id)) onAdd(id); else if (id) void lib.reload().then(() => onAdd(id)); }} />;
+  return <MediaPicker orgId={orgId} selected={[]} multiple={false} onChange={([id]) => id && onAdd(id)} />;
 }
 
 export default function StorefrontPage() {

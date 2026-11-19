@@ -156,21 +156,5 @@ export function ActionButton({ children, run, variant = 'default', confirm: ask,
 
 export const Plain = Label;
 
-// ───────────── money ─────────────
-
-/** "12.50" → 1250. Returns null for anything that isn't a non-negative amount with at most 2 decimals. */
-export function toMinor(text: string): number | null {
-  const t = text.trim().replace(',', '.');
-  if (!/^\d+(\.\d{1,2})?$/.test(t)) return null;
-  return Math.round(Number(t) * 100);
-}
-
-export const fromMinor = (minor: number | null | undefined) => (minor === null || minor === undefined ? '' : (minor / 100).toFixed(2));
-
-export const slugify = (text: string) =>
-  text
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
+// Money and slug helpers live in @repo/shared (tested there).
+export { fromMinor, slugify, toMinor } from '@repo/shared';

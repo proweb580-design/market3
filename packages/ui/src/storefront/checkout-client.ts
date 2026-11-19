@@ -32,12 +32,18 @@ async function call<T>(path: string, init: RequestInit & { token?: string | null
 export const quoteCart = (store: string, lines: { variantId: string; quantity: number }[]) =>
   call<Quote>(`${encodeURIComponent(store)}/quote`, { method: 'POST', body: JSON.stringify({ lines }) });
 
-export const placeOrder = (store: string, input: OrderCheckoutInput, token: string | null) =>
-  call<{ orderId: string; number: number; token: string; checkoutUrl: string; expiresAt: string }>(`${encodeURIComponent(store)}/checkout`, {
-    method: 'POST',
-    body: JSON.stringify(input),
-    token,
-  });
+type Placed = { orderId: string; number: number; token: string; checkoutUrl: string; expiresAt: string };
+
+export async function placeOrder(store: string, input: OrderCheckoutInput, token: string | null): Promise<Placed> {
+  const send = (t: string | null) => call<Placed>(`${encodeURIComponent(store)}/checkout`, { method: 'POST', body: JSON.stringify(input), token: t });
+  try {
+    return await send(token);
+  } catch (error) {
+    // An expired, revoked or blocked session must not stop a guest-capable purchase: retry once as a guest.
+    if (token && error instanceof CheckoutError && error.status === 401) return send(null);
+    throw error;
+  }
+}
 
 /** Signed-in buyer's wishlist for one store (the server keeps it per account). */
 export const fetchWishlist = (store: string, token: string) =>
