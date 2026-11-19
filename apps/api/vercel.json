@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm --filter @repo/shared build && pnpm --filter @repo/api build",
+  "buildCommand": "cd ../.. && pnpm --filter @repo/shared build && pnpm --filter @repo/api build && pnpm --filter @repo/api bundle",
   "outputDirectory": "public",
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
   "functions": { "api/index.js": { "maxDuration": 30, "includeFiles": "dist/**" } },

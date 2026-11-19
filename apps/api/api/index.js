@@ -4,7 +4,7 @@
 export default async function handler(req, res) {
   let app;
   try {
-    app = await import('../dist/serverless.js');
+    app = await import('../dist/serverless.bundle.mjs');
   } catch (error) {
     console.error('API failed to load:', error);
     res.statusCode = 500;

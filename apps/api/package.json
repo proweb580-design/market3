@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "prisma generate && nest build",
+    "bundle": "node scripts-bundle.mjs",
     "dev": "prisma generate && nest start --watch",
     "start": "node dist/main.js",
     "typecheck": "prisma generate && tsc --noEmit",
@@ -44,6 +45,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^24.19.2",
     "@types/supertest": "^7.2.1",
+    "esbuild": "^0.25.12",
     "prisma": "7.10.1",
     "supertest": "^7.3.2",
     "tsx": "^4.23.15",
