@@ -14,6 +14,9 @@ export default function Home() {
       <Link href="/dashboard" className="label-xs font-bold underline">
         Brand dashboard →
       </Link>
+      <Link href="/admin" className="label-xs font-bold underline">
+        Platform admin →
+      </Link>
       <Link href="/account" className="label-xs font-bold underline">
         My account →
       </Link>
