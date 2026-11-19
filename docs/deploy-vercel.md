@@ -43,6 +43,7 @@ pnpm --filter @repo/api db:seed-demo
 | `PUBLIC_MINI_APP_URL` | `https://market3-mini-app.vercel.app` | нет |
 | `PUBLIC_API_URL` | адрес самого API (`https://market3-api.vercel.app`) | нет |
 | `TELEGRAM_BOT_TOKEN` | токен бота из @BotFather | да |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API → `service_role` / secret key. **Только здесь**, для загрузки фото в кабинете бренда | да |
 | `STRIPE_SECRET_KEY` | `sk_test_…` | да |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` из Stripe → Webhooks (шаг 5) | да |
 
@@ -65,6 +66,14 @@ pnpm --filter @repo/api db:seed-demo
 | `NEXT_PUBLIC_API_URL` | адрес API |
 | `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | `Ashennew_bot` (без `@`) |
 | `NEXT_PUBLIC_MINI_APP_URL` | `https://market3-mini-app.vercel.app` |
+
+## 4a. Supabase Authentication (вход на сайте)
+
+Supabase → Authentication → **URL Configuration**:
+- Site URL: `https://market3-web.vercel.app`
+- Redirect URLs: `https://market3-web.vercel.app/auth/callback` (и `http://localhost:3000/auth/callback` для разработки).
+Без этого ссылки из писем (подтверждение, сброс пароля) не откроются. Встроенная почта Supabase ограничена несколькими письмами в час — для реального запуска нужен свой SMTP
+(Authentication → Emails → SMTP Settings).
 
 ## 5. Stripe
 

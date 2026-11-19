@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { OBJECT_STORAGE, type ObjectStorage } from '../src/modules/media/object-storage.js';
 import { randomUUID } from 'node:crypto';
 import { generateKeyPair, SignJWT } from 'jose';
 import request from 'supertest';
@@ -52,7 +53,7 @@ export interface TestUser {
   del(path: string): request.Test;
 }
 
-export async function createTestApp(envOverrides: Record<string, string> = {}, options: { paymentProvider?: PaymentProvider; botApi?: BotApi } = {}) {
+export async function createTestApp(envOverrides: Record<string, string> = {}, options: { paymentProvider?: PaymentProvider; botApi?: BotApi; storage?: ObjectStorage } = {}) {
   const keys = await generateKeyPair('ES256');
   const verifier = new JwtVerifier({ issuer: ISSUER, audience: AUDIENCE, jwks: async () => keys.publicKey });
 
@@ -71,6 +72,8 @@ export async function createTestApp(envOverrides: Record<string, string> = {}, o
     .useValue(verifier)
     .overrideProvider(PAYMENT_PROVIDER)
     .useValue(options.paymentProvider ?? null)
+    .overrideProvider(OBJECT_STORAGE)
+    .useValue(options.storage ?? null)
     .overrideProvider(BOT_API)
     .useValue(options.botApi ?? { getMe: () => Promise.reject(new Error('no Bot API in tests')) })
     .compile();

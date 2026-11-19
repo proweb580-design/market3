@@ -19,6 +19,8 @@ const envSchema = z
 
     // Supabase Auth: the API verifies web access tokens itself (signature, issuer, audience, expiry).
     SUPABASE_URL: z.url().optional(),
+    // Server-only key for Supabase Storage (signed upload URLs, deleting files). Never exposed to a browser; unset = uploads disabled.
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(20).optional(),
     SUPABASE_JWT_AUDIENCE: z.string().default('authenticated'),
     /** Only for projects still on the legacy HS256 JWT secret; asymmetric keys are verified via JWKS. */
     SUPABASE_JWT_SECRET: z.string().min(16).optional(),

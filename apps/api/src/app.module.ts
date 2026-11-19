@@ -21,6 +21,7 @@ import { BillingModule } from './modules/billing/billing.module.js';
 import { CatalogModule } from './modules/catalog/catalog.module.js';
 import { SubscriptionGuard } from './modules/billing/subscription.guard.js';
 import { JobsModule } from './modules/jobs/jobs.module.js';
+import { MediaModule } from './modules/media/media.module.js';
 import { OrdersModule } from './modules/orders/orders.module.js';
 import { OrganizationsModule } from './modules/organizations/organizations.module.js';
 import { TelegramModule } from './modules/telegram/telegram.module.js';
@@ -51,6 +52,7 @@ import { UsersModule } from './modules/users/users.module.js';
     OrdersModule,
     JobsModule,
     BuyersModule,
+    MediaModule,
   ],
   controllers: [HealthController],
   providers: [
