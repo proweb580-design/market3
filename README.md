@@ -8,6 +8,7 @@ SaaS для брендов одежды: витрина в стиле рефер
 - REST API, авторизация и права: [docs/api.md](docs/api.md)
 - Тарифы, подписки, Stripe: [docs/billing.md](docs/billing.md)
 - Telegram Mini App и боты: [docs/telegram.md](docs/telegram.md)
+- Размещение на Vercel (web, Mini App, API), ключи: [docs/deploy-vercel.md](docs/deploy-vercel.md)
 
 ## Требования
 

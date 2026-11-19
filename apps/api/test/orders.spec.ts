@@ -188,12 +188,12 @@ describe.skipIf(!TEST_DB)('orders: checkout, stock, payment, access', () => {
       expect(order.payments[0]).toMatchObject({ status: 'FAILED', failureReason: 'checkout_creation_failed' });
     });
 
-    it('ties the order to the signed-in buyer and uses the Mini App return address for Telegram', async () => {
+    it('ties the order to the signed-in buyer; Telegram orders return to the website', async () => {
       const buyer = await t.user('signed-buyer');
       const v = await addProduct('c-user', 5);
       const res = await checkout({ ...body(v), channel: 'telegram' }, buyer).expect(201);
       expect((await orderOf(res.body.orderId)).userId).toBe(buyer.id);
-      expect(s.create.mock.calls[0]![0].success_url).toMatch(new RegExp(`^https://mini.example.com/${org.slug}/orders/`));
+      expect(s.create.mock.calls[0]![0].success_url).toMatch(new RegExp(`^https://shop.example.com/s/${org.slug}/orders/`));
       expect((await orderOf(res.body.orderId)).source).toBe('TELEGRAM');
     });
 

@@ -174,7 +174,8 @@ export class OrdersService {
       return { order: created, payment: pay };
     });
 
-    const base = input.channel === 'telegram' ? this.env.PUBLIC_MINI_APP_URL.replace(/\/+$/, '') : `${this.env.PUBLIC_WEB_URL.replace(/\/+$/, '')}/s`;
+    // Both channels return to the website: the payment page opens in the system browser (not inside Telegram), so the order page lives on the site.
+    const base = `${this.env.PUBLIC_WEB_URL.replace(/\/+$/, '')}/s`;
     const back = `${base}/${org.slug}/orders/${order.id}?token=${token}`;
     try {
       const session = await provider.createCheckout({

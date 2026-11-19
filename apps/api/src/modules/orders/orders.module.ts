@@ -21,7 +21,8 @@ export class OrdersModule implements OnApplicationBootstrap, OnApplicationShutdo
 
   /** shortcut: in-process timer like the billing lifecycle (idempotent, overlap-safe) — move to a Redis-backed job in phase 10. */
   onApplicationBootstrap() {
-    if (this.env.NODE_ENV === 'test') return;
+    // On Vercel there is no long-running process: the same job runs from Vercel Cron (JobsController).
+    if (this.env.NODE_ENV === 'test' || process.env.VERCEL) return;
     this.timer = setInterval(() => {
       this.orders.expireStale().catch((e: unknown) => this.logger.error(`order expiry failed: ${String(e)}`));
     }, EXPIRY_EVERY_MS);

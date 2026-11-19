@@ -26,6 +26,8 @@ const envSchema = z
     THROTTLE_LIMIT: z.coerce.number().int().positive().default(120),
     /** Set true behind a reverse proxy (Render, Fly, Vercel) so client IPs come from X-Forwarded-For. */
     TRUST_PROXY: z.stringbool().default(false),
+    // Shared secret for the scheduled-job endpoints (Vercel Cron sends it as a bearer token); unset = endpoints disabled.
+    CRON_SECRET: z.string().min(16).optional(),
     INVITATION_TTL_DAYS: z.coerce.number().int().min(1).max(30).default(7),
 
     // Stripe (payments). Absent → billing works for Free/trials/admin grants, paid checkout answers 503.

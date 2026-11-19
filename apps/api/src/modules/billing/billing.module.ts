@@ -40,7 +40,7 @@ export class BillingModule implements OnApplicationBootstrap, OnApplicationShutd
 
   /** shortcut: in-process timer, one per API instance (the job is idempotent, so overlap is safe) — move to a BullMQ repeatable job with Redis in phase 10. */
   onApplicationBootstrap() {
-    if (this.env.NODE_ENV === 'test') return;
+    if (this.env.NODE_ENV === 'test' || process.env.VERCEL) return; // Vercel: scheduled via Vercel Cron instead (JobsController)
     if (!this.env.STRIPE_SECRET_KEY) this.logger.warn('STRIPE_SECRET_KEY not set: paid checkout is disabled');
     this.timer = setInterval(() => {
       this.subscriptions.runLifecycle().catch((e: unknown) => this.logger.error(`lifecycle run failed: ${String(e)}`));
