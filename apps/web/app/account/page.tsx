@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@repo/ui/components/ui/button';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../auth-provider';
@@ -13,15 +13,17 @@ export default function AccountPage() {
   const { status, signOut } = useAuth();
   const [me, setMe] = useState<Me | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const leaving = useRef(false); // set while signing out on purpose, so the "signed out" redirect below doesn't fight the move to the home page
 
   const loadMe = useCallback(() => api<Me>('/auth/me').then(setMe).catch((e: unknown) => setError(e instanceof ApiError ? e.message : 'Could not load your account.')), []);
 
   useEffect(() => {
-    if (status === 'signedOut') router.replace('/login?next=/account');
+    if (status === 'signedOut' && !leaving.current) router.replace('/login?next=/account');
     if (status === 'signedIn') void loadMe();
   }, [status, router, loadMe]);
 
   const leave = async () => {
+    leaving.current = true;
     await signOut();
     router.replace('/');
   };

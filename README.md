@@ -8,6 +8,8 @@ SaaS для брендов одежды: витрина в стиле рефер
 - REST API, авторизация и права: [docs/api.md](docs/api.md)
 - Тарифы, подписки, Stripe: [docs/billing.md](docs/billing.md)
 - Telegram Mini App и боты: [docs/telegram.md](docs/telegram.md)
+- Тестирование (модульные, API, сквозные в браузере, CI): [docs/testing.md](docs/testing.md)
+- Проверка безопасности: [docs/security-review.md](docs/security-review.md)
 - Размещение на Vercel (web, Mini App, API), ключи: [docs/deploy-vercel.md](docs/deploy-vercel.md)
 
 ## Требования
@@ -45,5 +47,6 @@ pnpm dev
 |---|---|
 | `pnpm build` | сборка всех пакетов |
 | `pnpm typecheck` | проверка типов |
-| `pnpm test` | тесты |
+| `pnpm test` | модульные и API-тесты (нужен `TEST_DATABASE_URL`) |
+| `pnpm --filter @repo/e2e e2e` | сквозные тесты в браузере (отдельная база и заглушки Supabase/Stripe) |
 | `pnpm lint` | oxlint |

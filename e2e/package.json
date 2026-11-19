@@ -1,0 +1,19 @@
+{
+  "name": "@repo/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare-db": "node support/prepare-db.mjs",
+    "e2e": "node support/prepare-db.mjs && playwright test",
+    "e2e:headed": "node support/prepare-db.mjs && playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.19.2",
+    "jose": "^6.0.0",
+    "pg": "^8.13.0",
+    "stripe": "^23.1.0",
+    "typescript": "~6.0.3"
+  }
+}

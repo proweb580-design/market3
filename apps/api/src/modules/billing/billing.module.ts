@@ -24,7 +24,12 @@ const LIFECYCLE_EVERY_MS = 10 * 60_000;
     {
       provide: PAYMENT_PROVIDER,
       inject: [ENV],
-      useFactory: (env: Env) => (env.STRIPE_SECRET_KEY ? new StripeProvider(new Stripe(env.STRIPE_SECRET_KEY), env.STRIPE_WEBHOOK_SECRET) : null),
+      useFactory: (env: Env) => {
+        if (!env.STRIPE_SECRET_KEY) return null;
+        const base = env.STRIPE_API_BASE_URL ? new URL(env.STRIPE_API_BASE_URL) : null;
+        const stripe = new Stripe(env.STRIPE_SECRET_KEY, base ? { host: base.hostname, port: base.port, protocol: base.protocol === 'https:' ? 'https' : 'http' } : undefined);
+        return new StripeProvider(stripe, env.STRIPE_WEBHOOK_SECRET);
+      },
     },
   ],
   exports: [EntitlementsService, SubscriptionsService, SubscriptionGuard, PaymentsService, PAYMENT_PROVIDER],

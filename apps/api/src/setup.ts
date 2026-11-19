@@ -15,6 +15,15 @@ export function setupApp(app: INestApplication): Env {
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
   app.enableCors({ origin: env.CORS_ORIGINS, credentials: true });
   app.enableShutdownHooks();
+  // The API serves JSON only: forbid sniffing, framing and caching of (often personal) responses. Swagger UI needs its own scripts.
+  app.use((req: { path: string }, res: { setHeader(k: string, v: string): void }, next: () => void) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Cache-Control', 'no-store');
+    if (!req.path.startsWith('/api/docs')) res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+    next();
+  });
   // Behind a reverse proxy the client IP (rate limits, audit trail) comes from X-Forwarded-For.
   if (env.TRUST_PROXY) (app.getHttpAdapter().getInstance() as { set(k: string, v: unknown): void }).set('trust proxy', 1);
   // The API serves JSON only; reduce what a browser would do with a mistaken HTML response.

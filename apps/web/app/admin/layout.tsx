@@ -50,7 +50,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     if (status === 'signedOut') router.replace(`/login?next=${encodeURIComponent('/admin')}`);
   }, [status, router]);
 
-  if (status !== 'signedIn' || (!me.data && !me.error)) return <p className="px-6 py-24 text-xs text-muted-foreground" aria-busy="true"><Loading /></p>;
+  if (status !== 'signedIn' || (!me.data && !me.error)) return <div className="px-6 py-24"><Loading /></div>;
   if (me.error) return <main className="px-6 py-10"><ErrorLine error={me.error} /></main>;
   if (perms.size === 0 && !me.data?.isSuperAdmin) {
     return (

@@ -3,6 +3,7 @@ import { OBJECT_STORAGE, type ObjectStorage } from '../src/modules/media/object-
 import { randomUUID } from 'node:crypto';
 import { generateKeyPair, SignJWT } from 'jose';
 import request from 'supertest';
+import { DiscoveryModule } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { type INestApplication, Controller, Get } from '@nestjs/common';
 import { loadEnv } from '../src/config/load-env.js';
@@ -57,7 +58,7 @@ export async function createTestApp(envOverrides: Record<string, string> = {}, o
   const keys = await generateKeyPair('ES256');
   const verifier = new JwtVerifier({ issuer: ISSUER, audience: AUDIENCE, jwks: async () => keys.publicKey });
 
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule], controllers: [NakedController] })
+  const moduleRef = await Test.createTestingModule({ imports: [AppModule, DiscoveryModule], controllers: [NakedController] })
     .overrideProvider(ENV)
     .useValue(
       parseEnv({

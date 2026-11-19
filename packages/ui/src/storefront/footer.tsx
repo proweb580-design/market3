@@ -69,7 +69,8 @@ function Testimonials() {
   const { store } = useStore();
   const [i, setI] = useState(0);
   const items = store.testimonials;
-  const t = items[i]!;
+  const t = items[i];
+  if (!t) return null; // a new store has no reviews yet
   const go = (d: number) => setI((i + d + items.length) % items.length);
 
   return (
