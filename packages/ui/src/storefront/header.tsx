@@ -40,7 +40,7 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
             <Search strokeWidth={1.5} className="size-4" />
           </button>
           {web && (
-            <Link href="/login" className={cn(iconBtn, 'max-md:hidden')} aria-label="Account">
+            <Link href="/account" className={cn(iconBtn, 'max-md:hidden')} aria-label="Account">
               <User strokeWidth={1.5} className="size-4" />
             </Link>
           )}

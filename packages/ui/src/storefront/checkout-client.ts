@@ -39,6 +39,13 @@ export const placeOrder = (store: string, input: OrderCheckoutInput, token: stri
     token,
   });
 
+/** Signed-in buyer's wishlist for one store (the server keeps it per account). */
+export const fetchWishlist = (store: string, token: string) =>
+  call<{ slugs: string[] }>(`${encodeURIComponent(store)}/wishlist`, { token });
+
+export const setWishlisted = (store: string, productSlug: string, on: boolean, token: string) =>
+  call<{ slugs: string[] }>(`${encodeURIComponent(store)}/wishlist/${encodeURIComponent(productSlug)}`, { method: on ? 'PUT' : 'DELETE', token });
+
 export interface BuyerOrder {
   id: string;
   number: number;

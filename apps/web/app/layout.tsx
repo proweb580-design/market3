@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Roboto_Flex } from 'next/font/google';
 import { ThemeScript } from '@repo/ui/storefront/theme-script';
+import { AuthProvider } from './auth-provider';
 import './globals.css';
 
 // Variable width axis gives the wide, heavy grotesk headings of the reference; Cyrillic for RU content.
@@ -22,7 +23,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       <head>
         <ThemeScript />
       </head>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

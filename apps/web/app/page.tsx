@@ -11,6 +11,9 @@ export default function Home() {
       <Link href="/s/ashen" className="label-xs mt-4 font-bold underline">
         Demo store →
       </Link>
+      <Link href="/account" className="label-xs font-bold underline">
+        My account →
+      </Link>
     </main>
   );
 }

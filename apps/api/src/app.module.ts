@@ -16,6 +16,7 @@ import { ApiLogMiddleware } from './modules/api-keys/api-log.middleware.js';
 import { AuditModule } from './modules/audit/audit.module.js';
 import { AuthGuard } from './modules/auth/auth.guard.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { BuyersModule } from './modules/buyers/buyers.module.js';
 import { BillingModule } from './modules/billing/billing.module.js';
 import { CatalogModule } from './modules/catalog/catalog.module.js';
 import { SubscriptionGuard } from './modules/billing/subscription.guard.js';
@@ -49,6 +50,7 @@ import { UsersModule } from './modules/users/users.module.js';
     CatalogModule,
     OrdersModule,
     JobsModule,
+    BuyersModule,
   ],
   controllers: [HealthController],
   providers: [

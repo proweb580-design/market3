@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { fetchWishlist, setWishlisted } from './checkout-client';
 import type { StoreConfig, StoreProduct } from './types';
 
 export interface CartLine {
@@ -66,7 +67,7 @@ const sameLine = (a: CartLine, b: CartLine) =>
 /**
  * Client state for one storefront. The cart is kept in this browser (localStorage, per store) as variant choices only:
  * prices, stock and totals are always re-computed by the server (quote / checkout), never taken from here.
- * shortcut: the wishlist is still in memory; it moves to the account (wishlist_items) with sign-in pages.
+ * the wishlist is local for guests and on the account (wishlist_items) when signed in.
  */
 export function StoreProvider({
   store,
@@ -134,13 +135,58 @@ export function StoreProvider({
     );
   }, []);
 
-  const toggleWishlist = useCallback((slug: string) => {
-    setWishlist((prev) => {
-      const next = new Set(prev);
-      if (!next.delete(slug)) next.add(slug);
-      return next;
-    });
-  }, []);
+  // Wishlist: kept in this browser for guests; for a signed-in buyer (host has a token) it lives on the account.
+  const wishlistKey = `wishlist:${store.slug}`;
+  useEffect(() => {
+    let live = true;
+    let local: string[] = [];
+    try {
+      local = (JSON.parse(localStorage.getItem(wishlistKey) ?? '[]') as string[]).filter((s) => bySlug.has(s));
+    } catch {
+      // storage unavailable: start empty
+    }
+    setWishlist(new Set(local));
+    if (!host) return;
+    void (async () => {
+      const token = await host.getAuthToken();
+      if (!token || !live) return;
+      try {
+        const { slugs } = await fetchWishlist(store.slug, token);
+        // Items hearted while signed out move to the account.
+        for (const s of local.filter((s) => !slugs.includes(s))) await setWishlisted(store.slug, s, true, token).catch(() => undefined);
+        if (live) setWishlist(new Set([...slugs, ...local]));
+        localStorage.removeItem(wishlistKey);
+      } catch {
+        // account wishlist unavailable: keep the local one
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [host, store.slug, wishlistKey, bySlug]);
+
+  const toggleWishlist = useCallback(
+    (slug: string) => {
+      const on = !wishlist.has(slug);
+      const next = new Set(wishlist);
+      if (on) next.add(slug);
+      else next.delete(slug);
+      setWishlist(next);
+      void (async () => {
+        const token = await host?.getAuthToken();
+        if (token) {
+          await setWishlisted(store.slug, slug, on, token).catch(() => setWishlist(wishlist)); // roll back if the server refused
+          return;
+        }
+        try {
+          localStorage.setItem(wishlistKey, JSON.stringify([...next]));
+        } catch {
+          // storage blocked: the heart still works for this page view
+        }
+      })();
+    },
+    [wishlist, host, store.slug, wishlistKey],
+  );
 
   const value = useMemo<StoreContextValue>(() => {
     const subtotalMinor = cart.reduce(
