@@ -17,7 +17,9 @@ import { AuditModule } from './modules/audit/audit.module.js';
 import { AuthGuard } from './modules/auth/auth.guard.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { BillingModule } from './modules/billing/billing.module.js';
+import { CatalogModule } from './modules/catalog/catalog.module.js';
 import { SubscriptionGuard } from './modules/billing/subscription.guard.js';
+import { OrdersModule } from './modules/orders/orders.module.js';
 import { OrganizationsModule } from './modules/organizations/organizations.module.js';
 import { TelegramModule } from './modules/telegram/telegram.module.js';
 import { ProfilesModule } from './modules/profiles/profiles.module.js';
@@ -43,6 +45,8 @@ import { UsersModule } from './modules/users/users.module.js';
     OrganizationsModule,
     ApiKeysModule,
     AdminModule,
+    CatalogModule,
+    OrdersModule,
   ],
   controllers: [HealthController],
   providers: [

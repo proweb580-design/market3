@@ -29,7 +29,7 @@ function applyTheme(app: TelegramWebApp) {
  * ready/expand, theme, BackButton, MainButton for the page's primary action, and sign-in.
  */
 export function TelegramBridge() {
-  const { store, href, primaryAction, setNativePrimary } = useStore();
+  const { store, href, primaryAction, setNativePrimary, setHost } = useStore();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -44,12 +44,16 @@ export function TelegramBridge() {
     app.onEvent('themeChanged', onTheme);
     setNativePrimary(true);
     // The session is kept for upcoming cart/checkout calls; browsing works even if sign-in fails (e.g. plan without Mini App).
-    telegramSession(store.slug, app.initData).catch(() => undefined);
+    const token = () => telegramSession(store.slug, app.initData).then((s) => s?.accessToken ?? null, () => null);
+    void token();
+    // Orders made in the Mini App belong to the Telegram user; the payment page opens in the system browser.
+    setHost({ getAuthToken: token, openLink: (url) => app.openLink(url) });
     return () => {
+      setHost(null);
       app.offEvent('themeChanged', onTheme);
       setNativePrimary(false);
     };
-  }, [store.slug, setNativePrimary]);
+  }, [store.slug, setNativePrimary, setHost]);
 
   // Telegram's own Back button replaces in-page navigation chrome; hidden on the store's home page.
   useEffect(() => {

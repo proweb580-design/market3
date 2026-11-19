@@ -7,6 +7,7 @@ import { formatMoney } from '../lib/format';
 import { Button } from '../components/ui/button';
 import { Checkbox } from '../components/ui/checkbox';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '../components/ui/sheet';
+import { CheckoutDialog } from './checkout-dialog';
 import { ProductImage } from './media';
 import { QuantityStepper } from './primitives';
 import { useStore } from './store-context';
@@ -43,10 +44,11 @@ function UpsellCard({ product }: { product: StoreProduct }) {
 export function CartSheet() {
   const { store, cart, products, productBySlug, setQuantity, cartCount, subtotalMinor, overlay, setOverlay, href } = useStore();
   const [agreed, setAgreed] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(false);
   const [upsellPage, setUpsellPage] = useState(0);
 
   const threshold = store.freeShippingThresholdMinor;
-  const progress = Math.min(100, Math.round((subtotalMinor / threshold) * 100));
+  const progress = threshold ? Math.min(100, Math.round((subtotalMinor / threshold) * 100)) : 0;
   const inCart = new Set(cart.map((l) => l.productSlug));
   const upsells = products.filter((p) => !inCart.has(p.slug)).slice(0, 6);
   const pages = Math.max(1, Math.ceil(upsells.length / 2));
@@ -58,16 +60,22 @@ export function CartSheet() {
         <div className="border-b border-border px-6 pb-4 pt-6">
           <div className="flex items-baseline justify-between pr-8">
             <SheetTitle className="label-xs font-bold">Cart ({cartCount})</SheetTitle>
-            <span className="label-xs tabular-nums text-muted-foreground">{progress}%</span>
+            {threshold !== null && <span className="label-xs tabular-nums text-muted-foreground">{progress}%</span>}
           </div>
-          <SheetDescription className="label-xs mt-3 text-muted-foreground">
-            {subtotalMinor >= threshold
-              ? 'You’ve unlocked free shipping!'
-              : `Spend ${money(threshold - subtotalMinor)} more for free shipping`}
-          </SheetDescription>
-          <div className="mt-2 h-0.5 w-full bg-border" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Free shipping progress">
-            <div className="h-full bg-foreground transition-[width] duration-500" style={{ width: `${progress}%` }} />
-          </div>
+          {threshold === null ? (
+            <SheetDescription className="sr-only">Your cart</SheetDescription>
+          ) : (
+            <>
+              <SheetDescription className="label-xs mt-3 text-muted-foreground">
+                {subtotalMinor >= threshold
+                  ? 'You’ve unlocked free shipping!'
+                  : `Spend ${money(threshold - subtotalMinor)} more for free shipping`}
+              </SheetDescription>
+              <div className="mt-2 h-0.5 w-full bg-border" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Free shipping progress">
+                <div className="h-full bg-foreground transition-[width] duration-500" style={{ width: `${progress}%` }} />
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto px-6">
@@ -139,11 +147,12 @@ export function CartSheet() {
             <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-px" />
             I agree with the Terms and Conditions and Privacy Policy
           </label>
-          <Button className="mt-4 w-full" disabled={!agreed || cart.length === 0} title="Checkout is built in phase 8">
+          <Button className="mt-4 w-full" disabled={!agreed || cart.length === 0} onClick={() => setCheckingOut(true)}>
             Checkout · {money(subtotalMinor)}
           </Button>
         </div>
       </SheetContent>
+      <CheckoutDialog open={checkingOut} onOpenChange={setCheckingOut} />
     </Sheet>
   );
 }

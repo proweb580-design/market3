@@ -1,7 +1,7 @@
 import { BadRequestException, type CanActivate, type ExecutionContext, Injectable, UnauthorizedException, Inject } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Response } from 'express';
-import { IS_PUBLIC } from '../../common/decorators.js';
+import { IS_PUBLIC, OPTIONAL_AUTH } from '../../common/decorators.js';
 import type { AppRequest } from '../../common/principal.js';
 import { AuthService } from './auth.service.js';
 import { ApiKeyRateLimiter } from './rate-limiter.js';
@@ -29,6 +29,9 @@ export class AuthGuard implements CanActivate {
     const req = http.getRequest<AppRequest>();
     const bearer = /^Bearer (\S+)$/.exec(req.headers.authorization ?? '')?.[1];
     const apiKey = req.headers['x-api-key'];
+
+    // Optional-auth routes work without credentials; sending any means it must be valid (no silent downgrade).
+    if (!bearer && apiKey === undefined && this.reflector.getAllAndOverride<boolean>(OPTIONAL_AUTH, [context.getHandler(), context.getClass()])) return true;
 
     if (bearer && apiKey) throw new BadRequestException('Send either a bearer token or an API key, not both');
 

@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation';
 import { Suspense, type ReactNode } from 'react';
 import { CollectionView } from './collection-view';
-import { demoStaticParams, getCollection, getProduct, getProducts, getStore } from './demo-data';
+import { getCollection, getProduct, getProducts, getStore } from './api';
 import { HomeView } from './home-view';
 import { LookbookView } from './lookbook-view';
+import { OrderView } from './order-view';
 import { ProductView } from './product-view';
 import { PageSkeleton, ShellSkeleton } from './skeletons';
 import { StoreShell } from './store-shell';
@@ -12,15 +13,12 @@ import { WishlistView } from './wishlist-view';
 /**
  * Route bodies shared by apps/web (/s/[store]) and apps/mini-app (/[store]).
  * Each awaits its params inside <Suspense> so client navigations stay instant (Next 16 cache components).
- * Data comes from demo-data until phase 8 swaps in the API client with the same signatures.
+ * Data comes from the public storefront API (see ./api). No generateStaticParams: stores are created at runtime,
+ * so pages render on request from cached API reads, and builds never depend on the API being reachable.
  */
 
 type StoreParams = Promise<{ store: string }>;
 type ItemParams = Promise<{ store: string; slug: string }>;
-
-export const storeParams = () => demoStaticParams.stores.map((store) => ({ store }));
-export const productParams = () => demoStaticParams.products.map((slug) => ({ slug }));
-export const collectionParams = () => demoStaticParams.collections.map((slug) => ({ slug }));
 
 async function StoreLayoutBody({
   params,
@@ -58,7 +56,7 @@ async function HomeBody({ params }: { params: StoreParams }) {
   const { store: slug } = await params;
   const store = await getStore(slug);
   if (!store) notFound();
-  const grid = await getCollection(slug, store.grid.collection);
+  const grid = store.grid && (await getCollection(slug, store.grid.collection));
   return <HomeView gridProducts={grid?.products ?? []} />;
 }
 
@@ -73,7 +71,8 @@ async function ProductBody({ params }: { params: ItemParams }) {
   const { store, slug } = await params;
   const product = await getProduct(store, slug);
   if (!product) notFound();
-  const collection = (await getCollection(store, product.collections.at(-1)!))!;
+  const context = product.collections.at(-1);
+  const collection = (context && (await getCollection(store, context))) || { slug: '', title: 'All', products: await getProducts(store) };
   const list = collection.products;
   const at = list.findIndex((p) => p.slug === slug);
   return (
@@ -84,6 +83,22 @@ async function ProductBody({ params }: { params: ItemParams }) {
       nextSlug={at < list.length - 1 ? list[at + 1]!.slug : undefined}
       related={list.filter((p) => p.slug !== slug)}
     />
+  );
+}
+
+export const OrderRoute = ({ params }: { params: Promise<{ store: string; orderId: string }> }) => (
+  <Suspense fallback={<PageSkeleton />}>
+    <OrderBody params={params} />
+  </Suspense>
+);
+
+async function OrderBody({ params }: { params: Promise<{ store: string; orderId: string }> }) {
+  const { orderId } = await params;
+  // useSearchParams (the order token) needs its own boundary.
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <OrderView orderId={orderId} />
+    </Suspense>
   );
 }
 
@@ -105,7 +120,17 @@ export const ProductRoute = ({ params }: { params: ItemParams }) => (
   </Suspense>
 );
 
-export const LookbookRoute = () => <LookbookView />;
+async function LookbookBody({ params }: { params: StoreParams }) {
+  const { store: slug } = await params;
+  if (!(await getStore(slug))?.lookbook) notFound();
+  return <LookbookView />;
+}
+
+export const LookbookRoute = ({ params }: { params: StoreParams }) => (
+  <Suspense fallback={<PageSkeleton />}>
+    <LookbookBody params={params} />
+  </Suspense>
+);
 export const WishlistRoute = () => <WishlistView />;
 
 export async function productTitle(params: ItemParams) {

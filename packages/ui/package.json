@@ -7,7 +7,6 @@
     "./tokens.css": "./src/tokens.css",
     "./components/*": "./src/components/*.tsx",
     "./storefront/types": "./src/storefront/types.ts",
-    "./storefront/demo-data": "./src/storefront/demo-data.ts",
     "./storefront/*": "./src/storefront/*.tsx",
     "./lib/*": "./src/lib/*.ts",
     "./hooks/*": "./src/hooks/*.ts"
@@ -30,6 +29,7 @@
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "next": "^16.4.6",

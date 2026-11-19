@@ -27,7 +27,7 @@ const LIFECYCLE_EVERY_MS = 10 * 60_000;
       useFactory: (env: Env) => (env.STRIPE_SECRET_KEY ? new StripeProvider(new Stripe(env.STRIPE_SECRET_KEY), env.STRIPE_WEBHOOK_SECRET) : null),
     },
   ],
-  exports: [EntitlementsService, SubscriptionsService, SubscriptionGuard],
+  exports: [EntitlementsService, SubscriptionsService, SubscriptionGuard, PaymentsService, PAYMENT_PROVIDER],
 })
 export class BillingModule implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger('Billing');

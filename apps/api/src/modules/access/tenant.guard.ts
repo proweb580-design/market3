@@ -1,7 +1,7 @@
 import { type CanActivate, type ExecutionContext, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { z } from 'zod';
-import { IS_PUBLIC } from '../../common/decorators.js';
+import { IS_PUBLIC, OPTIONAL_AUTH } from '../../common/decorators.js';
 import type { AppRequest } from '../../common/principal.js';
 import { AccessService } from './access.service.js';
 
@@ -19,7 +19,8 @@ export class TenantGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext) {
-    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [context.getHandler(), context.getClass()])) return true;
+    const targets = [context.getHandler(), context.getClass()];
+    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, targets) || this.reflector.getAllAndOverride<boolean>(OPTIONAL_AUTH, targets)) return true;
 
     const req = context.switchToHttp().getRequest<AppRequest>();
     const orgId = req.params?.orgId;

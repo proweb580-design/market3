@@ -8,7 +8,8 @@ import { useStore } from './store-context';
 /** Reference §2.9: eyebrow + title, tag filter tabs, three-column masonry with captions. */
 export function LookbookView() {
   const { store } = useStore();
-  const { lookbook } = store;
+  // The route returns 404 when the store has no lookbook.
+  const lookbook = store.lookbook!;
   const tags = ['All', ...new Set(lookbook.items.map((i) => i.tag))];
   const [tag, setTag] = useState('All');
   const items = tag === 'All' ? lookbook.items : lookbook.items.filter((i) => i.tag === tag);

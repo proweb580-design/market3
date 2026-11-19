@@ -14,7 +14,8 @@ import type { StoreProduct } from './types';
 /** Reference §2.2b: photo triptych under the translucent header, dissolving into the page background. */
 export function HeroBanner() {
   const { store, href } = useStore();
-  const { hero } = store;
+  const hero = store.hero!;
+  const shop = store.grid?.collection ?? store.collections[0]?.slug;
   return (
     <section className="relative h-[92svh] min-h-[520px] overflow-hidden" aria-label={hero.title}>
       <div className="grid h-full grid-cols-1 md:grid-cols-3">
@@ -27,12 +28,14 @@ export function HeroBanner() {
         <p className="label-xs opacity-80">{hero.eyebrow}</p>
         <h1 className="title-xl mt-2 text-6xl drop-shadow-lg sm:text-7xl">{hero.title}</h1>
         <p className="mt-2 text-xs opacity-80">{hero.subtitle}</p>
-        <Link
-          href={href('/collections/fw26')}
-          className="label-xs mt-6 inline-flex items-center gap-2 border-b border-white/60 pb-0.5 font-bold transition-opacity hover:opacity-70"
-        >
-          Shop the drop <ArrowRight className="size-3" />
-        </Link>
+        {shop && (
+          <Link
+            href={href(`/collections/${shop}`)}
+            className="label-xs mt-6 inline-flex items-center gap-2 border-b border-white/60 pb-0.5 font-bold transition-opacity hover:opacity-70"
+          >
+            Shop the drop <ArrowRight className="size-3" />
+          </Link>
+        )}
       </div>
     </section>
   );
@@ -41,7 +44,8 @@ export function HeroBanner() {
 /** Reference §2.2a: coverflow — focused cut-out in the middle, blurred neighbours, cross-fade between items. */
 export function FeaturedCarousel() {
   const { store, productBySlug, href } = useStore();
-  const items = store.featured.productSlugs.map(productBySlug).filter((p): p is StoreProduct => !!p);
+  const featured = store.featured!;
+  const items = featured.productSlugs.map(productBySlug).filter((p): p is StoreProduct => !!p);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
@@ -61,13 +65,13 @@ export function FeaturedCarousel() {
     <section
       className="overflow-x-clip px-page pt-10"
       aria-roledescription="carousel"
-      aria-label={store.featured.title}
+      aria-label={featured.title}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <SectionHeading title={store.featured.title} eyebrow={store.featured.subtitle} />
+      <SectionHeading title={featured.title} eyebrow={featured.subtitle} />
       <div
         className="relative mx-auto h-[min(62vw,520px)] max-md:h-[78vw]"
         onTouchStart={(e) => (touchX.current = e.touches[0]!.clientX)}
@@ -166,7 +170,7 @@ function useCountdown(target: string) {
 /** Reference §2.2d: drop teaser with a live countdown (client-only so prerendering stays deterministic). */
 export function DropCountdown() {
   const { store } = useStore();
-  const { drop } = store;
+  const drop = store.drop!;
   const left = useCountdown(drop.endsAt);
   const s = left === null ? null : Math.floor(left / 1000);
   const parts: [string, number | null][] = [
@@ -224,10 +228,10 @@ export function SocialFeed() {
     <section className="px-page pt-24">
       <SectionHeading
         title="Follow along"
-        action={<span className="label-xs text-muted-foreground">{store.social.handle}</span>}
+        action={<span className="label-xs text-muted-foreground">{store.social!.handle}</span>}
       />
       <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {store.social.panels.map((p, i) => (
+        {store.social!.panels.map((p, i) => (
           <div key={i} className={cn('aspect-[4/5] overflow-hidden rounded-sm', i > 3 && 'max-lg:hidden', i > 1 && 'max-sm:hidden')}>
             <PanelView panel={p} />
           </div>

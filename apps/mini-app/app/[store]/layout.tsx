@@ -1,7 +1,5 @@
-import { StoreLayoutRoute, storeParams } from '@repo/ui/storefront/routes';
+import { StoreLayoutRoute } from '@repo/ui/storefront/routes';
 import { TelegramBridge } from '../telegram-bridge';
-
-export const generateStaticParams = storeParams;
 
 export default function StoreLayout({ children, params }: LayoutProps<'/[store]'>) {
   return (

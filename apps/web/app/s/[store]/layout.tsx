@@ -1,6 +1,4 @@
-import { StoreLayoutRoute, storeParams } from '@repo/ui/storefront/routes';
-
-export const generateStaticParams = storeParams;
+import { StoreLayoutRoute } from '@repo/ui/storefront/routes';
 
 export default function StoreLayout({ children, params }: LayoutProps<'/s/[store]'>) {
   return (

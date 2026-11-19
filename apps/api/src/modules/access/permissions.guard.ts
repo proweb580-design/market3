@@ -1,6 +1,6 @@
 import { type CanActivate, type ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC, MEMBER_ONLY, PERMISSIONS_META, USER_ONLY } from '../../common/decorators.js';
+import { IS_PUBLIC, MEMBER_ONLY, OPTIONAL_AUTH, PERMISSIONS_META, USER_ONLY } from '../../common/decorators.js';
 import type { AppRequest } from '../../common/principal.js';
 import { AccessService, isOrgPermission } from './access.service.js';
 
@@ -17,7 +17,7 @@ export class PermissionsGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const targets = [context.getHandler(), context.getClass()];
-    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, targets)) return true;
+    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, targets) || this.reflector.getAllAndOverride<boolean>(OPTIONAL_AUTH, targets)) return true;
 
     const req = context.switchToHttp().getRequest<AppRequest>();
     const principal = req.principal!;

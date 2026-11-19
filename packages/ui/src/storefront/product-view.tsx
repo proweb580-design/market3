@@ -95,7 +95,7 @@ export function ProductView({
 
         <div className="flex flex-col md:col-span-5 lg:col-span-4 lg:col-start-9">
           <nav aria-label="Breadcrumb" className="label-xs text-muted-foreground">
-            <Link href={href(`/collections/${store.grid.collection}`)} className="hover:text-foreground">
+            <Link href={href(`/collections/${store.grid?.collection ?? collection.slug}`)} className="hover:text-foreground">
               Shop
             </Link>{' '}
             /{' '}
@@ -156,10 +156,6 @@ export function ProductView({
               <Heart className={cn('size-4', liked && 'fill-current')} />
             </Button>
           </div>
-          <Button variant="ghost" className="mt-1" disabled title="Express checkout is built in phase 8">
-            Buy it now
-          </Button>
-
           <div className="label-xs mt-4 flex justify-between text-muted-foreground">
             {prevSlug ? (
               <Link href={href(`/products/${prevSlug}`)} className="hover:text-foreground">

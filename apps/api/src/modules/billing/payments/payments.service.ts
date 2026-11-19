@@ -19,6 +19,7 @@ import { ENV, type Env } from '../../../config/env.js';
 import { Prisma } from '../../../generated/prisma/client.js';
 import { PrismaService } from '../../../infra/prisma/prisma.service.js';
 import { AuditService } from '../../audit/audit.service.js';
+import { cancelUnpaidOrder, markOrderPaid, markOrderRefunded } from '../../orders/order-lifecycle.js';
 import { PlansService } from '../plans.service.js';
 import { SubscriptionsService } from '../subscriptions.service.js';
 import { PAYMENT_PROVIDER, type CheckoutState, type PaymentProvider, ProviderError, type ProviderEvent, WebhookSignatureError } from './payment-provider.js';
@@ -225,10 +226,14 @@ export class PaymentsService {
       if (!found) return 'ignored'; // not ours (another integration on the same Stripe account)
       await tx.$queryRaw`SELECT id FROM "app"."payments" WHERE id = ${found.id}::uuid FOR UPDATE`;
       const payment = await tx.payment.findUniqueOrThrow({ where: { id: found.id } });
-      if (payment.status !== 'PENDING' || state.outcome === 'pending') return 'ignored';
+      // An order payment canceled on our side (brand cancel, expiry) can still be paid at the provider: record that money
+      // instead of dropping it, so it can be refunded.
+      const lateOrderMoney = !!payment.orderId && payment.status === 'CANCELED' && state.outcome === 'paid';
+      if ((payment.status !== 'PENDING' && !lateOrderMoney) || state.outcome === 'pending') return 'ignored';
 
       if (state.outcome === 'expired' || state.outcome === 'failed') {
         await tx.payment.update({ where: { id: payment.id }, data: { status: state.outcome === 'expired' ? 'CANCELED' : 'FAILED', failureReason: state.outcome } });
+        if (payment.orderId) await cancelUnpaidOrder(tx, payment.orderId);
         return 'applied';
       }
 
@@ -237,6 +242,18 @@ export class PaymentsService {
         this.logger.error(`amount mismatch on payment ${payment.id}`);
         await tx.payment.update({ where: { id: payment.id }, data: { status: 'FAILED', failureReason: 'amount_mismatch' } });
         await this.audit.record(null, { action: 'payment.amount_mismatch', organizationId: payment.organizationId, entityType: 'payment', entityId: payment.id, metadata: { expected: `${payment.amountMinor} ${payment.currency}`, received: `${state.amountMinor} ${state.currency}` } }, tx);
+        return 'applied';
+      }
+
+      if (payment.orderId) {
+        // Order payment: the order was captured at checkout; the webhook only says whether it was paid.
+        const result = await markOrderPaid(tx, payment.orderId);
+        await tx.payment.update({ where: { id: payment.id }, data: { status: 'SUCCEEDED' } });
+        await tx.transaction.create({
+          data: { paymentId: payment.id, type: 'CHARGE', amountMinor: payment.amountMinor, currency: payment.currency, status: 'SUCCEEDED', providerTransactionId: state.providerTransactionId },
+        });
+        const action = result === 'paid_after_cancel' ? 'order.paid_after_cancel' : 'order.paid';
+        await this.audit.record(null, { action, organizationId: payment.organizationId, entityType: 'order', entityId: payment.orderId, metadata: { paymentId: payment.id } }, tx);
         return 'applied';
       }
 
@@ -268,11 +285,12 @@ export class PaymentsService {
   }
 
   private async recomputeRefundStatus(tx: Tx, paymentId: string) {
-    const payment = await tx.payment.findUniqueOrThrow({ where: { id: paymentId }, select: { amountMinor: true, status: true } });
+    const payment = await tx.payment.findUniqueOrThrow({ where: { id: paymentId }, select: { amountMinor: true, status: true, orderId: true } });
     const refunds = await tx.transaction.findMany({ where: { paymentId, type: 'REFUND', status: 'SUCCEEDED' }, select: { amountMinor: true } });
     const refunded = refunds.reduce((s, r) => s + r.amountMinor, 0n);
     const status = refunded >= payment.amountMinor ? 'REFUNDED' : refunded > 0n ? 'PARTIALLY_REFUNDED' : 'SUCCEEDED';
     if (status !== payment.status) await tx.payment.update({ where: { id: paymentId }, data: { status } });
+    if (status === 'REFUNDED' && payment.orderId) await markOrderRefunded(tx, payment.orderId);
   }
 
   // ── refunds (platform admin) ──

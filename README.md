@@ -23,6 +23,7 @@ cp .env.example .env   # единый файл настроек в корне; �
 docker compose -f infrastructure/docker-compose.yml up -d
 pnpm --filter @repo/api db:deploy
 pnpm --filter @repo/api db:seed
+pnpm --filter @repo/api db:seed-demo   # только для разработки: демо-магазин ashen с каталогом
 pnpm dev
 ```
 
@@ -34,6 +35,8 @@ pnpm dev
 | демо-витрина (Mini App) | http://localhost:3001/ashen |
 | api | http://localhost:4000/api/v1/health |
 | Swagger | http://localhost:4000/api/docs |
+
+Витрины (сайт и Mini App) берут данные из API: без запущенного API страница магазина покажет «Store unavailable».
 
 ## Команды
 

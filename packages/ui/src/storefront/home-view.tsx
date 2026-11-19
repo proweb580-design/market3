@@ -16,12 +16,12 @@ export function HomeView({ gridProducts }: { gridProducts: StoreProduct[] }) {
   const { store } = useStore();
   return (
     <>
-      <HeroBanner />
-      <FeaturedCarousel />
-      <ProductGridSection title={store.grid.title} products={gridProducts.slice(0, 8)} viewAllPath={`/collections/${store.grid.collection}`} />
-      <DropCountdown />
-      <CollectionsRow />
-      <SocialFeed />
+      {store.hero && <HeroBanner />}
+      {store.featured && <FeaturedCarousel />}
+      {store.grid && <ProductGridSection title={store.grid.title} products={gridProducts.slice(0, 8)} viewAllPath={`/collections/${store.grid.collection}`} />}
+      {store.drop && <DropCountdown />}
+      {store.collections.length > 0 && <CollectionsRow />}
+      {store.social && <SocialFeed />}
     </>
   );
 }

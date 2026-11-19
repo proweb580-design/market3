@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import { CollectionRoute, collectionParams, collectionTitle } from '@repo/ui/storefront/routes';
-
-export const generateStaticParams = collectionParams;
+import { CollectionRoute, collectionTitle } from '@repo/ui/storefront/routes';
 
 export async function generateMetadata({ params }: PageProps<'/[store]/collections/[slug]'>): Promise<Metadata> {
   return { title: await collectionTitle(params) };

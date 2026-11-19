@@ -6,6 +6,7 @@
 import { loadEnv } from '../src/config/load-env.js';
 import { createPrismaClient } from '../src/infra/prisma/create-client.js';
 import { addInterval } from '../src/modules/billing/period.js';
+import { seedDemoCatalog } from './demo-catalog.js';
 
 loadEnv();
 if (process.env.NODE_ENV === 'production') throw new Error('seed-demo is for development only');
@@ -36,7 +37,8 @@ try {
       create: { organizationId: org.id, userId: owner.id, roleId: role.id },
     });
   }
-  console.log(`Demo store "ashen" ready (${org.id})${owner ? `, owner ${email}` : ''}`);
+  const catalog = await seedDemoCatalog(db, org.id);
+  console.log(`Demo store "ashen" ready (${org.id}): ${catalog.products} products, ${catalog.collections} collections${owner ? `, owner ${email}` : ''}`);
 } finally {
   await db.$disconnect();
 }

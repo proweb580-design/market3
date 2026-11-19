@@ -8,6 +8,7 @@ export interface TelegramWebApp {
   themeParams: Partial<Record<'bg_color' | 'text_color' | 'hint_color' | 'link_color' | 'button_color' | 'button_text_color' | 'secondary_bg_color', string>>;
   ready(): void;
   expand(): void;
+  openLink(url: string): void;
   onEvent(event: 'themeChanged', cb: () => void): void;
   offEvent(event: 'themeChanged', cb: () => void): void;
   BackButton: { show(): void; hide(): void; onClick(cb: () => void): void; offClick(cb: () => void): void };

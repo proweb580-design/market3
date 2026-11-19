@@ -1,6 +1,6 @@
 import { type CanActivate, type ExecutionContext, Injectable, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC } from '../../common/decorators.js';
+import { IS_PUBLIC, OPTIONAL_AUTH } from '../../common/decorators.js';
 import type { AppRequest } from '../../common/principal.js';
 import { EntitlementsService, type FlagKey, type LimitKey } from './entitlements.service.js';
 
@@ -26,7 +26,7 @@ export class SubscriptionGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const targets = [context.getHandler(), context.getClass()];
-    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, targets)) return true;
+    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, targets) || this.reflector.getAllAndOverride<boolean>(OPTIONAL_AUTH, targets)) return true;
     const req = context.switchToHttp().getRequest<AppRequest>();
     const orgId = req.tenant?.organizationId;
     if (!orgId) return true;

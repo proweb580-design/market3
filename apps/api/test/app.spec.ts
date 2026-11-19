@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DiscoveryModule, DiscoveryService, Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
-import { IS_PUBLIC, MEMBER_ONLY, PERMISSIONS_META, USER_ONLY } from '../src/common/decorators.js';
+import { IS_PUBLIC, MEMBER_ONLY, OPTIONAL_AUTH, PERMISSIONS_META, USER_ONLY } from '../src/common/decorators.js';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
@@ -66,7 +66,7 @@ describe('API bootstrap', () => {
         const handler = proto[name];
         if (name === 'constructor' || typeof handler !== 'function' || Reflect.getMetadata('path', handler) === undefined) continue;
         routes += 1;
-        const ruled = [IS_PUBLIC, USER_ONLY, MEMBER_ONLY, PERMISSIONS_META].some((k) => reflector.getAllAndOverride(k, [handler, wrapper.metatype!]));
+        const ruled = [IS_PUBLIC, OPTIONAL_AUTH, USER_ONLY, MEMBER_ONLY, PERMISSIONS_META].some((k) => reflector.getAllAndOverride(k, [handler, wrapper.metatype!]));
         if (!ruled) unprotected.push(`${wrapper.metatype!.name}.${name}`);
       }
     }
