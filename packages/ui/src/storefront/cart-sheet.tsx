@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { formatMoney } from '../lib/format';
 import { Button } from '../components/ui/button';
 import { Checkbox } from '../components/ui/checkbox';
@@ -11,47 +11,15 @@ import { CheckoutDialog } from './checkout-dialog';
 import { ProductImage } from './media';
 import { QuantityStepper } from './primitives';
 import { useStore } from './store-context';
-import type { StoreProduct } from './types';
 
-function UpsellCard({ product }: { product: StoreProduct }) {
-  const { addToCart } = useStore();
-  const color = product.colors[0]!;
-  return (
-    <div className="flex flex-col">
-      <ProductImage media={product.media[0]!} tone={color.hex} className="mx-auto w-4/5" />
-      <p className="label-xs mt-2 font-bold">{product.title}</p>
-      <p className="label-xs text-muted-foreground">{formatMoney(product.price)}</p>
-      <div className="mt-2 flex flex-wrap gap-1" aria-label={`Quick add ${product.title}`}>
-        {product.sizes
-          .filter((s) => s.inStock)
-          .map((s) => (
-            <button
-              key={s.label}
-              type="button"
-              onClick={() => addToCart({ productSlug: product.slug, size: s.label, color: color.name, quantity: 1 })}
-              className="label-xs rounded-sm border border-border px-1.5 py-0.5 transition-colors hover:border-foreground"
-              aria-label={`Add ${product.title}, size ${s.label}`}
-            >
-              {s.label}
-            </button>
-          ))}
-      </div>
-    </div>
-  );
-}
-
-/** Reference §2.5: right drawer with free-shipping progress, line items and "complete the look" upsells. */
+/** Reference §2.5: right drawer with free-shipping progress and line items. */
 export function CartSheet() {
-  const { store, cart, products, productBySlug, setQuantity, cartCount, subtotalMinor, overlay, setOverlay, href } = useStore();
+  const { store, cart, productBySlug, setQuantity, cartCount, subtotalMinor, overlay, setOverlay, href } = useStore();
   const [agreed, setAgreed] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
-  const [upsellPage, setUpsellPage] = useState(0);
 
   const threshold = store.freeShippingThresholdMinor;
   const progress = threshold ? Math.min(100, Math.round((subtotalMinor / threshold) * 100)) : 0;
-  const inCart = new Set(cart.map((l) => l.productSlug));
-  const upsells = products.filter((p) => !inCart.has(p.slug)).slice(0, 6);
-  const pages = Math.max(1, Math.ceil(upsells.length / 2));
   const money = (amountMinor: number) => formatMoney({ amountMinor, currency: store.currency });
 
   return (
@@ -113,27 +81,6 @@ export function CartSheet() {
                 );
               })}
             </ul>
-          )}
-
-          {upsells.length > 0 && (
-            <section className="border-t border-border py-5" aria-label="Complete the look">
-              <div className="mb-3 flex items-center justify-between">
-                <p className="label-xs font-bold">Complete the look</p>
-                <div className="flex gap-1">
-                  <button type="button" aria-label="Previous suggestions" disabled={upsellPage === 0} onClick={() => setUpsellPage(upsellPage - 1)} className="p-1 disabled:opacity-30">
-                    <ChevronLeft className="size-4" />
-                  </button>
-                  <button type="button" aria-label="Next suggestions" disabled={upsellPage >= pages - 1} onClick={() => setUpsellPage(upsellPage + 1)} className="p-1 disabled:opacity-30">
-                    <ChevronRight className="size-4" />
-                  </button>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {upsells.slice(upsellPage * 2, upsellPage * 2 + 2).map((p) => (
-                  <UpsellCard key={p.slug} product={p} />
-                ))}
-              </div>
-            </section>
           )}
         </div>
 

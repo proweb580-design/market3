@@ -6,7 +6,6 @@ import { CartSheet } from './cart-sheet';
 import { Footer } from './footer';
 import { Header } from './header';
 import { MenuSheet } from './menu-sheet';
-import { MusicPlayer } from './music-player';
 import { SearchSheet } from './search-sheet';
 import { StoreProvider } from './store-context';
 import type { StoreConfig, StoreProduct } from './types';
@@ -25,12 +24,11 @@ function Chrome({ basePath, children }: { basePath: string; children: ReactNode 
       <MenuSheet />
       <SearchSheet />
       <CartSheet />
-      <MusicPlayer />
     </>
   );
 }
 
-/** Everything around a storefront page: providers, header, footer, drawers, player. */
+/** Everything around a storefront page: providers, header, footer, drawers. */
 export function StoreShell({
   store,
   products,
