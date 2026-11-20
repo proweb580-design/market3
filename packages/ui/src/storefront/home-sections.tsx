@@ -244,3 +244,27 @@ export function SocialFeed() {
     </section>
   );
 }
+
+/** Customer reviews (edited in the brand dashboard), all visible at once in a row. */
+export function Reviews() {
+  const { store } = useStore();
+  return (
+    <section className="px-page pt-24" aria-labelledby="reviews-title">
+      <p className="label-xs mb-1 text-muted-foreground">Reviews</p>
+      <h2 id="reviews-title" className="title-xl text-2xl sm:text-3xl">
+        What they say
+      </h2>
+      <div className="mt-8 grid gap-x-6 gap-y-8 md:grid-cols-3">
+        {store.testimonials.map((t, i) => (
+          <figure key={i} className="flex flex-col border-t border-border pt-5">
+            <blockquote className="flex-1 text-sm leading-relaxed">“{t.quote}”</blockquote>
+            <figcaption className="label-xs mt-5">
+              <b>{t.author}</b>
+              {t.location && <span className="text-muted-foreground"> · {t.location}</span>}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
