@@ -230,7 +230,8 @@ export function SocialFeed() {
         title="Follow along"
         action={<span className="label-xs text-muted-foreground">{store.social!.handle}</span>}
       />
-      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      {/* Four photos fill a 2×2 / 4-across grid; otherwise the 3- and 5-across layout. */}
+      <div className={cn('mt-8 grid grid-cols-2 gap-3', store.social!.panels.length === 4 ? 'lg:grid-cols-4' : 'sm:grid-cols-3 lg:grid-cols-5')}>
         {store.social!.panels.map((p, i) => (
           <div key={i} className={cn('aspect-[4/5] overflow-hidden rounded-sm', i > 3 && 'max-lg:hidden', i > 1 && 'max-sm:hidden')}>
             <PanelView panel={p} />

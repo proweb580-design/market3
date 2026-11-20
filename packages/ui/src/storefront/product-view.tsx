@@ -153,7 +153,7 @@ export function ProductView({
               <ShoppingBag className="size-3.5" /> Add to cart {total}
             </Button>
             <Button variant="outline" size="icon" className="size-11" aria-pressed={liked} aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => toggleWishlist(product.slug)}>
-              <Heart className={cn('size-4', liked && 'fill-current')} />
+              <Heart className={cn('size-4', liked && 'fill-red-500 text-red-500')} />
             </Button>
           </div>
           <div className="label-xs mt-4 flex justify-between text-muted-foreground">

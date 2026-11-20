@@ -45,7 +45,7 @@ export function ProductCard({ product, className }: { product: StoreProduct; cla
           aria-label={liked ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
           className="absolute right-0 top-0 p-1.5 transition-opacity hover:opacity-60"
         >
-          <Heart strokeWidth={1.5} className={cn('size-3.5', liked && 'fill-current')} />
+          <Heart strokeWidth={1.5} className={cn('size-3.5', liked && 'fill-red-500 text-red-500')} />
         </button>
       </div>
 

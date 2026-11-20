@@ -42,6 +42,11 @@ const PHOTOS = {
   'track-jacket.webp': { alt: 'Brown track jacket', width: 709, height: 608 },
   'hoodie.webp': { alt: 'Washed two-tone hoodie', width: 735, height: 912 },
   'tee-black.webp': { alt: 'Black tee with white piping', width: 620, height: 638 },
+  // Street-style shots for the "Follow along" block (full photos, not cut out).
+  'street-1.webp': { alt: 'Grey puffer on a city crosswalk', width: 536, height: 892 },
+  'street-2.webp': { alt: 'Black puffer over a grey hoodie', width: 736, height: 920 },
+  'street-3.webp': { alt: 'Olive down jacket in a car park', width: 800, height: 1069 },
+  'street-4.webp': { alt: 'Cropped black puffer with wide jeans', width: 627, height: 910 },
 } as const;
 type Photo = keyof typeof PHOTOS;
 
@@ -65,7 +70,7 @@ const TEE_TEXT = ['Heavyweight 280 gsm cotton', 'Boxy fit, dropped shoulder', 'P
 const OUTER_TEXT = ['Regular fit', 'Water-repellent shell', 'Two-way zip with storm flap', 'Adjustable hood and hem', 'Embroidered chest logo'];
 
 const art = (from: string, to: string) => ({ from, to });
-const shot = (file: Photo) => ({ type: 'image' as const, src: `/demo/${file}`, alt: 'Campaign photo' });
+const shot = (file: Photo) => ({ type: 'image' as const, src: `/demo/${file}`, alt: PHOTOS[file].alt });
 
 const collections: { slug: string; title: string; photo: Photo; has: (p: DemoProduct) => boolean }[] = [
   { slug: 'fw26', title: 'FW26', photo: 'puffer-black.webp', has: () => true },
@@ -210,11 +215,10 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
         enabled: true,
         handle: '@ashen.studio',
         panels: [
-          shot('hoodie.webp'),
-          shot('tee-black.webp'),
-          shot('puffer-shine.webp'),
-          shot('track-jacket.webp'),
-          shot('puffer-pink-hood.webp'),
+          shot('street-1.webp'),
+          shot('street-2.webp'),
+          shot('street-3.webp'),
+          shot('street-4.webp'),
         ],
       },
     },
