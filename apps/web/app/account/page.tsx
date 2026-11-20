@@ -40,7 +40,7 @@ export default function AccountPage() {
 
   return (
     <main className="mx-auto max-w-xl px-6 py-16">
-      <Link href="/" className="label-xs text-muted-foreground hover:text-foreground">← Platform</Link>
+      <Link href="/" className="label-xs text-muted-foreground hover:text-foreground">← Back to store</Link>
       <div className="mt-8 flex items-end justify-between gap-4">
         <div>
           <p className="label-xs text-muted-foreground">Account</p>

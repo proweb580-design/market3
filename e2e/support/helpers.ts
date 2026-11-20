@@ -26,7 +26,7 @@ export async function signIn(page: Page, email: string, password = PASSWORD, nex
 export async function signOutViaApp(page: Page) {
   await page.goto('/account');
   await page.getByRole('button', { name: 'Sign out' }).first().click();
-  await expect(page).toHaveURL(URLS.web + '/');
+  await expect(page).toHaveURL(`${URLS.web}/s/ashen`); // the home address opens the main store
 }
 
 interface FakeSession {
