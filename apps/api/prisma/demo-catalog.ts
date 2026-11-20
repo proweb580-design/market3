@@ -1,5 +1,5 @@
 /**
- * DEVELOPMENT ONLY: catalogue and home page of the fictional "ashen" demo store (vector art, no real photos).
+ * DEVELOPMENT ONLY: catalogue and home page of the fictional "ashen" demo store (demo photos; vector art where there is no photo).
  * Written through the same functions the API uses, so the demo exercises the real storage path.
  */
 import type { GarmentKind, ProductInput, SizeChartInput, StorefrontContent } from '@repo/shared';
@@ -32,14 +32,24 @@ const teeChart: SizeChartInput = {
   ],
 };
 
-type DemoProduct = { slug: string; title: string; kind: GarmentKind; color: { name: string; hex: string }; price: number; gender?: ProductInput['gender'] };
+/** Demo photos (background cut out, transparent WebP) shipped in apps/web/public/demo and apps/mini-app/public/demo. Tees have no photo yet, so they keep vector art. */
+const PHOTOS = {
+  'puffer-black.webp': { alt: 'Black down puffer jacket', width: 888, height: 981 },
+  'puffer-gloss.webp': { alt: 'Glossy black puffer jacket', width: 709, height: 739 },
+  'track-jacket.webp': { alt: 'Brown track jacket', width: 709, height: 608 },
+  'hoodie.webp': { alt: 'Washed two-tone hoodie', width: 735, height: 912 },
+} as const;
+type Photo = keyof typeof PHOTOS;
+const KIND_PHOTO: Partial<Record<GarmentKind, Photo>> = { puffer: 'puffer-black.webp', fleece: 'track-jacket.webp', hoodie: 'hoodie.webp' };
+
+type DemoProduct = { slug: string; title: string; kind: GarmentKind; color: { name: string; hex: string }; price: number; gender?: ProductInput['gender']; photo?: Photo };
 
 const products: DemoProduct[] = [
   { slug: 'quilt-puffer-black', title: 'Quilt Puffer (Black)', kind: 'puffer', color: { name: 'Black', hex: '#141414' }, price: 300 },
   { slug: 'storm-fleece-ash', title: 'Storm Fleece (Ash Black)', kind: 'fleece', color: { name: 'Ash', hex: '#2b2b2d' }, price: 150, gender: 'MAN' },
   { slug: 'storm-fleece-fog', title: 'Storm Fleece (Fog Grey)', kind: 'fleece', color: { name: 'Fog', hex: '#b9b7b3' }, price: 150, gender: 'WOMAN' },
-  { slug: 'heat-shell-graphite', title: 'Heat Shell (Graphite)', kind: 'puffer', color: { name: 'Graphite', hex: '#3a3c40' }, price: 280 },
-  { slug: 'drift-puffer-navy', title: 'Drift Puffer (Navy)', kind: 'puffer', color: { name: 'Navy', hex: '#1c2740' }, price: 320, gender: 'MAN' },
+  { slug: 'heat-shell-graphite', title: 'Heat Shell (Graphite)', kind: 'puffer', color: { name: 'Graphite', hex: '#3a3c40' }, price: 280, photo: 'puffer-gloss.webp' },
+  { slug: 'drift-puffer-navy', title: 'Drift Puffer (Navy)', kind: 'puffer', color: { name: 'Navy', hex: '#1c2740' }, price: 320, gender: 'MAN', photo: 'puffer-gloss.webp' },
   { slug: 'night-hoodie-black', title: 'Night Hoodie (Black)', kind: 'hoodie', color: { name: 'Black', hex: '#161616' }, price: 140 },
   { slug: 'cloud-hoodie-ice', title: 'Cloud Hoodie (Ice)', kind: 'hoodie', color: { name: 'Ice', hex: '#d9dcdf' }, price: 140, gender: 'WOMAN' },
   { slug: 'signal-tee-black', title: 'Signal Tee (Black)', kind: 'tee', color: { name: 'Black', hex: '#151515' }, price: 60 },
@@ -54,7 +64,10 @@ const TEE_TEXT = ['Heavyweight 280 gsm cotton', 'Boxy fit, dropped shoulder', 'P
 const OUTER_TEXT = ['Regular fit', 'Water-repellent shell', 'Two-way zip with storm flap', 'Adjustable hood and hem', 'Embroidered chest logo'];
 
 const art = (from: string, to: string, kind?: GarmentKind, tone?: string) => ({ from, to, ...(kind && tone && { garment: { kind, tone } }) });
-const inline = (from: string, to: string, kind?: GarmentKind, tone?: string) => ({ type: 'art' as const, ...art(from, to, kind, tone), alt: 'Campaign photo' });
+const inline = (from: string, to: string, kind?: GarmentKind, tone?: string) => {
+  const photo = kind && KIND_PHOTO[kind];
+  return photo ? { type: 'image' as const, src: `/demo/${photo}`, alt: 'Campaign photo' } : { type: 'art' as const, ...art(from, to, kind, tone), alt: 'Campaign photo' };
+};
 
 const collections = [
   { slug: 'fw26', title: 'FW26', panel: art('#3b3f46', '#16181b', 'puffer', '#1d1f22'), has: () => true },
@@ -88,6 +101,18 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
     const data = { mimeType: ART_MIME, sizeBytes: 0n, meta, alt, width: ratio ? 1000 : null, height: ratio ? Math.round(ratio * 1000) : null };
     return (await db.mediaFile.upsert({ where: { storageKey }, update: data, create: { organizationId, storageKey, ...data } })).id;
   };
+  /** One media row per demo photo, shared by everything that shows it. Keys starting with "/" are served by the site itself. */
+  const photo = async (file: Photo) => {
+    const storageKey = `/demo/${file}`;
+    const data = { mimeType: 'image/webp', sizeBytes: 0n, meta: {}, ...PHOTOS[file] };
+    return (await db.mediaFile.upsert({ where: { storageKey }, update: data, create: { organizationId, storageKey, ...data } })).id;
+  };
+  /** Collection / lookbook panel: the photo of its garment if there is one, else the vector art. */
+  const panel = (name: string, a: ReturnType<typeof art>, alt: string, ratio?: number) => {
+    const kind = (a as { garment?: { kind: GarmentKind } }).garment?.kind;
+    const file = kind && KIND_PHOTO[kind];
+    return file ? photo(file) : media(name, a, alt, ratio);
+  };
 
   const chartId = async (chart: SizeChartInput) => {
     const found = await db.sizeChart.findFirst({ where: { organizationId, name: chart.name } });
@@ -98,6 +123,7 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
   const productIds: Record<string, string> = {};
   for (const [i, p] of products.entries()) {
     const isTee = p.kind === 'tee';
+    const productPhoto = p.photo ?? KIND_PHOTO[p.kind];
     const sizes = isTee ? SIZES.slice(0, 5) : SIZES;
     const fabric = isTee ? 'Cotton' : p.kind === 'puffer' ? 'Nylon' : 'Fleece';
     const input: ProductInput = {
@@ -121,10 +147,12 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
         stock: (p.slug.length + s) % 5 === 0 ? 0 : 12,
         isActive: true,
       })),
-      mediaIds: [
-        await media(`products/${p.slug}-front`, { kind: p.kind, view: 'front' }, `${p.title} — front`),
-        await media(`products/${p.slug}-back`, { kind: p.kind, view: 'back' }, `${p.title} — back`),
-      ],
+      mediaIds: productPhoto
+        ? [await photo(productPhoto)]
+        : [
+            await media(`products/${p.slug}-front`, { kind: p.kind, view: 'front' }, `${p.title} — front`),
+            await media(`products/${p.slug}-back`, { kind: p.kind, view: 'back' }, `${p.title} — back`),
+          ],
       collectionIds: [],
     };
     const existing = await db.product.findFirst({ where: { organizationId, slug: p.slug }, select: { id: true } });
@@ -136,7 +164,7 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
     const input = {
       slug: c.slug,
       title: c.title,
-      imageId: await media(`collections/${c.slug}`, c.panel, c.title),
+      imageId: await panel(`collections/${c.slug}`, c.panel, c.title),
       sortOrder: i,
       isPublished: true,
       productIds: products.filter(c.has).map((p) => productIds[p.slug]!),
@@ -216,7 +244,7 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
       title: 'Ashen gallery',
       subtitle: 'A visual study of the latest collection',
       items: await Promise.all(
-        lookbook.map(async (l, i) => ({ mediaId: await media(`lookbook/${i}`, l.art, l.title, l.ratio), tag: l.tag, title: l.title, caption: l.caption })),
+        lookbook.map(async (l, i) => ({ mediaId: await panel(`lookbook/${i}`, l.art, l.title, l.ratio), tag: l.tag, title: l.title, caption: l.caption })),
       ),
     },
   };

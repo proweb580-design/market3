@@ -18,7 +18,8 @@ type ArtMeta = { kind?: GarmentKind; view?: 'front' | 'back'; from?: string; to?
 
 /** Where uploaded files are served from (Supabase Storage public bucket "media"). */
 export const mediaUrl = (supabaseUrl: string | undefined, key: string) =>
-  `${(supabaseUrl ?? '').replace(/\/$/, '')}/storage/v1/object/public/media/${key.split('/').map(encodeURIComponent).join('/')}`;
+  // A key starting with "/" is a file shipped in the site's own public/ folder (demo photos).
+  key.startsWith('/') ? key : `${(supabaseUrl ?? '').replace(/\/$/, '')}/storage/v1/object/public/media/${key.split('/').map(encodeURIComponent).join('/')}`;
 
 const FALLBACK = { from: '#3b3f46', to: '#16181b' };
 

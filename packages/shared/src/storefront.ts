@@ -131,7 +131,8 @@ const money = z.number().int().min(0).max(1_000_000_000_00);
 const storePath = z.string().regex(/^\/(?!\/)[a-z0-9/_-]{0,120}$/, 'Use a path inside the store, e.g. /collections/new');
 
 export const panelSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('image'), src: httpsUrl, alt: z.string().max(200) }).strict(),
+  // src: an https URL, or a file shipped with the site itself, e.g. "/demo/hoodie.jpg".
+  z.object({ type: z.literal('image'), src: z.union([httpsUrl, z.string().regex(/^\/(?!\/)[a-z0-9/_.-]{1,200}$/)]), alt: z.string().max(200) }).strict(),
   z
     .object({
       type: z.literal('art'),

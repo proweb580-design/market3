@@ -20,7 +20,8 @@ export function ProductImage({
         src={media.src}
         alt={media.alt}
         loading={priority ? 'eager' : 'lazy'}
-        className={cn('cutout h-auto w-full object-contain', className)}
+        // Square box so cut-out photos of any shape line up in grids.
+        className={cn('cutout aspect-square w-full object-contain', className)}
       />
     );
   }
