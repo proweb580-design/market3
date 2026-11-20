@@ -17,13 +17,16 @@ export function HeroBanner() {
   const hero = store.hero!;
   const shop = store.grid?.collection ?? store.collections[0]?.slug;
   return (
-    <section className="relative h-[92svh] min-h-[520px] overflow-hidden" aria-label={hero.title}>
+    // Sized to the photos (3:4 each — one on phones, three across from md) so they show whole instead of a cropped half.
+    <section className="relative aspect-[3/4] max-h-[100svh] w-full overflow-hidden md:aspect-[9/4]" aria-label={hero.title}>
       <div className="grid h-full grid-cols-1 md:grid-cols-3">
         {hero.panels.map((panel, i) => (
-          <PanelView key={i} panel={panel} className={cn(i !== 1 && 'max-md:hidden')} />
+          <PanelView key={i} panel={panel} className={cn('object-[50%_25%]', i !== 1 && 'max-md:hidden')} />
         ))}
       </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-b from-transparent to-background" />
+      {/* Light scrim keeps the white title readable on bright photos; a short fade melts the bottom edge into the page. */}
+      <div className="pointer-events-none absolute inset-0 bg-black/20" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent to-background" />
       <div className="absolute inset-x-0 top-[30%] flex flex-col items-center px-page text-center text-white">
         <p className="label-xs opacity-80">{hero.eyebrow}</p>
         <h1 className="title-xl mt-2 text-6xl drop-shadow-lg sm:text-7xl">{hero.title}</h1>

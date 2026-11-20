@@ -42,7 +42,10 @@ const PHOTOS = {
   'track-jacket.webp': { alt: 'Brown track jacket', width: 705, height: 605 },
   'hoodie.webp': { alt: 'Washed two-tone hoodie', width: 723, height: 558 },
   'tee-black.webp': { alt: 'Black tee with white piping', width: 614, height: 631 },
-  // Street-style shots for the "Follow along" block (full photos, not cut out).
+  // Street-style shots for the hero and the "Follow along" block (full photos, not cut out).
+  'hero-1.webp': { alt: 'Black puffer and grey wide jeans by a construction fence', width: 640, height: 800 },
+  'hero-2.webp': { alt: 'Cropped black puffer with dark jeans in Paris', width: 627, height: 910 },
+  'hero-3.webp': { alt: 'Olive down jacket and black joggers in a car park', width: 900, height: 1203 },
   'street-1.webp': { alt: 'Grey puffer on a city crosswalk', width: 536, height: 892 },
   'street-2.webp': { alt: 'Black puffer over a grey hoodie', width: 736, height: 920 },
   'street-3.webp': { alt: 'Olive down jacket in a car park', width: 800, height: 1069 },
@@ -200,7 +203,7 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
         eyebrow: 'Outerwear drop 01',
         title: 'FW26',
         subtitle: 'Built for those who move at night',
-        panels: [shot('track-jacket.webp'), shot('puffer-black.webp'), shot('hoodie.webp')],
+        panels: [shot('hero-1.webp'), shot('hero-2.webp'), shot('hero-3.webp')],
       },
       featured: {
         enabled: true,
