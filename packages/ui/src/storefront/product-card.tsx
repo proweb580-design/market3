@@ -11,7 +11,7 @@ import { useStore } from './store-context';
 import type { StoreProduct } from './types';
 
 /** Reference §3.1: cut-out on page background, in-card image arrows, wishlist, swatches and quick-add sizes. */
-export function ProductCard({ product, className }: { product: StoreProduct; className?: string }) {
+export function ProductCard({ product, className, quickAdd = true }: { product: StoreProduct; className?: string; quickAdd?: boolean }) {
   const { href, wishlist, toggleWishlist, addToCart, setOverlay } = useStore();
   const [mediaIndex, setMediaIndex] = useState(0);
   const [color, setColor] = useState(product.colors[0]!);
@@ -57,23 +57,25 @@ export function ProductCard({ product, className }: { product: StoreProduct; cla
         <p className="label-xs tabular-nums text-muted-foreground">{formatMoney(product.price)}</p>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <Swatches colors={product.colors} selected={color.name} onSelect={(n) => setColor(product.colors.find((c) => c.name === n)!)} />
-          <div className="flex flex-wrap gap-x-1.5" aria-label="Quick add size">
-            {product.sizes.map((s) => (
-              <button
-                key={s.label}
-                type="button"
-                disabled={!s.inStock}
-                onClick={() => {
-                  addToCart({ productSlug: product.slug, size: s.label, color: color.name, quantity: 1 });
-                  setOverlay('cart');
-                }}
-                className="label-xs text-muted-foreground transition-colors hover:text-foreground disabled:line-through disabled:opacity-50"
-                aria-label={`Add size ${s.label} to cart`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
+          {quickAdd && (
+            <div className="flex flex-wrap gap-x-1.5" aria-label="Quick add size">
+              {product.sizes.map((s) => (
+                <button
+                  key={s.label}
+                  type="button"
+                  disabled={!s.inStock}
+                  onClick={() => {
+                    addToCart({ productSlug: product.slug, size: s.label, color: color.name, quantity: 1 });
+                    setOverlay('cart');
+                  }}
+                  className="label-xs text-muted-foreground transition-colors hover:text-foreground disabled:line-through disabled:opacity-50"
+                  aria-label={`Add size ${s.label} to cart`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </article>

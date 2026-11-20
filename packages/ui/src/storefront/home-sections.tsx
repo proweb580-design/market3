@@ -151,7 +151,7 @@ export function ProductGridSection({ title, products, viewAllPath }: { title: st
       />
       <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
         {products.map((p) => (
-          <ProductCard key={p.slug} product={p} />
+          <ProductCard key={p.slug} product={p} quickAdd={false} />
         ))}
       </div>
     </section>
