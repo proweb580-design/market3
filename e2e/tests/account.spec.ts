@@ -4,7 +4,7 @@ import { alertOf, inStockVariant, PASSWORD, signIn, signOutViaApp, signUp, uniqu
 
 /** A guest order placed straight through the public API (the buyer flow itself is covered in buyer.spec). */
 async function guestOrder(email: string) {
-  const variantId = await inStockVariant('ashen', 'static-tee-grey');
+  const variantId = await inStockVariant('ashen', 'night-hoodie-black');
   const res = await fetch(`${URLS.api}/api/v1/storefront/ashen/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -68,7 +68,7 @@ test('the wishlist belongs to the account and follows the shopper across session
   const page = await first.newPage();
   await signUp(page, email);
 
-  await page.goto('/s/ashen/products/mono-tee-black');
+  await page.goto('/s/ashen/products/heat-shell-graphite');
   await page.locator('button[aria-label="Add to wishlist"]:visible').click();
   await expect(page.locator('button[aria-label="Remove from wishlist"]:visible')).toBeVisible();
   await first.close();
@@ -78,7 +78,7 @@ test('the wishlist belongs to the account and follows the shopper across session
   const again = await second.newPage();
   await signIn(again, email, PASSWORD, '/account');
   await expect(again).toHaveURL(/\/account/);
-  await again.goto('/s/ashen/products/mono-tee-black');
+  await again.goto('/s/ashen/products/heat-shell-graphite');
   await expect(again.locator('button[aria-label="Remove from wishlist"]:visible')).toBeVisible();
   await second.close();
 });
