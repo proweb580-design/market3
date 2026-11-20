@@ -31,7 +31,7 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
           </button>
         </div>
 
-        <Link href={href()} aria-label={`${store.name} — home`} className="flex items-center">
+        <Link href={href()} aria-label={`${store.name} — home`} className="flex items-center" draggable={false}>
           <LogoMark className={web ? 'size-9' : 'size-7'} />
         </Link>
 

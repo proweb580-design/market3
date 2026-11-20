@@ -86,13 +86,7 @@
   --spacing-page: var(--page-x);
   --spacing-header: var(--header-h);
 
-  --animate-spin-y: spin-y 7s linear infinite;
   --animate-vinyl: spin 6s linear infinite;
-  @keyframes spin-y {
-    to {
-      transform: rotateY(360deg);
-    }
-  }
 }
 
 @layer base {
