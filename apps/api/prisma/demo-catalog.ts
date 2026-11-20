@@ -34,14 +34,14 @@ const teeChart: SizeChartInput = {
 
 /** Demo photos (background cut out, transparent WebP) shipped in apps/web/public/demo and apps/mini-app/public/demo. One photo per product. */
 const PHOTOS = {
-  'puffer-black.webp': { alt: 'Black down puffer jacket', width: 888, height: 981 },
-  'puffer-gloss.webp': { alt: 'Black ripstop puffer jacket', width: 709, height: 739 },
-  'puffer-shine.webp': { alt: 'Glossy black puffer jacket', width: 1064, height: 1293 },
-  'puffer-pink-hood.webp': { alt: 'Glossy black puffer with pink-lined hood', width: 916, height: 1045 },
-  'puffer-fur.webp': { alt: 'Glossy black puffer with fur-trimmed hood', width: 712, height: 772 },
-  'track-jacket.webp': { alt: 'Brown track jacket', width: 709, height: 608 },
-  'hoodie.webp': { alt: 'Washed two-tone hoodie', width: 735, height: 912 },
-  'tee-black.webp': { alt: 'Black tee with white piping', width: 620, height: 638 },
+  'puffer-black.webp': { alt: 'Black down puffer jacket', width: 886, height: 979 },
+  'puffer-gloss.webp': { alt: 'Black ripstop puffer jacket', width: 707, height: 737 },
+  'puffer-shine.webp': { alt: 'Glossy black puffer jacket', width: 1052, height: 1288 },
+  'puffer-pink-hood.webp': { alt: 'Glossy black puffer with pink-lined hood', width: 907, height: 1038 },
+  'puffer-fur.webp': { alt: 'Glossy black puffer with fur-trimmed hood', width: 710, height: 770 },
+  'track-jacket.webp': { alt: 'Brown track jacket', width: 705, height: 605 },
+  'hoodie.webp': { alt: 'Washed two-tone hoodie', width: 723, height: 558 },
+  'tee-black.webp': { alt: 'Black tee with white piping', width: 614, height: 631 },
   // Street-style shots for the "Follow along" block (full photos, not cut out).
   'street-1.webp': { alt: 'Grey puffer on a city crosswalk', width: 536, height: 892 },
   'street-2.webp': { alt: 'Black puffer over a grey hoodie', width: 736, height: 920 },

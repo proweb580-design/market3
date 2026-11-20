@@ -20,8 +20,8 @@ export function ProductImage({
         src={media.src}
         alt={media.alt}
         loading={priority ? 'eager' : 'lazy'}
-        // Square box so cut-out photos of any shape line up in grids.
-        className={cn('cutout aspect-square w-full object-contain', className)}
+        // Square box so cut-out photos of any shape line up in grids. No `cutout` glow: on a photo it reads as a white halo in dark mode.
+        className={cn('aspect-square w-full object-contain', className)}
       />
     );
   }
