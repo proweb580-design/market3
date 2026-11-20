@@ -11,6 +11,13 @@ import { SectionHeading, Swatches } from './primitives';
 import { useStore } from './store-context';
 import type { StoreProduct } from './types';
 
+/** Hero photos settle from a slight zoom one after another; the delay lives in the shorthand (a separate animation-delay would be reset by it). */
+const HERO_ZOOM = [
+  'motion-safe:animate-[hero-in_1.6s_cubic-bezier(.2,.7,.2,1)_both]',
+  'motion-safe:animate-[hero-in_1.6s_cubic-bezier(.2,.7,.2,1)_150ms_both]',
+  'motion-safe:animate-[hero-in_1.6s_cubic-bezier(.2,.7,.2,1)_300ms_both]',
+];
+
 /** Reference §2.2b: photo triptych under the translucent header, dissolving into the page background. */
 export function HeroBanner() {
   const { store, href } = useStore();
@@ -21,13 +28,17 @@ export function HeroBanner() {
     <section className="relative aspect-[3/4] max-h-[100svh] w-full overflow-hidden md:aspect-[9/4]" aria-label={hero.title}>
       <div className="grid h-full grid-cols-1 md:grid-cols-3">
         {hero.panels.map((panel, i) => (
-          <PanelView key={i} panel={panel} className={cn('object-[50%_25%]', i !== 1 && 'max-md:hidden')} />
+          <PanelView
+            key={i}
+            panel={panel}
+            className={cn('object-[50%_25%]', HERO_ZOOM[i], i !== 1 && 'max-md:hidden')}
+          />
         ))}
       </div>
       {/* Light scrim keeps the white title readable on bright photos; a short fade melts the bottom edge into the page. */}
       <div className="pointer-events-none absolute inset-0 bg-black/20" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent to-background" />
-      <div className="absolute inset-x-0 top-[30%] flex flex-col items-center px-page text-center text-white">
+      <div className="absolute inset-x-0 top-[30%] flex flex-col items-center px-page text-center text-white motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-700 motion-safe:delay-300 motion-safe:fill-mode-backwards">
         <p className="label-xs opacity-80">{hero.eyebrow}</p>
         <h1 className="title-xl mt-2 text-6xl drop-shadow-lg sm:text-7xl">{hero.title}</h1>
         <p className="mt-2 text-xs opacity-80">{hero.subtitle}</p>
@@ -76,7 +87,7 @@ export function FeaturedCarousel() {
     >
       <SectionHeading title={featured.title} eyebrow={featured.subtitle} />
       <div
-        className="relative mx-auto h-[min(62vw,520px)] max-md:h-[78vw]"
+        className="reveal relative mx-auto h-[min(62vw,520px)] max-md:h-[78vw]"
         onTouchStart={(e) => (touchX.current = e.touches[0]!.clientX)}
         onTouchEnd={(e) => {
           if (touchX.current === null) return;
@@ -185,7 +196,7 @@ export function DropCountdown() {
 
   return (
     <section className="px-page pt-24" aria-label={drop.title}>
-      <div className="relative h-[min(46vw,520px)] min-h-[320px] overflow-hidden rounded-sm">
+      <div className="reveal relative h-[min(46vw,520px)] min-h-[320px] overflow-hidden rounded-sm">
         <PanelView panel={drop.panel} />
         <div className="absolute inset-0 bg-black/45" />
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
@@ -194,7 +205,9 @@ export function DropCountdown() {
           <div className="mt-6 flex gap-5 sm:gap-8" role="timer" aria-live="off">
             {parts.map(([label, value]) => (
               <div key={label} className="flex flex-col items-center">
-                <span className="title-xl text-3xl tabular-nums sm:text-4xl">{value === null ? '--' : String(value).padStart(2, '0')}</span>
+                <span key={value} className="title-xl text-3xl tabular-nums sm:text-4xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-2 motion-safe:duration-300">
+                  {value === null ? '--' : String(value).padStart(2, '0')}
+                </span>
                 <span className="label-xs mt-1 opacity-70">{label}</span>
               </div>
             ))}
@@ -212,7 +225,7 @@ export function CollectionsRow() {
       <SectionHeading title="Collections" />
       <div className="mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:overflow-visible">
         {store.collections.map((c, i) => (
-          <Link key={c.title + i} href={href(`/collections/${c.slug}`)} className="group w-[70vw] shrink-0 snap-start md:w-auto">
+          <Link key={c.title + i} href={href(`/collections/${c.slug}`)} className="reveal group w-[70vw] shrink-0 snap-start md:w-auto">
             <div className="aspect-[3/4] overflow-hidden rounded-sm">
               <PanelView panel={c.panel} className="transition-transform duration-700 group-hover:scale-[1.04]" />
             </div>
@@ -236,8 +249,8 @@ export function SocialFeed() {
       {/* Four photos fill a 2×2 / 4-across grid; otherwise the 3- and 5-across layout. */}
       <div className={cn('mt-8 grid grid-cols-2 gap-3', store.social!.panels.length === 4 ? 'lg:grid-cols-4' : 'sm:grid-cols-3 lg:grid-cols-5')}>
         {store.social!.panels.map((p, i) => (
-          <div key={i} className={cn('aspect-[4/5] overflow-hidden rounded-sm', i > 3 && 'max-lg:hidden', i > 1 && 'max-sm:hidden')}>
-            <PanelView panel={p} />
+          <div key={i} className={cn('reveal group aspect-[4/5] overflow-hidden rounded-sm', i > 3 && 'max-lg:hidden', i > 1 && 'max-sm:hidden')}>
+            <PanelView panel={p} className="transition-transform duration-700 group-hover:scale-[1.04]" />
           </div>
         ))}
       </div>
@@ -250,13 +263,15 @@ export function Reviews() {
   const { store } = useStore();
   return (
     <section className="px-page pt-24" aria-labelledby="reviews-title">
-      <p className="label-xs mb-1 text-muted-foreground">Reviews</p>
-      <h2 id="reviews-title" className="title-xl text-2xl sm:text-3xl">
-        What they say
-      </h2>
+      <div className="reveal">
+        <p className="label-xs mb-1 text-muted-foreground">Reviews</p>
+        <h2 id="reviews-title" className="title-xl text-2xl sm:text-3xl">
+          What they say
+        </h2>
+      </div>
       <div className="mt-8 grid gap-x-6 gap-y-8 md:grid-cols-3">
         {store.testimonials.map((t, i) => (
-          <figure key={i} className="flex flex-col border-t border-border pt-5">
+          <figure key={i} className="reveal flex flex-col border-t border-border pt-5">
             <blockquote className="flex-1 text-sm leading-relaxed">“{t.quote}”</blockquote>
             <figcaption className="label-xs mt-5">
               <b>{t.author}</b>

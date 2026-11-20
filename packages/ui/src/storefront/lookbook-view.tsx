@@ -36,7 +36,7 @@ export function LookbookView() {
       <div className="mt-8 gap-4 sm:columns-2 lg:columns-3">
         {items.map((item, idx) => (
           <figure key={item.id} className="mb-6 break-inside-avoid animate-in fade-in duration-500">
-            <div className="overflow-hidden rounded-sm" style={{ aspectRatio: `1 / ${item.ratio}` }}>
+            <div className="reveal overflow-hidden rounded-sm" style={{ aspectRatio: `1 / ${item.ratio}` }}>
               <PanelView panel={item.panel} />
             </div>
             <figcaption className="mt-2 grid grid-cols-[auto_1fr] gap-x-3">

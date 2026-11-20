@@ -15,6 +15,7 @@ export function ProductCard({ product, className, quickAdd = true }: { product: 
   const { href, wishlist, toggleWishlist, addToCart, setOverlay } = useStore();
   const [mediaIndex, setMediaIndex] = useState(0);
   const [color, setColor] = useState(product.colors[0]!);
+  const [pop, setPop] = useState(false);
   const media = product.media[mediaIndex] ?? product.media[0]!;
   const url = href(`/products/${product.slug}`);
   const liked = wishlist.has(product.slug);
@@ -23,7 +24,7 @@ export function ProductCard({ product, className, quickAdd = true }: { product: 
     'absolute top-1/2 -translate-y-1/2 p-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 max-md:opacity-100';
 
   return (
-    <article className={cn('group flex flex-col', className)}>
+    <article className={cn('reveal group flex flex-col', className)}>
       <div className="relative">
         <Link href={url} aria-label={product.title} className="block px-[8%] py-[6%]">
           <ProductImage media={media} tone={color.hex} className="transition-transform duration-500 group-hover:scale-[1.03]" />
@@ -40,12 +41,19 @@ export function ProductCard({ product, className, quickAdd = true }: { product: 
         )}
         <button
           type="button"
-          onClick={() => toggleWishlist(product.slug)}
+          onClick={() => {
+            if (!liked) setPop(true);
+            toggleWishlist(product.slug);
+          }}
           aria-pressed={liked}
           aria-label={liked ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
           className="absolute right-0 top-0 p-1.5 transition-opacity hover:opacity-60"
         >
-          <Heart strokeWidth={1.5} className={cn('size-3.5', liked && 'fill-red-500 text-red-500')} />
+          <Heart
+            strokeWidth={1.5}
+            onAnimationEnd={() => setPop(false)}
+            className={cn('size-3.5', liked && 'fill-red-500 text-red-500', pop && 'motion-safe:animate-[heart-pop_400ms_ease-out]')}
+          />
         </button>
       </div>
 

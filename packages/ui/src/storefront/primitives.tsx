@@ -104,7 +104,7 @@ export function SectionHeading({
   className?: string;
 }) {
   return (
-    <div className={cn('flex items-end justify-between gap-4', className)}>
+    <div className={cn('reveal flex items-end justify-between gap-4', className)}>
       <div>
         {eyebrow && <p className="label-xs mb-1 text-muted-foreground">{eyebrow}</p>}
         <h2 className="title-xl text-2xl sm:text-3xl">{title}</h2>

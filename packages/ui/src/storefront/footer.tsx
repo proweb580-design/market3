@@ -23,8 +23,8 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-24 overflow-hidden border-t border-border">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-10 px-page py-14 md:grid-cols-12">
+    <footer className="mt-24 overflow-clip border-t border-border">
+      <div className="reveal grid grid-cols-2 gap-x-6 gap-y-10 px-page py-14 md:grid-cols-12">
         <div className="col-span-2 md:col-span-6">
           <p className="title-xl text-2xl">{store.name}</p>
           {store.hero?.subtitle && <p className="mt-3 max-w-xs text-sm text-muted-foreground">{store.hero.subtitle}</p>}

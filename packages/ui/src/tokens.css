@@ -130,6 +130,48 @@
   filter: drop-shadow(0 0 14px var(--glow));
 }
 
+/* ── Motion ─────────────────────────────────────────────────────────────────────────────────
+ * `.reveal`: the element rises in as it scrolls into view. Pure CSS scroll-driven animation, so nothing is ever
+ * hidden where it isn't supported, with reduced motion, or before JS loads — the element just shows.
+ * Siblings in a grid row get a small offset (nth-child) so a row arrives as a gentle wave.
+ */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+@keyframes hero-in {
+  from {
+    transform: scale(1.08);
+  }
+}
+@keyframes heart-pop {
+  40% {
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      --stagger: 0;
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--stagger) * 8%) entry calc(70% + var(--stagger) * 8%);
+    }
+    .reveal:nth-child(4n + 2) {
+      --stagger: 1;
+    }
+    .reveal:nth-child(4n + 3) {
+      --stagger: 2;
+    }
+    .reveal:nth-child(4n + 4) {
+      --stagger: 3;
+    }
+  }
+}
+
 /* Theme switch cross-fade (View Transitions API, progressive enhancement). */
 ::view-transition-old(root),
 ::view-transition-new(root) {

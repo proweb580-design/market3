@@ -69,6 +69,7 @@ export function ProductView({
   const [color, setColor] = useState(product.colors[0]!);
   const [fabric, setFabric] = useState(product.fabrics[0]);
   const [qty, setQty] = useState(1);
+  const [pop, setPop] = useState(false);
   const [dialog, setDialog] = useState<'fit' | 'guide' | null>(null);
   const liked = wishlist.has(product.slug);
   const total = formatMoney({ ...product.price, amountMinor: product.price.amountMinor * qty });
@@ -89,11 +90,11 @@ export function ProductView({
   return (
     <div className="px-page pt-8">
       <div className="grid gap-10 md:grid-cols-12">
-        <div className="md:sticky md:top-8 md:col-span-7 md:self-start">
+        <div className="md:sticky md:top-8 md:col-span-7 md:self-start motion-safe:animate-in motion-safe:fade-in motion-safe:duration-700">
           <Gallery product={product} tone={color.hex} />
         </div>
 
-        <div className="flex flex-col md:col-span-5 lg:col-span-4 lg:col-start-9">
+        <div className="flex flex-col md:col-span-5 lg:col-span-4 lg:col-start-9 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-700 motion-safe:delay-150 motion-safe:fill-mode-backwards">
           <nav aria-label="Breadcrumb" className="label-xs text-muted-foreground">
             <Link href={href(`/collections/${store.grid?.collection ?? collection.slug}`)} className="hover:text-foreground">
               Shop
@@ -152,8 +153,11 @@ export function ProductView({
             <Button className="flex-1" onClick={add} disabled={!size}>
               <ShoppingBag className="size-3.5" /> Add to cart {total}
             </Button>
-            <Button variant="outline" size="icon" className="size-11" aria-pressed={liked} aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => toggleWishlist(product.slug)}>
-              <Heart className={cn('size-4', liked && 'fill-red-500 text-red-500')} />
+            <Button variant="outline" size="icon" className="size-11" aria-pressed={liked} aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => {
+                if (!liked) setPop(true);
+                toggleWishlist(product.slug);
+              }}>
+              <Heart onAnimationEnd={() => setPop(false)} className={cn('size-4', liked && 'fill-red-500 text-red-500', pop && 'motion-safe:animate-[heart-pop_400ms_ease-out]')} />
             </Button>
           </div>
           <div className="label-xs mt-4 flex justify-between text-muted-foreground">
