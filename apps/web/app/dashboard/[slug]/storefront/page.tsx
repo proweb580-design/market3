@@ -166,8 +166,7 @@ function Editor({ initial }: { initial: Doc }) {
       </Block>
 
       <Block title="Banner (top of the home page)" enabled={sec.hero.enabled} onEnabled={(enabled) => setSec('hero', { enabled })}>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <TextField label="Small heading" value={sec.hero.eyebrow} onChange={(eyebrow) => setSec('hero', { eyebrow })} />
+        <div className="grid gap-3 sm:grid-cols-2">
           <TextField label="Title" value={sec.hero.title} onChange={(title) => setSec('hero', { title })} />
           <TextField label="Subtitle" value={sec.hero.subtitle} onChange={(subtitle) => setSec('hero', { subtitle })} />
         </div>

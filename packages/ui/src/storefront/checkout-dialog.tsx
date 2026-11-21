@@ -10,8 +10,8 @@ import { formatMoney } from '../lib/format';
 import { CheckoutError, placeOrder, quoteCart } from './checkout-client';
 import { useStore, variantFor } from './store-context';
 
-type Fields = { email: string; name: string; line1: string; city: string; postalCode: string; country: string; phone: string; note: string };
-const EMPTY: Fields = { email: '', name: '', line1: '', city: '', postalCode: '', country: '', phone: '', note: '' };
+type Fields = { email: string; name: string; line1: string; city: string; postalCode: string; note: string };
+const EMPTY: Fields = { email: '', name: '', line1: '', city: '', postalCode: '', note: '' };
 
 const FIELDS: { key: keyof Fields; label: string; autoComplete: string; type?: string; required?: boolean; max?: number }[] = [
   { key: 'email', label: 'Эл. почта', autoComplete: 'email', type: 'email', required: true },
@@ -19,8 +19,6 @@ const FIELDS: { key: keyof Fields; label: string; autoComplete: string; type?: s
   { key: 'line1', label: 'Адрес', autoComplete: 'address-line1', required: true },
   { key: 'city', label: 'Город', autoComplete: 'address-level2', required: true },
   { key: 'postalCode', label: 'Индекс', autoComplete: 'postal-code', required: true },
-  { key: 'country', label: 'Страна (2 буквы, напр. RU)', autoComplete: 'country', required: true, max: 2 },
-  { key: 'phone', label: 'Телефон (необязательно)', autoComplete: 'tel', type: 'tel' },
 ];
 
 /**
@@ -65,9 +63,8 @@ export function CheckoutDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       lines,
       channel: variant === 'miniapp' ? 'telegram' : 'web',
       email: form.email,
-      phone: form.phone || undefined,
       note: form.note || undefined,
-      shippingAddress: { name: form.name, line1: form.line1, city: form.city, postalCode: form.postalCode, country: form.country },
+      shippingAddress: { name: form.name, line1: form.line1, city: form.city, postalCode: form.postalCode, country: 'RU' },
     });
     if (!parsed.success) {
       const next: typeof errors = {};
