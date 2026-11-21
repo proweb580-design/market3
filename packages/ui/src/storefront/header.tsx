@@ -20,7 +20,7 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
   return (
     <header
       className={cn(
-        'z-40 w-full transition-transform duration-300 motion-reduce:transition-none',
+        'z-40 w-full print:hidden transition-transform duration-300 motion-reduce:transition-none',
         overlay
           ? 'fixed inset-x-0 top-0 bg-background/30 backdrop-blur-xl'
           : 'sticky top-0 border-b border-border bg-background',

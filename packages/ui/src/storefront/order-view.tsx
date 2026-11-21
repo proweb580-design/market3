@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Button } from '../components/ui/button';
 import { formatMoney } from '../lib/format';
 import { CheckoutError, fetchOrder, type BuyerOrder } from './checkout-client';
@@ -66,6 +66,8 @@ export function OrderView({ orderId }: { orderId: string }) {
 
   const money = (amountMinor: number) => formatMoney({ amountMinor, currency: order.currency });
   const head = HEADLINE[order.status];
+  const a = order.shippingAddress;
+  const address = a && [a.name, a.line1, a.line2, [a.postalCode, a.city].join(' '), a.region, a.country].filter(Boolean).join(', ');
   return (
     <div className="mx-auto max-w-xl px-page py-16">
       <p className="label-xs text-muted-foreground">Заказ №{order.number}</p>
@@ -79,20 +81,58 @@ export function OrderView({ orderId }: { orderId: string }) {
         </Button>
       )}
 
-      <ul className="mt-8 divide-y divide-border border-y border-border">
-        {order.items.map((i, n) => (
-          <li key={n} className="flex justify-between gap-3 py-3 text-xs">
-            <span>{i.productTitle} · {i.variantTitle} × {i.quantity}</span>
-            <span className="tabular-nums">{money(i.totalMinor)}</span>
-          </li>
-        ))}
-      </ul>
-      <dl className="mt-4 flex flex-col gap-1 text-xs">
-        <div className="flex justify-between"><dt className="text-muted-foreground">Сумма</dt><dd className="tabular-nums">{money(order.subtotalMinor)}</dd></div>
-        <div className="flex justify-between"><dt className="text-muted-foreground">Доставка</dt><dd className="tabular-nums">{order.shippingMinor === 0 ? 'Бесплатно' : money(order.shippingMinor)}</dd></div>
-        <div className="flex justify-between font-bold"><dt>Итого</dt><dd className="tabular-nums">{money(order.totalMinor)}</dd></div>
-      </dl>
-      <Button asChild variant="outline" className="mt-8"><Link href={href()}>Продолжить покупки</Link></Button>
+      <section aria-label="Чек" className="mt-8 rounded-lg border border-border p-6">
+        <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-border pb-4">
+          <p className="label-xs font-bold">{paid ? 'Кассовый чек' : 'Счёт'}</p>
+          <p className="label-xs text-muted-foreground">{store.name}</p>
+        </div>
+
+        <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-xs">
+          <Row label="Заказ">№{order.number}</Row>
+          <Row label="Оформлен">{when(order.createdAt)}</Row>
+          {order.paidAt && <Row label="Оплачен">{when(order.paidAt)}</Row>}
+          <Row label="Статус">{STATUS[order.status]}</Row>
+          {order.paymentProvider && <Row label="Оплата">Банковская карта · {order.paymentProvider === 'stripe' ? 'Stripe' : order.paymentProvider}</Row>}
+          {order.contactEmail && <Row label="Эл. почта">{order.contactEmail}</Row>}
+          {address && <Row label="Доставка">{address}</Row>}
+        </dl>
+
+        <ul className="mt-4 divide-y divide-border border-y border-dashed border-border">
+          {order.items.map((i, n) => (
+            <li key={n} className="flex justify-between gap-3 py-3 text-xs">
+              <span>
+                {i.productTitle}
+                <span className="block text-muted-foreground">{i.variantTitle} · {i.quantity} × {money(i.unitPriceMinor)}</span>
+              </span>
+              <span className="tabular-nums">{money(i.totalMinor)}</span>
+            </li>
+          ))}
+        </ul>
+        <dl className="mt-4 flex flex-col gap-1 text-xs">
+          <div className="flex justify-between"><dt className="text-muted-foreground">Сумма</dt><dd className="tabular-nums">{money(order.subtotalMinor)}</dd></div>
+          <div className="flex justify-between"><dt className="text-muted-foreground">Доставка</dt><dd className="tabular-nums">{order.shippingMinor === 0 ? 'Бесплатно' : money(order.shippingMinor)}</dd></div>
+          <div className="flex justify-between text-sm font-bold"><dt>{paid ? 'Оплачено' : 'К оплате'}</dt><dd className="tabular-nums">{money(order.totalMinor)}</dd></div>
+        </dl>
+      </section>
+
+      <div className="mt-8 flex flex-wrap gap-3 print:hidden">
+        <Button asChild variant="outline"><Link href={href()}>Продолжить покупки</Link></Button>
+        {!host && <Button variant="outline" onClick={() => window.print()}>Распечатать чек</Button>}
+        {!host && <Button asChild variant="ghost"><Link href="/account">Все заказы</Link></Button>}
+      </div>
     </div>
+  );
+}
+
+const STATUS: Record<BuyerOrder['status'], string> = { PENDING_PAYMENT: 'Ожидает оплаты', PAID: 'Оплачен', FULFILLED: 'Отправлен', CANCELED: 'Отменён', REFUNDED: 'Возвращён' };
+
+const when = (iso: string) => new Date(iso).toLocaleString('ru-RU', { dateStyle: 'long', timeStyle: 'short' });
+
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="text-right">{children}</dd>
+    </>
   );
 }

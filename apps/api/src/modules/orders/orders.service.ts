@@ -42,7 +42,7 @@ const variantTitle = (v: VariantRow) =>
 
 const ORDER_INCLUDE = {
   items: { orderBy: { id: 'asc' } },
-  payments: { orderBy: { createdAt: 'desc' }, take: 1, select: { status: true, confirmationUrl: true } },
+  payments: { orderBy: { createdAt: 'desc' }, take: 1, select: { status: true, confirmationUrl: true, provider: true } },
 } satisfies Prisma.OrderInclude;
 type OrderRow = Prisma.OrderGetPayload<{ include: typeof ORDER_INCLUDE }>;
 
@@ -220,6 +220,7 @@ export class OrdersService {
       shippingAddress: o.shippingAddress,
       createdAt: o.createdAt,
       paidAt: o.paidAt,
+      paymentProvider: pay?.provider ?? null,
       items: o.items.map((i) => ({ productTitle: i.productTitle, variantTitle: i.variantTitle, unitPriceMinor: Number(i.unitPriceMinor), quantity: i.quantity, totalMinor: Number(i.totalMinor) })),
       /** Lets the buyer finish paying while the payment page is still open. */
       payUrl: o.status === 'PENDING_PAYMENT' && pay?.status === 'PENDING' ? pay.confirmationUrl : null,

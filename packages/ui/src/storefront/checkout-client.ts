@@ -61,6 +61,10 @@ export interface BuyerOrder {
   shippingMinor: number;
   totalMinor: number;
   contactEmail: string | null;
+  shippingAddress: { name: string; line1: string; line2?: string; city: string; region?: string; postalCode: string; country: string } | null;
+  createdAt: string;
+  paidAt: string | null;
+  paymentProvider: string | null;
   items: { productTitle: string; variantTitle: string; unitPriceMinor: number; quantity: number; totalMinor: number }[];
   payUrl: string | null;
 }
