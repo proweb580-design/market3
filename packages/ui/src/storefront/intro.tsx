@@ -42,7 +42,6 @@ let run = 0;
 export function Intro() {
   const { store } = useStore();
   const [on, setOn] = useState(false);
-  const [pct, setPct] = useState(0);
   const [look, setLook] = useState(0);
   const [phase, setPhase] = useState<'run' | 'hold' | 'fly' | 'land'>('run');
   const logo = useRef<HTMLDivElement>(null);
@@ -65,7 +64,6 @@ export function Intro() {
     let raf = 0;
 
     const finish = () => {
-      setPct(100);
       setLook(BADGE);
       setPhase('hold');
       timers.push(
@@ -97,8 +95,6 @@ export function Intro() {
     const tick = (now: number) => {
       const t = Math.max(0, now - start); // rAF's timestamp can predate `start`
       if ((loaded && t >= MIN_MS) || t >= MAX_MS) return finish();
-      // Eases toward 99 over the minimum run; only real page load lets it reach 100.
-      setPct(Math.min(99, Math.round(99 * (1 - Math.pow(1 - Math.min(1, t / MIN_MS), 2.2)))));
       setLook(Math.floor(t / 140) % BADGE);
       raf = requestAnimationFrame(tick);
     };
@@ -136,20 +132,6 @@ export function Intro() {
             {name}
           </span>
         </div>
-      </div>
-      <div
-        aria-hidden
-        className="absolute inset-x-0 bottom-0 flex items-end justify-between px-page pb-8 transition-opacity duration-300"
-        style={{ opacity: moving ? 0 : 1 }}
-      >
-        <span className="label-xs opacity-70">Загрузка</span>
-        <span className="text-6xl font-bold leading-none tabular-nums tracking-tight sm:text-8xl">
-          {pct}
-          <span className="align-top text-2xl sm:text-3xl">%</span>
-        </span>
-      </div>
-      <div aria-hidden className="absolute inset-x-0 bottom-0 h-px bg-white/20">
-        <div className="h-full bg-white transition-[width] duration-150" style={{ width: `${pct}%`, opacity: moving ? 0 : 1 }} />
       </div>
     </div>
   );
