@@ -4,14 +4,13 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Heart, Menu, Search, ShoppingBag, User } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { LogoMark } from './logo-mark';
 import { useStore } from './store-context';
 import { ThemeToggle } from './theme-toggle';
 
 const iconBtn =
   'relative inline-flex size-9 items-center justify-center rounded-md transition-opacity hover:opacity-60 focus-visible:outline-2 focus-visible:outline-ring';
 
-/** Reference §2.1: burger left, spinning emblem centre, utility icons right. `overlay` floats it over the hero. */
+/** Reference §2.1: burger left, store name centre, utility icons right. `overlay` floats it over the hero. */
 export function Header({ overlay = false }: { overlay?: boolean }) {
   const { store, href, variant, cartCount, wishlist, setOverlay } = useStore();
   const web = variant === 'web';
@@ -34,8 +33,8 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
           </button>
         </div>
 
-        <Link href={href()} aria-label={`${store.name} — главная`} className="flex items-center" draggable={false}>
-          <LogoMark className={web ? 'size-9' : 'size-7'} />
+        <Link href={href()} aria-label={`${store.name} — главная`} className="label-xs text-sm font-bold tracking-[0.3em] transition-opacity hover:opacity-60" draggable={false}>
+          {store.name}
         </Link>
 
         <nav aria-label="Действия" className="-mr-2 flex items-center justify-end gap-0.5">
