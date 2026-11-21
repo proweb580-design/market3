@@ -94,7 +94,7 @@ export function Profile({ me, onSaved }: { me: Me; onSaved: (profile: NonNullabl
     try {
       const saved = await api<NonNullable<Me['profile']>>('/profiles/me', { method: 'PATCH', body: { displayName: displayName.trim() || null, phone: phone.trim() || null } });
       onSaved(saved);
-      setMessage({ ok: true, text: 'Saved.' });
+      setMessage({ ok: true, text: 'Профиль сохранён.' });
     } catch (e) {
       setMessage({ ok: false, text: errText(e) });
     } finally {
@@ -120,7 +120,8 @@ export function Profile({ me, onSaved }: { me: Me; onSaved: (profile: NonNullabl
 
 // ───────────── telegram ─────────────
 
-const BOT = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
+// The store's Mini App bot; a deployment can override it with NEXT_PUBLIC_TELEGRAM_BOT_USERNAME.
+const BOT = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'Ashennew_bot';
 
 export function TelegramLink({ me, onChanged }: { me: Me; onChanged: () => void }) {
   const [link, setLink] = useState<string | null>(null);
