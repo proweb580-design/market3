@@ -64,11 +64,24 @@ export function FeaturedCarousel() {
   const items = featured.productSlugs.map(productBySlug).filter((p): p is StoreProduct => !!p);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
-  const touchX = useRef<number | null>(null);
+  // Drag (mouse or finger): the row follows the pointer, and on release moves by at most one item.
+  const drag = useRef<{ x: number; id: number } | null>(null);
+  const [dragDx, setDragDx] = useState(0);
+  const moved = useRef(false);
+  const nextSwipeAt = useRef(0);
   const section = useRef<HTMLElement>(null);
   const [onScreen, setOnScreen] = useState(false);
   const n = items.length;
   const go = (d: number) => setActive((a) => (a + d + n) % n);
+  const endDrag = (dx: number) => {
+    drag.current = null;
+    setDragDx(0);
+    // One item per swipe, and not again until the 700 ms slide has finished, so a burst of flicks can't spin the whole row.
+    if (Math.abs(dx) > 50 && Date.now() >= nextSwipeAt.current) {
+      nextSwipeAt.current = Date.now() + 700;
+      go(dx < 0 ? 1 : -1);
+    }
+  };
 
   // Autoplay only while the carousel is in view: off screen its blurred cross-fades are paint work nobody sees.
   useEffect(() => {
@@ -101,14 +114,29 @@ export function FeaturedCarousel() {
     >
       <SectionHeading title={featured.title} eyebrow={featured.subtitle} />
       <div
-        className="reveal relative mx-auto h-[min(62vw,520px)] max-md:h-[78vw]"
-        onTouchStart={(e) => (touchX.current = e.touches[0]!.clientX)}
-        onTouchEnd={(e) => {
-          if (touchX.current === null) return;
-          const dx = e.changedTouches[0]!.clientX - touchX.current;
-          if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
-          touchX.current = null;
+        className={cn('reveal relative mx-auto h-[min(62vw,520px)] touch-pan-y select-none max-md:h-[78vw]', n > 1 && (dragDx ? 'cursor-grabbing' : 'cursor-grab'))}
+        onPointerDown={(e) => {
+          if (n < 2 || e.button !== 0 || (e.target as Element).closest('button')) return;
+          drag.current = { x: e.clientX, id: e.pointerId };
+          moved.current = false;
         }}
+        onPointerMove={(e) => {
+          if (drag.current?.id !== e.pointerId) return;
+          const dx = e.clientX - drag.current.x;
+          if (!moved.current && Math.abs(dx) > 6) {
+            moved.current = true;
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }
+          if (moved.current) setDragDx(dx);
+        }}
+        onPointerUp={(e) => drag.current?.id === e.pointerId && endDrag(e.clientX - drag.current.x)}
+        onPointerCancel={() => endDrag(0)}
+        // A drag that ends over a product must not also open it.
+        onClickCapture={(e) => {
+          if (moved.current) e.preventDefault();
+          moved.current = false;
+        }}
+        onDragStart={(e) => e.preventDefault()}
       >
         {items.map((p, i) => {
           let offset = i - active;
@@ -123,12 +151,13 @@ export function FeaturedCarousel() {
               aria-hidden={offset !== 0}
               className="absolute left-1/2 top-1/2 w-[min(42vw,420px)] max-md:w-[64vw]"
               style={{
-                transform: `translate(-50%, -50%) translateX(${offset * 105}%) scale(${offset === 0 ? 1 : 0.6})`,
+                // While dragging the row trails the pointer at a damped, capped distance and snaps back on release.
+                transform: `translate(-50%, -50%) translateX(calc(${offset * 105}% + ${Math.max(-160, Math.min(160, dragDx * 0.5))}px)) scale(${offset === 0 ? 1 : 0.6})`,
                 opacity: hidden ? 0 : offset === 0 ? 1 : 0.45,
                 filter: offset === 0 ? 'none' : 'blur(3px)',
                 zIndex: offset === 0 ? 2 : 1,
                 pointerEvents: hidden ? 'none' : undefined,
-                transition: 'transform 700ms cubic-bezier(.2,.7,.2,1), opacity 700ms, filter 700ms',
+                transition: dragDx ? 'none' : 'transform 700ms cubic-bezier(.2,.7,.2,1), opacity 700ms, filter 700ms',
               }}
             >
               <ProductImage media={p.media[0]!} tone={p.colors[0]!.hex} priority={offset === 0} />
