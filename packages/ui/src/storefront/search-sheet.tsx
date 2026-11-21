@@ -18,15 +18,15 @@ export function SearchSheet() {
   return (
     <Sheet open={overlay === 'search'} onOpenChange={(open) => setOverlay(open ? 'search' : null)}>
       <SheetContent side="top" className="gap-0 px-page pb-8 pt-6">
-        <SheetTitle className="label-xs font-normal text-muted-foreground">Search</SheetTitle>
-        <SheetDescription className="sr-only">Search products by name</SheetDescription>
+        <SheetTitle className="label-xs font-normal text-muted-foreground">Поиск</SheetTitle>
+        <SheetDescription className="sr-only">Поиск товаров по названию</SheetDescription>
         <label className="mt-4 flex items-center gap-3 border-b border-foreground pb-3">
           <Search strokeWidth={1.5} className="size-5 shrink-0" />
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="What are you looking for?"
+            placeholder="Что вы ищете?"
             className="title-xl w-full bg-transparent text-2xl outline-none placeholder:text-muted-foreground sm:text-4xl"
           />
         </label>
@@ -41,7 +41,7 @@ export function SearchSheet() {
                 </Link>
               </li>
             ))}
-            {results.length === 0 && <li className="col-span-full text-sm text-muted-foreground">Nothing found for “{query}”.</li>}
+            {results.length === 0 && <li className="col-span-full text-sm text-muted-foreground">По запросу «{query}» ничего не найдено.</li>}
           </ul>
         )}
       </SheetContent>

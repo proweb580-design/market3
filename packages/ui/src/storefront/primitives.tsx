@@ -47,7 +47,7 @@ export function Swatches({
           key={c.name}
           type="button"
           title={c.name}
-          aria-label={`Colour ${c.name}`}
+          aria-label={`Цвет ${c.name}`}
           aria-pressed={selected === c.name}
           onClick={() => onSelect?.(c.name)}
           className={cn(
@@ -79,13 +79,13 @@ export function QuantityStepper({
   const btn = 'inline-flex size-8 items-center justify-center transition-opacity hover:opacity-60 disabled:opacity-30';
   return (
     <div className={cn('inline-flex items-center rounded-sm border border-border', className)}>
-      <button type="button" className={btn} aria-label="Decrease quantity" disabled={value <= min} onClick={() => onChange(value - 1)}>
+      <button type="button" className={btn} aria-label="Уменьшить количество" disabled={value <= min} onClick={() => onChange(value - 1)}>
         <Minus className="size-3" />
       </button>
       <span className="w-6 text-center text-[11px] tabular-nums" aria-live="polite">
         {value}
       </span>
-      <button type="button" className={btn} aria-label="Increase quantity" disabled={value >= max} onClick={() => onChange(value + 1)}>
+      <button type="button" className={btn} aria-label="Увеличить количество" disabled={value >= max} onClick={() => onChange(value + 1)}>
         <Plus className="size-3" />
       </button>
     </div>
@@ -137,7 +137,7 @@ export function TrustBar({ items }: { items: StoreConfig['trust'] }) {
 
 export function PaymentBadges({ badges, className }: { badges: string[]; className?: string }) {
   return (
-    <ul className={cn('flex flex-wrap gap-1.5', className)} aria-label="Accepted payment methods">
+    <ul className={cn('flex flex-wrap gap-1.5', className)} aria-label="Способы оплаты">
       {badges.map((b) => (
         <li key={b} className="rounded-sm border border-border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-muted-foreground">
           {b}

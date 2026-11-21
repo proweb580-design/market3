@@ -16,7 +16,7 @@ function Chrome({ basePath, children }: { basePath: string; children: ReactNode 
   return (
     <>
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-background focus:p-2">
-        Skip to content
+        Перейти к содержимому
       </a>
       <Header overlay={isHome} />
       <main id="main">{children}</main>

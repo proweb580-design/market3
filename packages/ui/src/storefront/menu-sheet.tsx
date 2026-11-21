@@ -14,7 +14,7 @@ export function MenuSheet() {
     <Sheet open={overlay === 'menu'} onOpenChange={(open) => setOverlay(open ? 'menu' : null)}>
       <SheetContent side="left" className="w-full gap-0 p-0 sm:max-w-md">
         <SheetTitle className="label-xs px-6 pt-6 font-normal text-muted-foreground">{store.name}</SheetTitle>
-        <SheetDescription className="sr-only">Store navigation</SheetDescription>
+        <SheetDescription className="sr-only">Навигация по магазину</SheetDescription>
         <nav className="flex flex-col px-6 pt-8">
           {[...store.footer.menu, { label: 'Wishlist', path: '/wishlist' }].map((item) => (
             <Link
@@ -38,7 +38,7 @@ export function MenuSheet() {
           {variant === 'web' && (
             <div className="flex items-center gap-4">
               <Link href="/login" onClick={close} className="label-xs hover:opacity-60">
-                Account
+                Аккаунт
               </Link>
               <ThemeToggle className="inline-flex size-8 items-center justify-center" />
             </div>

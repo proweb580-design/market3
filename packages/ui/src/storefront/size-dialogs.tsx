@@ -21,12 +21,12 @@ export function SizeGuideDialog({ chart, open, onOpenChange }: { chart: SizeChar
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg gap-0 rounded-lg p-6">
-        <DialogTitle className="label-xs font-bold">Size guide</DialogTitle>
-        <DialogDescription className="sr-only">Garment measurements per size</DialogDescription>
+        <DialogTitle className="label-xs font-bold">Таблица размеров</DialogTitle>
+        <DialogDescription className="sr-only">Замеры изделия по размерам</DialogDescription>
         <table className="mt-5 w-full text-left">
           <thead>
             <tr className="border-b border-border">
-              {['Size', ...chart.columns].map((c) => (
+              {['Размер', ...chart.columns].map((c) => (
                 <th key={c} scope="col" className="label-xs pb-2 font-normal text-muted-foreground">
                   {c}
                 </th>
@@ -53,7 +53,7 @@ export function SizeGuideDialog({ chart, open, onOpenChange }: { chart: SizeChar
   );
 }
 
-function Segmented<T extends string>({ label, options, value, onChange }: { label: string; options: readonly T[]; value: T; onChange: (v: T) => void }) {
+function Segmented<T extends string>({ label, options, names, value, onChange }: { label: string; options: readonly T[]; names: Record<T, string>; value: T; onChange: (v: T) => void }) {
   return (
     <fieldset>
       <legend className="label-xs text-muted-foreground">{label}</legend>
@@ -66,7 +66,7 @@ function Segmented<T extends string>({ label, options, value, onChange }: { labe
             onClick={() => onChange(o)}
             className={cn('label-xs rounded-[4px] py-2 transition-colors', value === o ? 'bg-primary font-bold text-primary-foreground' : 'hover:bg-accent')}
           >
-            {o}
+            {names[o]}
           </button>
         ))}
       </div>
@@ -106,16 +106,16 @@ export function FitFinderDialog({
       }}
     >
       <DialogContent className="max-w-md gap-0 rounded-lg p-6">
-        <DialogTitle className="label-xs font-bold">Find your perfect fit</DialogTitle>
+        <DialogTitle className="label-xs font-bold">Подберите свой размер</DialogTitle>
         <DialogDescription className="mt-2 text-xs text-muted-foreground">
-          Enter a few details and we’ll recommend the best size for you.
+          Укажите пару параметров — и мы подскажем подходящий размер.
         </DialogDescription>
 
         <form onSubmit={submit} noValidate className="mt-5 flex flex-col gap-4">
           {(
             [
-              ['heightCm', 'Height', 'cm', '170'],
-              ['weightKg', 'Weight', 'kg', '70'],
+              ['heightCm', 'Рост', 'см', '170'],
+              ['weightKg', 'Вес', 'кг', '70'],
             ] as const
           ).map(([name, label, unit, placeholder]) => (
             <label key={name} className="flex flex-col gap-1.5">
@@ -124,22 +124,22 @@ export function FitFinderDialog({
                 <input inputMode="numeric" placeholder={placeholder} aria-invalid={!!errors[name]} {...form.register(name)} className={field} />
                 <span className="label-xs absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">{unit}</span>
               </span>
-              {errors[name] && <span className="text-[11px] text-destructive">Enter a realistic {label.toLowerCase()}</span>}
+              {errors[name] && <span className="text-[11px] text-destructive">Укажите реальный {label.toLowerCase()}</span>}
             </label>
           ))}
-          <Segmented label="Body type" options={BODY_TYPES} value={form.watch('bodyType')} onChange={(v) => form.setValue('bodyType', v)} />
-          <Segmented label="Fit preference" options={FIT_PREFERENCES} value={form.watch('fit')} onChange={(v) => form.setValue('fit', v)} />
+          <Segmented label="Телосложение" options={BODY_TYPES} names={{ slim: 'Худощавое', regular: 'Среднее', broad: 'Крупное' }} value={form.watch('bodyType')} onChange={(v) => form.setValue('bodyType', v)} />
+          <Segmented label="Посадка" options={FIT_PREFERENCES} names={{ fitted: 'Облегающая', regular: 'Обычная', oversized: 'Свободная' }} value={form.watch('fit')} onChange={(v) => form.setValue('fit', v)} />
           <Button type="submit" className="mt-2 w-full">
-            Find my size
+            Подобрать размер
           </Button>
         </form>
 
         {result && (
           <div className="mt-5 flex items-center justify-between rounded-md border border-border p-4 animate-in fade-in" role="status">
             <div>
-              <p className="label-xs text-muted-foreground">{result.fits ? 'We recommend' : 'Closest size (may feel snug)'}</p>
+              <p className="label-xs text-muted-foreground">{result.fits ? 'Рекомендуем' : 'Ближайший размер (может быть тесноват)'}</p>
               <p className="title-xl mt-1 text-3xl">{result.size}</p>
-              {soldOut.includes(result.size) && <p className="label-xs mt-1 text-destructive">Sold out in this colour</p>}
+              {soldOut.includes(result.size) && <p className="label-xs mt-1 text-destructive">Нет в наличии в этом цвете</p>}
             </div>
             <Button
               variant="outline"
@@ -150,7 +150,7 @@ export function FitFinderDialog({
                 setResult(null);
               }}
             >
-              Select {result.size}
+              Выбрать {result.size}
             </Button>
           </div>
         )}

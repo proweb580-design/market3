@@ -32,7 +32,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     <button
       type="button"
       onClick={toggle}
-      aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
+      aria-label={dark ? 'Включить светлую тему' : 'Включить тёмную тему'}
       aria-pressed={dark}
       className={className}
     >

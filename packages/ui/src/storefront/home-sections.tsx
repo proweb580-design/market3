@@ -78,7 +78,7 @@ export function FeaturedCarousel() {
   return (
     <section
       className="overflow-x-clip px-page pt-10"
-      aria-roledescription="carousel"
+      aria-roledescription="карусель"
       aria-label={featured.title}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -121,10 +121,10 @@ export function FeaturedCarousel() {
             </Link>
           );
         })}
-        <button type="button" onClick={() => go(-1)} aria-label="Previous product" className="absolute left-[22%] top-1/2 z-10 -translate-y-1/2 p-2 opacity-60 hover:opacity-100 max-md:left-0">
+        <button type="button" onClick={() => go(-1)} aria-label="Предыдущий товар" className="absolute left-[22%] top-1/2 z-10 -translate-y-1/2 p-2 opacity-60 hover:opacity-100 max-md:left-0">
           <ChevronLeft strokeWidth={1.25} className="size-5" />
         </button>
-        <button type="button" onClick={() => go(1)} aria-label="Next product" className="absolute right-[22%] top-1/2 z-10 -translate-y-1/2 p-2 opacity-60 hover:opacity-100 max-md:right-0">
+        <button type="button" onClick={() => go(1)} aria-label="Следующий товар" className="absolute right-[22%] top-1/2 z-10 -translate-y-1/2 p-2 opacity-60 hover:opacity-100 max-md:right-0">
           <ChevronRight strokeWidth={1.25} className="size-5" />
         </button>
       </div>
@@ -188,10 +188,10 @@ export function DropCountdown() {
   const left = useCountdown(drop.endsAt);
   const s = left === null ? null : Math.floor(left / 1000);
   const parts: [string, number | null][] = [
-    ['Days', s === null ? null : Math.floor(s / 86400)],
-    ['Hours', s === null ? null : Math.floor(s / 3600) % 24],
-    ['Min', s === null ? null : Math.floor(s / 60) % 60],
-    ['Sec', s === null ? null : s % 60],
+    ['Дней', s === null ? null : Math.floor(s / 86400)],
+    ['Часов', s === null ? null : Math.floor(s / 3600) % 24],
+    ['Мин', s === null ? null : Math.floor(s / 60) % 60],
+    ['Сек', s === null ? null : s % 60],
   ];
 
   return (
@@ -264,7 +264,7 @@ export function Reviews() {
   return (
     <section className="px-page pt-24" aria-labelledby="reviews-title">
       <div className="reveal">
-        <p className="label-xs mb-1 text-muted-foreground">Reviews</p>
+        <p className="label-xs mb-1 text-muted-foreground">Отзывы</p>
         <h2 id="reviews-title" className="title-xl text-2xl sm:text-3xl">
           What they say
         </h2>

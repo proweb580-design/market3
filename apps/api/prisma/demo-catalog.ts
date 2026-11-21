@@ -9,7 +9,7 @@ import { ART_MIME } from '../src/modules/catalog/view.js';
 
 const outerwearChart: SizeChartInput = {
   name: 'Outerwear',
-  columns: ['Chest', 'Length', 'Sleeve'],
+  columns: ['Грудь', 'Длина', 'Рукав'],
   rows: [
     { size: 'XS', chestCm: 51, values: ['51 cm', '66 cm', '60 cm'] },
     { size: 'S', chestCm: 54, values: ['54 cm', '68 cm', '62 cm'] },
@@ -22,7 +22,7 @@ const outerwearChart: SizeChartInput = {
 
 const teeChart: SizeChartInput = {
   name: 'Tees',
-  columns: ['Chest', 'Length', 'Shoulder'],
+  columns: ['Грудь', 'Длина', 'Плечо'],
   rows: [
     { size: 'XS', chestCm: 52, values: ['52 cm', '67 cm', '52 cm'] },
     { size: 'S', chestCm: 55, values: ['55 cm', '69 cm', '54 cm'] },
@@ -34,22 +34,22 @@ const teeChart: SizeChartInput = {
 
 /** Demo photos (background cut out, transparent WebP) shipped in apps/web/public/demo and apps/mini-app/public/demo. One photo per product. */
 const PHOTOS = {
-  'puffer-black.webp': { alt: 'Black down puffer jacket', width: 886, height: 979 },
-  'puffer-gloss.webp': { alt: 'Black ripstop puffer jacket', width: 707, height: 737 },
-  'puffer-shine.webp': { alt: 'Glossy black puffer jacket', width: 1052, height: 1288 },
-  'puffer-pink-hood.webp': { alt: 'Glossy black puffer with pink-lined hood', width: 907, height: 1038 },
-  'puffer-fur.webp': { alt: 'Glossy black puffer with fur-trimmed hood', width: 710, height: 770 },
-  'track-jacket.webp': { alt: 'Brown track jacket', width: 705, height: 605 },
-  'hoodie.webp': { alt: 'Washed two-tone hoodie', width: 723, height: 558 },
-  'tee-black.webp': { alt: 'Black tee with white piping', width: 614, height: 631 },
+  'puffer-black.webp': { alt: 'Чёрный пуховик', width: 886, height: 979 },
+  'puffer-gloss.webp': { alt: 'Чёрный пуховик из рипстопа', width: 707, height: 737 },
+  'puffer-shine.webp': { alt: 'Глянцевый чёрный пуховик', width: 1052, height: 1288 },
+  'puffer-pink-hood.webp': { alt: 'Глянцевый чёрный пуховик с розовой подкладкой капюшона', width: 907, height: 1038 },
+  'puffer-fur.webp': { alt: 'Глянцевый чёрный пуховик с меховой опушкой', width: 710, height: 770 },
+  'track-jacket.webp': { alt: 'Коричневая олимпийка', width: 705, height: 605 },
+  'hoodie.webp': { alt: 'Двухцветное худи с эффектом стирки', width: 723, height: 558 },
+  'tee-black.webp': { alt: 'Чёрная футболка с белым кантом', width: 614, height: 631 },
   // Street-style shots for the hero and the "Follow along" block (full photos, not cut out).
-  'hero-1.webp': { alt: 'Black puffer and grey wide jeans by a construction fence', width: 640, height: 800 },
-  'hero-2.webp': { alt: 'Cropped black puffer with dark jeans in Paris', width: 627, height: 910 },
-  'hero-3.webp': { alt: 'Olive down jacket and black joggers in a car park', width: 900, height: 1203 },
-  'street-1.webp': { alt: 'Grey puffer on a city crosswalk', width: 536, height: 892 },
-  'street-2.webp': { alt: 'Black puffer over a grey hoodie', width: 736, height: 920 },
-  'street-3.webp': { alt: 'Olive down jacket in a car park', width: 800, height: 1069 },
-  'street-4.webp': { alt: 'Cropped black puffer with wide jeans', width: 627, height: 910 },
+  'hero-1.webp': { alt: 'Чёрный пуховик и серые широкие джинсы у строительного забора', width: 640, height: 800 },
+  'hero-2.webp': { alt: 'Укороченный чёрный пуховик и тёмные джинсы в Париже', width: 627, height: 910 },
+  'hero-3.webp': { alt: 'Оливковый пуховик и чёрные джоггеры на парковке', width: 900, height: 1203 },
+  'street-1.webp': { alt: 'Серый пуховик на пешеходном переходе', width: 536, height: 892 },
+  'street-2.webp': { alt: 'Чёрный пуховик поверх серого худи', width: 736, height: 920 },
+  'street-3.webp': { alt: 'Оливковый пуховик на парковке', width: 800, height: 1069 },
+  'street-4.webp': { alt: 'Укороченный чёрный пуховик с широкими джинсами', width: 627, height: 910 },
 } as const;
 type Photo = keyof typeof PHOTOS;
 
@@ -69,8 +69,8 @@ const products: DemoProduct[] = [
 const RETIRED = ['storm-fleece-fog', 'cloud-hoodie-ice', 'signal-tee-bone', 'static-tee-grey', 'mono-tee-black'];
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
-const TEE_TEXT = ['Heavyweight 280 gsm cotton', 'Boxy fit, dropped shoulder', 'Puff-print graphic', 'Pre-shrunk'];
-const OUTER_TEXT = ['Regular fit', 'Water-repellent shell', 'Two-way zip with storm flap', 'Adjustable hood and hem', 'Embroidered chest logo'];
+const TEE_TEXT = ['Плотный хлопок 280 г/м²', 'Свободный крой, спущенное плечо', 'Объёмный принт', 'Не садится после стирки'];
+const OUTER_TEXT = ['Прямой крой', 'Водоотталкивающая ткань', 'Двусторонняя молния с ветрозащитной планкой', 'Регулируемые капюшон и низ', 'Вышитый логотип на груди'];
 
 const art = (from: string, to: string) => ({ from, to });
 const shot = (file: Photo) => ({ type: 'image' as const, src: `/demo/${file}`, alt: PHOTOS[file].alt });
@@ -123,7 +123,7 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
   for (const [i, p] of products.entries()) {
     const isTee = p.kind === 'tee';
     const sizes = isTee ? SIZES.slice(0, 5) : SIZES;
-    const fabric = isTee ? 'Cotton' : p.kind === 'puffer' ? 'Nylon' : 'Fleece';
+    const fabric = isTee ? 'Хлопок' : p.kind === 'puffer' ? 'Нейлон' : 'Флис';
     const input: ProductInput = {
       slug: p.slug,
       title: p.title,
@@ -171,10 +171,10 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
       freeShippingThresholdMinor: 15000,
       shippingFlatMinor: 1000,
       trust: [
-        { icon: 'truck', title: 'Free shipping', text: 'On orders over $150' },
-        { icon: 'shield', title: 'Secure payment', text: 'Encrypted checkout — shop with confidence' },
-        { icon: 'returns', title: 'Easy returns', text: 'Hassle-free returns within 30 days' },
-        { icon: 'globe', title: 'Worldwide shipping', text: 'Delivered to your door, wherever you are' },
+        { icon: 'truck', title: 'Бесплатная доставка', text: 'При заказе от $150' },
+        { icon: 'shield', title: 'Безопасная оплата', text: 'Защищённое оформление — покупайте спокойно' },
+        { icon: 'returns', title: 'Простой возврат', text: 'Без лишних вопросов в течение 30 дней' },
+        { icon: 'globe', title: 'Доставка по всему миру', text: 'Привезём до двери, где бы вы ни были' },
       ],
       paymentBadges: ['Visa', 'Mastercard', 'Apple Pay', 'Google Pay'],
       footer: {
@@ -185,10 +185,10 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
           { label: 'Lookbook', path: '/lookbook' },
         ],
         help: [
-          { label: 'Shipping', path: '/pages/shipping' },
-          { label: 'Returns', path: '/pages/returns' },
-          { label: 'Terms', path: '/pages/terms' },
-          { label: 'Privacy', path: '/pages/privacy' },
+          { label: 'Доставка', path: '/pages/shipping' },
+          { label: 'Возврат', path: '/pages/returns' },
+          { label: 'Условия', path: '/pages/terms' },
+          { label: 'Конфиденциальность', path: '/pages/privacy' },
         ],
         socials: [
           { label: 'Instagram', href: 'https://instagram.com' },
@@ -202,17 +202,17 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
         enabled: true,
         eyebrow: 'Outerwear drop 01',
         title: 'FW26',
-        subtitle: 'Built for those who move at night',
+        subtitle: 'Для тех, кто живёт ночью',
         panels: [shot('hero-1.webp'), shot('hero-2.webp'), shot('hero-3.webp')],
       },
       featured: {
         enabled: true,
         title: 'Featured',
-        subtitle: 'Picked for the season',
+        subtitle: 'Выбор сезона',
         productSlugs: ['quilt-puffer-black', 'storm-fleece-ash', 'drift-puffer-navy', 'signal-tee-black', 'heat-shell-graphite', 'frost-parka-black'],
       },
       grid: { enabled: true, title: 'New in', collection: 'fw26' },
-      drop: { enabled: true, eyebrow: 'Next drop', title: 'The Midnight Collection', endsAt: '2026-12-12T18:00:00Z', panel: shot('puffer-fur.webp') },
+      drop: { enabled: true, eyebrow: 'Следующий дроп', title: 'The Midnight Collection', endsAt: '2026-12-12T18:00:00Z', panel: shot('puffer-fur.webp') },
       collections: { enabled: true, slugs: collections.map((c) => c.slug) },
       social: {
         enabled: true,
@@ -226,16 +226,16 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
       },
     },
     testimonials: [
-      { quote: 'Fits exactly like the size finder said. Warmest jacket I own.', author: 'Mila R.', location: 'Berlin' },
-      { quote: 'Shipping took three days and the quality is unreal for the price.', author: 'Daniel K.', location: 'Warsaw' },
-      { quote: 'The fleece is heavy in the best way. Already ordered a second colour.', author: 'Aisha T.', location: 'London' },
+      { quote: 'Сел ровно так, как подсказал подбор размера. Самая тёплая куртка из всех, что у меня есть.', author: 'Mila R.', location: 'Берлин' },
+      { quote: 'Доставка заняла три дня, а качество невероятное для такой цены.', author: 'Daniel K.', location: 'Варшава' },
+      { quote: 'Флис плотный — в лучшем смысле. Уже заказал второй цвет.', author: 'Aisha T.', location: 'Лондон' },
     ],
     playlist: await Promise.all(
       tracks.map(async (t, i) => ({ title: t.title, artist: t.artist, durationSec: t.durationSec, coverMediaId: await media(`tracks/${i}`, t.art, t.title), audioMediaId: null })),
     ),
     lookbook: {
       title: 'Ashen gallery',
-      subtitle: 'A visual study of the latest collection',
+      subtitle: 'Визуальная история новой коллекции',
       items: await Promise.all(
         lookbook.map(async (l, i) => ({ mediaId: await photo(l.photo), tag: l.tag, title: l.title, caption: l.caption })),
       ),

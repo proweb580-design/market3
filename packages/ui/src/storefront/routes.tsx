@@ -72,7 +72,7 @@ async function ProductBody({ params }: { params: ItemParams }) {
   const product = await getProduct(store, slug);
   if (!product) notFound();
   const context = product.collections.at(-1);
-  const collection = (context && (await getCollection(store, context))) || { slug: '', title: 'All', products: await getProducts(store) };
+  const collection = (context && (await getCollection(store, context))) || { slug: '', title: 'Все товары', products: await getProducts(store) };
   const list = collection.products;
   const at = list.findIndex((p) => p.slug === slug);
   return (

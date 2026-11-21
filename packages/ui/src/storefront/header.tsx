@@ -26,25 +26,25 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
     >
       <div className="grid h-header grid-cols-[1fr_auto_1fr] items-center px-page">
         <div className="flex items-center">
-          <button type="button" className={cn(iconBtn, '-ml-2')} aria-label="Open menu" onClick={() => setOverlay('menu')}>
+          <button type="button" className={cn(iconBtn, '-ml-2')} aria-label="Открыть меню" onClick={() => setOverlay('menu')}>
             <Menu strokeWidth={1.5} className="size-[18px]" />
           </button>
         </div>
 
-        <Link href={href()} aria-label={`${store.name} — home`} className="flex items-center" draggable={false}>
+        <Link href={href()} aria-label={`${store.name} — главная`} className="flex items-center" draggable={false}>
           <LogoMark className={web ? 'size-9' : 'size-7'} />
         </Link>
 
-        <nav aria-label="Utilities" className="-mr-2 flex items-center justify-end gap-0.5">
-          <button type="button" className={iconBtn} aria-label="Search" onClick={() => setOverlay('search')}>
+        <nav aria-label="Действия" className="-mr-2 flex items-center justify-end gap-0.5">
+          <button type="button" className={iconBtn} aria-label="Поиск" onClick={() => setOverlay('search')}>
             <Search strokeWidth={1.5} className="size-4" />
           </button>
           {web && (
-            <Link href="/account" className={cn(iconBtn, 'max-md:hidden')} aria-label="Account">
+            <Link href="/account" className={cn(iconBtn, 'max-md:hidden')} aria-label="Аккаунт">
               <User strokeWidth={1.5} className="size-4" />
             </Link>
           )}
-          <Link href={href('/wishlist')} className={cn(iconBtn, 'max-sm:hidden')} aria-label={`Wishlist (${wishlist.size})`}>
+          <Link href={href('/wishlist')} className={cn(iconBtn, 'max-sm:hidden')} aria-label={`Избранное (${wishlist.size})`}>
             <Heart strokeWidth={1.5} className="size-4" />
             {wishlist.size > 0 && <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-foreground" />}
           </Link>
@@ -54,7 +54,7 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
               <ThemeToggle className={cn(iconBtn, 'max-md:hidden')} />
             </>
           )}
-          <button type="button" className={cn(iconBtn, 'w-auto gap-1 px-2')} aria-label={`Cart, ${cartCount} items`} onClick={() => setOverlay('cart')}>
+          <button type="button" className={cn(iconBtn, 'w-auto gap-1 px-2')} aria-label={`Корзина, товаров: ${cartCount}`} onClick={() => setOverlay('cart')}>
             <ShoppingBag strokeWidth={1.5} className="size-4" />
             <span className="text-[11px] tabular-nums">{cartCount}</span>
           </button>

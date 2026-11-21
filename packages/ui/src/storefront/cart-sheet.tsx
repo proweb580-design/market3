@@ -27,19 +27,19 @@ export function CartSheet() {
       <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-[460px]">
         <div className="border-b border-border px-6 pb-4 pt-6">
           <div className="flex items-baseline justify-between pr-8">
-            <SheetTitle className="label-xs font-bold">Cart ({cartCount})</SheetTitle>
+            <SheetTitle className="label-xs font-bold">Корзина ({cartCount})</SheetTitle>
             {threshold !== null && <span className="label-xs tabular-nums text-muted-foreground">{progress}%</span>}
           </div>
           {threshold === null ? (
-            <SheetDescription className="sr-only">Your cart</SheetDescription>
+            <SheetDescription className="sr-only">Ваша корзина</SheetDescription>
           ) : (
             <>
               <SheetDescription className="label-xs mt-3 text-muted-foreground">
                 {subtotalMinor >= threshold
-                  ? 'You’ve unlocked free shipping!'
-                  : `Spend ${money(threshold - subtotalMinor)} more for free shipping`}
+                  ? 'Доставка будет бесплатной!'
+                  : `Ещё ${money(threshold - subtotalMinor)} до бесплатной доставки`}
               </SheetDescription>
-              <div className="mt-2 h-0.5 w-full bg-border" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Free shipping progress">
+              <div className="mt-2 h-0.5 w-full bg-border" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Прогресс до бесплатной доставки">
                 <div className="h-full bg-foreground transition-[width] duration-500" style={{ width: `${progress}%` }} />
               </div>
             </>
@@ -48,7 +48,7 @@ export function CartSheet() {
 
         <div className="flex-1 overflow-y-auto px-6">
           {cart.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">Your cart is empty.</p>
+            <p className="py-10 text-center text-sm text-muted-foreground">Корзина пуста.</p>
           ) : (
             <ul className="divide-y divide-border">
               {cart.map((line) => {
@@ -72,7 +72,7 @@ export function CartSheet() {
                       </div>
                       <div className="flex items-center justify-between">
                         <QuantityStepper value={line.quantity} onChange={(q) => setQuantity(line, q)} />
-                        <button type="button" onClick={() => setQuantity(line, 0)} className="p-1 text-muted-foreground hover:text-foreground" aria-label={`Remove ${p.title}`}>
+                        <button type="button" onClick={() => setQuantity(line, 0)} className="p-1 text-muted-foreground hover:text-foreground" aria-label={`Удалить ${p.title}`}>
                           <Trash2 className="size-3.5" />
                         </button>
                       </div>
@@ -86,16 +86,16 @@ export function CartSheet() {
 
         <div className="border-t border-border px-6 pb-6 pt-4">
           <div className="flex items-baseline justify-between">
-            <span className="label-xs font-bold">Subtotal</span>
+            <span className="label-xs font-bold">Сумма</span>
             <span className="text-sm font-bold tabular-nums">{money(subtotalMinor)}</span>
           </div>
-          <p className="label-xs mt-1 text-muted-foreground">Taxes and shipping calculated at checkout</p>
+          <p className="label-xs mt-1 text-muted-foreground">Налоги и доставка рассчитываются при оформлении</p>
           <label className="mt-4 flex items-start gap-2 text-[11px] text-muted-foreground">
             <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-px" />
-            I agree with the Terms and Conditions and Privacy Policy
+            Я согласен с условиями продажи и политикой конфиденциальности
           </label>
           <Button className="mt-4 w-full" disabled={!agreed || cart.length === 0} onClick={() => setCheckingOut(true)}>
-            Checkout · {money(subtotalMinor)}
+            Оформить заказ · {money(subtotalMinor)}
           </Button>
         </div>
       </SheetContent>

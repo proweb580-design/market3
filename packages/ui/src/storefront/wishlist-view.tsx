@@ -11,12 +11,12 @@ export function WishlistView() {
   return (
     <div className="px-page pt-10">
       <h1 className="title-xl text-4xl sm:text-6xl">Wishlist</h1>
-      <p className="label-xs mt-2 text-muted-foreground">{items.length} saved</p>
+      <p className="label-xs mt-2 text-muted-foreground">Сохранено: {items.length}</p>
       {items.length === 0 ? (
         <div className="py-24 text-center">
-          <p className="text-sm text-muted-foreground">Tap the heart on any product to save it here.</p>
+          <p className="text-sm text-muted-foreground">Нажмите на сердечко у товара, чтобы сохранить его здесь.</p>
           <Link href={href(`/collections/fw26`)} className="label-xs mt-4 inline-block font-bold underline">
-            Browse the collection
+            Смотреть коллекцию
           </Link>
         </div>
       ) : (

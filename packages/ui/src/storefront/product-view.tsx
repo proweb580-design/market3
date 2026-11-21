@@ -34,10 +34,10 @@ function Gallery({ product, tone }: { product: StoreProduct; tone: string }) {
       </div>
       {n > 1 && (
         <>
-          <button type="button" onClick={() => go(-1)} aria-label="Previous image" className="absolute left-0 top-1/2 -translate-y-1/2 p-2 opacity-60 hover:opacity-100">
+          <button type="button" onClick={() => go(-1)} aria-label="Предыдущее фото" className="absolute left-0 top-1/2 -translate-y-1/2 p-2 opacity-60 hover:opacity-100">
             <ChevronLeft strokeWidth={1.25} className="size-5" />
           </button>
-          <button type="button" onClick={() => go(1)} aria-label="Next image" className="absolute right-0 top-1/2 -translate-y-1/2 p-2 opacity-60 hover:opacity-100">
+          <button type="button" onClick={() => go(1)} aria-label="Следующее фото" className="absolute right-0 top-1/2 -translate-y-1/2 p-2 opacity-60 hover:opacity-100">
             <ChevronRight strokeWidth={1.25} className="size-5" />
           </button>
         </>
@@ -82,7 +82,7 @@ export function ProductView({
 
   // Offer "add to cart" as the page's main action; a host (Telegram MainButton) may render it natively.
   useEffect(() => {
-    setPrimaryAction({ label: size ? `Add to cart · ${total}` : 'Select a size', onClick: add, disabled: !size });
+    setPrimaryAction({ label: size ? `В корзину · ${total}` : 'Выберите размер', onClick: add, disabled: !size });
     return () => setPrimaryAction(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `add` closes over exactly these values
   }, [size, color.name, qty, total, product.slug]);
@@ -95,7 +95,7 @@ export function ProductView({
         </div>
 
         <div className="flex flex-col md:col-span-5 lg:col-span-4 lg:col-start-9 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-700 motion-safe:delay-150 motion-safe:fill-mode-backwards">
-          <nav aria-label="Breadcrumb" className="label-xs text-muted-foreground">
+          <nav aria-label="Навигация" className="label-xs text-muted-foreground">
             <Link href={href(`/collections/${store.grid?.collection ?? collection.slug}`)} className="hover:text-foreground">
               Shop
             </Link>{' '}
@@ -110,21 +110,21 @@ export function ProductView({
 
           <div className="mt-6 flex flex-col gap-5">
             <fieldset>
-              <legend className="label-xs mb-2 text-muted-foreground">Size</legend>
+              <legend className="label-xs mb-2 text-muted-foreground">Размер</legend>
               <div className="flex flex-wrap gap-1.5">
                 {product.sizes.map((s) => (
-                  <OptionChip key={s.label} selected={size === s.label} unavailable={!s.inStock} disabled={!s.inStock} onClick={() => setSize(s.label)} aria-label={`Size ${s.label}${s.inStock ? '' : ', sold out'}`}>
+                  <OptionChip key={s.label} selected={size === s.label} unavailable={!s.inStock} disabled={!s.inStock} onClick={() => setSize(s.label)} aria-label={`Размер ${s.label}${s.inStock ? '' : ', нет в наличии'}`}>
                     {s.label}
                   </OptionChip>
                 ))}
               </div>
             </fieldset>
             <fieldset>
-              <legend className="label-xs mb-2 text-muted-foreground">Colour — {color.name}</legend>
+              <legend className="label-xs mb-2 text-muted-foreground">Цвет — {color.name}</legend>
               <Swatches size="lg" colors={product.colors} selected={color.name} onSelect={(n) => setColor(product.colors.find((c) => c.name === n)!)} />
             </fieldset>
             <fieldset>
-              <legend className="label-xs mb-2 text-muted-foreground">Fabric</legend>
+              <legend className="label-xs mb-2 text-muted-foreground">Ткань</legend>
               <div className="flex gap-1.5">
                 {product.fabrics.map((f) => (
                   <OptionChip key={f} selected={fabric === f} onClick={() => setFabric(f)}>
@@ -136,24 +136,24 @@ export function ProductView({
             {product.sizeChart && (
               <div className="flex gap-5">
                 <button type="button" onClick={() => setDialog('fit')} className="label-xs flex items-center gap-1.5 font-bold hover:underline">
-                  <Ruler className="size-3.5" /> Find my size
+                  <Ruler className="size-3.5" /> Подобрать размер
                 </button>
                 <button type="button" onClick={() => setDialog('guide')} className="label-xs text-muted-foreground hover:text-foreground hover:underline">
-                  Size guide
+                  Таблица размеров
                 </button>
               </div>
             )}
             <div className="flex items-center justify-between">
-              <span className="label-xs text-muted-foreground">Quantity</span>
+              <span className="label-xs text-muted-foreground">Количество</span>
               <QuantityStepper value={qty} onChange={setQty} />
             </div>
           </div>
 
           <div className="mt-6 flex gap-2">
             <Button className="flex-1" onClick={add} disabled={!size}>
-              <ShoppingBag className="size-3.5" /> Add to cart {total}
+              <ShoppingBag className="size-3.5" /> В корзину {total}
             </Button>
-            <Button variant="outline" size="icon" className="size-11" aria-pressed={liked} aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => {
+            <Button variant="outline" size="icon" className="size-11" aria-pressed={liked} aria-label={liked ? 'Убрать из избранного' : 'Добавить в избранное'} onClick={() => {
                 if (!liked) setPop(true);
                 toggleWishlist(product.slug);
               }}>
@@ -163,14 +163,14 @@ export function ProductView({
           <div className="label-xs mt-4 flex justify-between text-muted-foreground">
             {prevSlug ? (
               <Link href={href(`/products/${prevSlug}`)} className="hover:text-foreground">
-                ‹ Prev
+                ‹ Назад
               </Link>
             ) : (
               <span />
             )}
             {nextSlug && (
               <Link href={href(`/products/${nextSlug}`)} className="hover:text-foreground">
-                Next ›
+                Далее ›
               </Link>
             )}
           </div>
@@ -182,7 +182,7 @@ export function ProductView({
 
           <Accordion type="single" collapsible defaultValue="description" className="mt-6 border-t border-border">
             <AccordionItem value="description">
-              <AccordionTrigger className="label-xs font-bold hover:no-underline">Description</AccordionTrigger>
+              <AccordionTrigger className="label-xs font-bold hover:no-underline">Описание</AccordionTrigger>
               <AccordionContent>
                 <ul className="flex list-disc flex-col gap-1 pl-4 text-xs text-muted-foreground">
                   {product.description.map((d) => (
@@ -192,9 +192,9 @@ export function ProductView({
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="shipping">
-              <AccordionTrigger className="label-xs font-bold hover:no-underline">Shipping &amp; returns</AccordionTrigger>
+              <AccordionTrigger className="label-xs font-bold hover:no-underline">Доставка и возврат</AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground">
-                Ships in 1–3 business days. Free returns within 30 days of delivery.
+                Отправка за 1–3 рабочих дня. Бесплатный возврат в течение 30 дней после получения.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -218,10 +218,10 @@ export function ProductView({
       <div className={cn('fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t border-border bg-background/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur md:hidden', nativePrimary && 'hidden')}>
         <div className="min-w-0 flex-1">
           <p className="label-xs truncate font-bold">{product.title}</p>
-          <p className="label-xs text-muted-foreground">{size ? `Size ${size}` : 'Select a size'}</p>
+          <p className="label-xs text-muted-foreground">{size ? `Размер ${size}` : 'Выберите размер'}</p>
         </div>
         <Button onClick={add} disabled={!size}>
-          Add · {total}
+          В корзину · {total}
         </Button>
       </div>
 

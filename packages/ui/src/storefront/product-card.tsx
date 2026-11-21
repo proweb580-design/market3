@@ -31,10 +31,10 @@ export function ProductCard({ product, className, quickAdd = true }: { product: 
         </Link>
         {product.media.length > 1 && (
           <>
-            <button type="button" className={cn(arrow, 'left-0')} aria-label="Previous image" onClick={() => step(-1)}>
+            <button type="button" className={cn(arrow, 'left-0')} aria-label="Предыдущее фото" onClick={() => step(-1)}>
               <ChevronLeft strokeWidth={1.5} className="size-4" />
             </button>
-            <button type="button" className={cn(arrow, 'right-0')} aria-label="Next image" onClick={() => step(1)}>
+            <button type="button" className={cn(arrow, 'right-0')} aria-label="Следующее фото" onClick={() => step(1)}>
               <ChevronRight strokeWidth={1.5} className="size-4" />
             </button>
           </>
@@ -46,7 +46,7 @@ export function ProductCard({ product, className, quickAdd = true }: { product: 
             toggleWishlist(product.slug);
           }}
           aria-pressed={liked}
-          aria-label={liked ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
+          aria-label={liked ? `Убрать ${product.title} из избранного` : `Добавить ${product.title} в избранное`}
           className="absolute right-0 top-0 p-1.5 transition-opacity hover:opacity-60"
         >
           <Heart
@@ -66,7 +66,7 @@ export function ProductCard({ product, className, quickAdd = true }: { product: 
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <Swatches colors={product.colors} selected={color.name} onSelect={(n) => setColor(product.colors.find((c) => c.name === n)!)} />
           {quickAdd && (
-            <div className="flex flex-wrap gap-x-1.5" aria-label="Quick add size">
+            <div className="flex flex-wrap gap-x-1.5" aria-label="Быстро добавить размер">
               {product.sizes.map((s) => (
                 <button
                   key={s.label}
@@ -77,7 +77,7 @@ export function ProductCard({ product, className, quickAdd = true }: { product: 
                     setOverlay('cart');
                   }}
                   className="label-xs text-muted-foreground transition-colors hover:text-foreground disabled:line-through disabled:opacity-50"
-                  aria-label={`Add size ${s.label} to cart`}
+                  aria-label={`Добавить размер ${s.label} в корзину`}
                 >
                   {s.label}
                 </button>

@@ -65,7 +65,7 @@ export function Footer() {
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border px-page py-5">
         <p className="label-xs text-muted-foreground">
-          © {year} {store.name}. All rights reserved.
+          © {year} {store.name}. Все права защищены.
         </p>
         <PaymentBadges badges={store.paymentBadges} />
       </div>
