@@ -6,14 +6,15 @@ import { URLS, WEBHOOK_SECRET } from './env.mjs';
 export const PASSWORD = 'e2e-password-123';
 export const uniqueEmail = (name = 'user') => `${name}-${randomUUID().slice(0, 8)}@e2e.test`;
 
-/** Registers through the real sign-up page (the fake Supabase confirms at once) and waits for the account page. */
+/** Registers through the real sign-up page (the fake Supabase confirms at once), lands on the store, then opens the account page. */
 export async function signUp(page: Page, email: string, password = PASSWORD) {
   await page.goto('/register');
   await page.locator('#email').fill(email);
   await page.locator('#password').fill(password);
   await page.locator('#repeat').fill(password);
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page).toHaveURL(/\/account/);
+  await expect(page).toHaveURL(`${URLS.web}/s/ashen`); // signed in straight away, on the home page
+  await page.goto('/account');
 }
 
 export async function signIn(page: Page, email: string, password = PASSWORD, next?: string) {

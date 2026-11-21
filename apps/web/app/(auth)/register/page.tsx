@@ -7,7 +7,7 @@ import { getSupabase, safeNext } from '../../../lib/supabase';
 
 function RegisterForm() {
   const router = useRouter();
-  const next = safeNext(useSearchParams().get('next'));
+  const next = safeNext(useSearchParams().get('next'), '/');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [repeat, setRepeat] = useState('');
@@ -33,7 +33,7 @@ function RegisterForm() {
     setNotice('Check your inbox: we sent a confirmation link. Open it to finish creating your account.');
   }
 
-  const q = next === '/account' ? '' : `?next=${encodeURIComponent(next)}`;
+  const q = next === '/' ? '' : `?next=${encodeURIComponent(next)}`;
   return (
     <AuthForm
       title="Create account"

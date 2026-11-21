@@ -7,7 +7,7 @@ import { getSupabase, safeNext } from '../../../lib/supabase';
 
 function LoginForm() {
   const router = useRouter();
-  const next = safeNext(useSearchParams().get('next'));
+  const next = safeNext(useSearchParams().get('next'), '/');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -25,7 +25,7 @@ function LoginForm() {
     router.replace(next);
   }
 
-  const q = next === '/account' ? '' : `?next=${encodeURIComponent(next)}`;
+  const q = next === '/' ? '' : `?next=${encodeURIComponent(next)}`;
   return (
     <AuthForm
       title="Sign in"

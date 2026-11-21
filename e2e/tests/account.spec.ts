@@ -69,8 +69,8 @@ test('the wishlist belongs to the account and follows the shopper across session
   await signUp(page, email);
 
   await page.goto('/s/ashen/products/heat-shell-graphite');
-  await page.locator('button[aria-label="Add to wishlist"]:visible').click();
-  await expect(page.locator('button[aria-label="Remove from wishlist"]:visible')).toBeVisible();
+  await page.locator('button[aria-label="Добавить в избранное"]:visible').click();
+  await expect(page.locator('button[aria-label="Убрать из избранного"]:visible')).toBeVisible();
   await first.close();
 
   // A brand-new browser (no local storage): signing in brings the heart back from the server.
@@ -79,6 +79,6 @@ test('the wishlist belongs to the account and follows the shopper across session
   await signIn(again, email, PASSWORD, '/account');
   await expect(again).toHaveURL(/\/account/);
   await again.goto('/s/ashen/products/heat-shell-graphite');
-  await expect(again.locator('button[aria-label="Remove from wishlist"]:visible')).toBeVisible();
+  await expect(again.locator('button[aria-label="Убрать из избранного"]:visible')).toBeVisible();
   await second.close();
 });
