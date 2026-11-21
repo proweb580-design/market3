@@ -135,14 +135,27 @@ export function TrustBar({ items }: { items: StoreConfig['trust'] }) {
   );
 }
 
-export function PaymentBadges({ badges, className }: { badges: string[]; className?: string }) {
+/** Grey card logos: Mastercard, МИР, Visa. */
+export function PaymentBadges({ className }: { className?: string }) {
   return (
-    <ul className={cn('flex flex-wrap gap-1.5', className)} aria-label="Способы оплаты">
-      {badges.map((b) => (
-        <li key={b} className="rounded-sm border border-border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-muted-foreground">
-          {b}
-        </li>
-      ))}
+    <ul className={cn('flex items-center gap-3 text-muted-foreground', className)} aria-label="Способы оплаты">
+      <li title="Mastercard">
+        <svg viewBox="0 0 34 22" className="h-5 w-auto" role="img" aria-label="Mastercard">
+          <circle cx="12" cy="11" r="9" fill="currentColor" opacity="0.55" />
+          <circle cx="22" cy="11" r="9" fill="currentColor" opacity="0.85" />
+        </svg>
+      </li>
+      <li title="МИР">
+        <svg viewBox="0 0 48 22" className="h-5 w-auto" role="img" aria-label="МИР">
+          <text x="0" y="17" fill="currentColor" fontSize="17" fontWeight="900" fontStyle="italic" fontFamily="Arial, sans-serif" letterSpacing="-0.5">МИР</text>
+        </svg>
+      </li>
+      <li title="Visa">
+        <svg viewBox="0 0 44 26" className="h-6 w-auto" role="img" aria-label="Visa">
+          <rect width="44" height="26" rx="3" fill="currentColor" opacity="0.85" />
+          <text x="22" y="18" textAnchor="middle" fill="var(--color-background, #fff)" fontSize="13" fontWeight="900" fontStyle="italic" fontFamily="Arial, sans-serif">VISA</text>
+        </svg>
+      </li>
     </ul>
   );
 }

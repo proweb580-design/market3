@@ -67,7 +67,7 @@ export function Footer() {
         <p className="label-xs text-muted-foreground">
           © {year} {store.name}. Все права защищены.
         </p>
-        <PaymentBadges badges={store.paymentBadges} />
+        <PaymentBadges />
       </div>
 
       <p

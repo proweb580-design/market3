@@ -91,7 +91,7 @@ function Editor({ initial }: { initial: Doc }) {
   const [doc, setDoc] = useState<Doc>(initial);
   const [threshold, setThreshold] = useState(fromMinor(initial.settings.freeShippingThresholdMinor));
   const [flat, setFlat] = useState(fromMinor(initial.settings.shippingFlatMinor));
-  const [badges, setBadges] = useState(initial.settings.paymentBadges.join(', '));
+  const [badges] = useState(initial.settings.paymentBadges.join(', '));
   const [menu, setMenu] = useState(linksToLines(initial.settings.footer.menu, 'path'));
   const [help, setHelp] = useState(linksToLines(initial.settings.footer.help, 'path'));
   const [socials, setSocials] = useState(linksToLines(initial.settings.footer.socials, 'href'));
@@ -141,10 +141,9 @@ function Editor({ initial }: { initial: Doc }) {
   return (
     <form onSubmit={(e) => { e.preventDefault(); void save(); }}>
       <Block title="Shipping and footer">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <TextField label={`Free shipping from (${org.currency})`} value={threshold} onChange={setThreshold} hint="Empty = never free" />
           <TextField label={`Flat shipping fee (${org.currency})`} value={flat} onChange={setFlat} hint="Charged below the threshold" />
-          <TextField label="Payment badges" value={badges} onChange={setBadges} hint="Comma separated: Visa, Mastercard" />
         </div>
         <div className="grid gap-3 md:grid-cols-3">
           <TextArea label="Menu links" rows={4} value={menu} onChange={setMenu} hint="One per line: Label | /collections/new" />

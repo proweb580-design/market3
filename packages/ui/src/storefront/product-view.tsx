@@ -183,7 +183,7 @@ export function ProductView({
 
           <div className="mt-8 border-t border-border pt-6">
             <TrustBar items={store.trust} />
-            <PaymentBadges badges={store.paymentBadges} className="mt-5" />
+            <PaymentBadges className="mt-5" />
           </div>
 
           <Accordion type="single" collapsible defaultValue="description" className="mt-6 border-t border-border">
