@@ -46,6 +46,10 @@ const PHOTOS = {
   'sprint-tee.webp': { alt: 'Чёрная джерси-футболка с белым кантом и принтом на груди', width: 594, height: 537 },
   'shade-pullover.webp': { alt: 'Серый пуловер с балаклавой и молнией, эффект стирки', width: 517, height: 726 },
   'orbit-tee.webp': { alt: 'Графитовая футболка с серым кантом и металлической звездой', width: 712, height: 666 },
+  'vector-jacket.webp': { alt: 'Коричневая куртка со светлыми фигурными вставками и стойкой', width: 654, height: 585 },
+  'arc-crewneck.webp': { alt: 'Серо-голубой свитшот с белыми вставками и кантом', width: 700, height: 635 },
+  'relay-jacket.webp': { alt: 'Чёрно-синяя олимпийка с бежевыми вставками и полосками на рукавах', width: 1152, height: 681 },
+  'line-jacket.webp': { alt: 'Чёрная олимпийка на молнии с белым кантом', width: 536, height: 407 },
   // Street-style shots for the hero and the "Follow along" block (full photos, not cut out).
   'hero-1.webp': { alt: 'Чёрный пуховик и серые широкие джинсы у строительного забора', width: 640, height: 800 },
   'hero-2.webp': { alt: 'Укороченный чёрный пуховик и тёмные джинсы в Париже', width: 627, height: 910 },
@@ -72,6 +76,10 @@ const products: DemoProduct[] = [
   { slug: 'sprint-tee-black', title: 'Sprint Tee (Black)', kind: 'tee', color: { name: 'Black', hex: '#121212' }, price: 70, photo: 'sprint-tee.webp' },
   { slug: 'shade-pullover-grey', title: 'Shade Pullover (Washed Grey)', kind: 'hoodie', color: { name: 'Washed Grey', hex: '#6b6b6b' }, price: 190, photo: 'shade-pullover.webp' },
   { slug: 'orbit-tee-charcoal', title: 'Orbit Tee (Charcoal)', kind: 'tee', color: { name: 'Charcoal', hex: '#4a4a4c' }, price: 65, photo: 'orbit-tee.webp' },
+  { slug: 'vector-jacket-coffee', title: 'Vector Jacket (Coffee)', kind: 'fleece', color: { name: 'Coffee', hex: '#3b3631' }, price: 240, fabric: 'Нейлон', photo: 'vector-jacket.webp' },
+  { slug: 'arc-crewneck-slate', title: 'Arc Crewneck (Slate)', kind: 'hoodie', color: { name: 'Slate', hex: '#6e7882' }, price: 120, fabric: 'Хлопок', photo: 'arc-crewneck.webp' },
+  { slug: 'relay-jacket-navy', title: 'Relay Track Jacket (Navy)', kind: 'fleece', color: { name: 'Navy', hex: '#262b3a' }, price: 220, fabric: 'Нейлон', photo: 'relay-jacket.webp' },
+  { slug: 'line-jacket-black', title: 'Line Track Jacket (Black)', kind: 'fleece', color: { name: 'Black', hex: '#111111' }, price: 180, fabric: 'Полиэстер', photo: 'line-jacket.webp' },
 ];
 /** Earlier demo products that had no photo of their own: archived on re-seed (not deleted, orders may point at them). */
 const RETIRED = ['storm-fleece-fog', 'cloud-hoodie-ice', 'signal-tee-bone', 'static-tee-grey', 'mono-tee-black'];
