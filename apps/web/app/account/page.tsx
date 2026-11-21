@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@repo/ui/components/ui/button';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../auth-provider';
-import { DeleteAccount, Orders, Profile, Section, Sessions, TelegramLink, type Me } from './sections';
+import { Orders, Profile, Section, Sessions, TelegramLink, type Me } from './sections';
 
 export default function AccountPage() {
   const router = useRouter();
@@ -68,7 +68,6 @@ export default function AccountPage() {
       <Section title="Telegram"><TelegramLink me={me} onChanged={loadMe} /></Section>
       <Section title="Devices"><Sessions /></Section>
       <Section title="Выйти из учётной записи"><Button variant="outline" onClick={leave}>Выйти</Button></Section>
-      <Section title="Delete account"><DeleteAccount onDeleted={leave} /></Section>
     </main>
   );
 }

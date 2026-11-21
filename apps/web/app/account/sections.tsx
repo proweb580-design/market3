@@ -222,32 +222,3 @@ export function Sessions() {
     </ul>
   );
 }
-
-export function DeleteAccount({ onDeleted }: { onDeleted: () => Promise<void> }) {
-  const [open, setOpen] = useState(false);
-  const [confirm, setConfirm] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  async function remove() {
-    setError(null);
-    try {
-      await api('/users/me', { method: 'DELETE' });
-      await onDeleted();
-    } catch (e) {
-      setError(errText(e));
-    }
-  }
-
-  if (!open) return <Button variant="outline" onClick={() => setOpen(true)}>Delete my account…</Button>;
-  return (
-    <div className="flex max-w-sm flex-col gap-3 text-xs">
-      <p>Your account is closed and you are signed out everywhere. Past orders are kept for the stores’ records. Type <b>DELETE</b> to confirm.</p>
-      <Input aria-label="Type DELETE to confirm" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-      {error && <p role="alert" className="text-destructive">{error}</p>}
-      <div className="flex gap-2">
-        <Button variant="destructive" disabled={confirm !== 'DELETE'} onClick={remove}>Delete account</Button>
-        <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-      </div>
-    </div>
-  );
-}
