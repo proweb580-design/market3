@@ -6,11 +6,12 @@ import { Search } from 'lucide-react';
 import { formatMoney } from '../lib/format';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '../components/ui/sheet';
 import { ProductImage } from './media';
-import { useStore } from './store-context';
+import { useOverlay, useStore } from './store-context';
 
 /** Search overlay. shortcut: filters the loaded catalogue client-side; phase 8 queries the API. */
 export function SearchSheet() {
-  const { products, href, overlay, setOverlay } = useStore();
+  const { products, href, setOverlay } = useStore();
+  const overlay = useOverlay();
   const [query, setQuery] = useState('');
   const q = useDeferredValue(query.trim().toLowerCase());
   const results = q ? products.filter((p) => p.title.toLowerCase().includes(q)).slice(0, 8) : [];

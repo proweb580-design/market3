@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { useStore } from '@repo/ui/storefront/store-context';
+import { usePrimaryAction, useStore } from '@repo/ui/storefront/store-context';
 import { telegramSession, telegramWebApp, type TelegramWebApp } from './telegram';
 
 /** Telegram theme → our design tokens, so the store follows the user's Telegram colours. */
@@ -29,7 +29,8 @@ function applyTheme(app: TelegramWebApp) {
  * ready/expand, theme, BackButton, MainButton for the page's primary action, and sign-in.
  */
 export function TelegramBridge() {
-  const { store, href, primaryAction, setNativePrimary, setHost } = useStore();
+  const { store, href, setNativePrimary, setHost } = useStore();
+  const primaryAction = usePrimaryAction();
   const pathname = usePathname();
   const router = useRouter();
 

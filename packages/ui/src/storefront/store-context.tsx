@@ -50,9 +50,9 @@ interface StoreContextValue {
   subtotalMinor: number;
   wishlist: ReadonlySet<string>;
   toggleWishlist: (slug: string) => void;
-  overlay: Overlay;
+  /** The open drawer is read with useOverlay(). */
   setOverlay: (overlay: Overlay) => void;
-  primaryAction: PrimaryAction | null;
+  /** The current primary action is read with usePrimaryAction(). */
   setPrimaryAction: (action: PrimaryAction | null) => void;
   /** True when the host shows primaryAction itself (Telegram MainButton) — pages then hide their own bar. */
   nativePrimary: boolean;
@@ -60,6 +60,10 @@ interface StoreContextValue {
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
+// Values that change often get their own contexts: opening a drawer or changing the size on a product page
+// then re-renders only their few readers, not every product card that uses the store.
+const OverlayContext = createContext<Overlay>(null);
+const PrimaryActionContext = createContext<PrimaryAction | null>(null);
 
 const sameLine = (a: CartLine, b: CartLine) =>
   a.productSlug === b.productSlug && a.size === b.size && a.color === b.color;
@@ -188,6 +192,10 @@ export function StoreProvider({
     [wishlist, host, store.slug, wishlistKey],
   );
 
+  // Stable between renders, so effects that depend on them (e.g. the Telegram Back button) don't re-run on every cart change.
+  const href = useCallback((path = '') => `${basePath}${path}` || '/', [basePath]);
+  const productBySlug = useCallback((slug: string) => bySlug.get(slug), [bySlug]);
+
   const value = useMemo<StoreContextValue>(() => {
     const subtotalMinor = cart.reduce(
       (sum, l) => sum + (bySlug.get(l.productSlug)?.price.amountMinor ?? 0) * l.quantity,
@@ -197,8 +205,8 @@ export function StoreProvider({
       store,
       products,
       variant,
-      href: (path = '') => `${basePath}${path}` || '/',
-      productBySlug: (slug) => bySlug.get(slug),
+      href,
+      productBySlug,
       cart,
       addToCart,
       setQuantity,
@@ -209,16 +217,20 @@ export function StoreProvider({
       subtotalMinor,
       wishlist,
       toggleWishlist,
-      overlay,
       setOverlay,
-      primaryAction,
       setPrimaryAction,
       nativePrimary,
       setNativePrimary,
     };
-  }, [store, products, variant, basePath, bySlug, cart, addToCart, setQuantity, clearCart, host, wishlist, toggleWishlist, overlay, primaryAction, nativePrimary]);
+  }, [store, products, variant, href, productBySlug, bySlug, cart, addToCart, setQuantity, clearCart, host, wishlist, toggleWishlist, nativePrimary]);
 
-  return <StoreContext value={value}>{children}</StoreContext>;
+  return (
+    <StoreContext value={value}>
+      <OverlayContext value={overlay}>
+        <PrimaryActionContext value={primaryAction}>{children}</PrimaryActionContext>
+      </OverlayContext>
+    </StoreContext>
+  );
 }
 
 export function useStore() {
@@ -226,3 +238,9 @@ export function useStore() {
   if (!ctx) throw new Error('useStore must be used inside <StoreProvider>');
   return ctx;
 }
+
+/** Which drawer is open (cart, menu, search…). */
+export const useOverlay = () => use(OverlayContext);
+
+/** The page's main call to action, for a host that renders it natively. */
+export const usePrimaryAction = () => use(PrimaryActionContext);

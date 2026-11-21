@@ -31,6 +31,8 @@ export function HeroBanner() {
           <PanelView
             key={i}
             panel={panel}
+            // the middle photo is the one shown on every screen size (and the phone's largest paint)
+            priority={i === 1}
             className={cn('object-[50%_25%]', HERO_ZOOM[i], i !== 1 && 'max-md:hidden')}
           />
         ))}
@@ -63,20 +65,32 @@ export function FeaturedCarousel() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
+  const section = useRef<HTMLElement>(null);
+  const [onScreen, setOnScreen] = useState(false);
   const n = items.length;
   const go = (d: number) => setActive((a) => (a + d + n) % n);
 
+  // Autoplay only while the carousel is in view: off screen its blurred cross-fades are paint work nobody sees.
   useEffect(() => {
-    if (paused || n < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const el = section.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setOnScreen(!!entry?.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (paused || !onScreen || n < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const id = setInterval(() => setActive((a) => (a + 1) % n), 4500);
     return () => clearInterval(id);
-  }, [paused, n]);
+  }, [paused, onScreen, n]);
 
   const current = items[active];
   if (!current) return null;
 
   return (
     <section
+      ref={section}
       className="overflow-x-clip px-page pt-10"
       aria-roledescription="карусель"
       aria-label={featured.title}

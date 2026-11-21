@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '../components/ui/sheet';
-import { useStore } from './store-context';
+import { useOverlay, useStore } from './store-context';
 import { ThemeToggle } from './theme-toggle';
 
 /** Burger menu. Not opened in the reference video — designed in the same visual language. */
 export function MenuSheet() {
-  const { store, href, overlay, setOverlay, variant } = useStore();
+  const { store, href, setOverlay, variant } = useStore();
+  const overlay = useOverlay();
   const close = () => setOverlay(null);
 
   return (

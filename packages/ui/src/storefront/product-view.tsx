@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Heart, Ruler, ShoppingBag } from 'lucide-react';
@@ -10,9 +11,12 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '..
 import { ProductImage } from './media';
 import { OptionChip, PaymentBadges, QuantityStepper, Swatches, TrustBar } from './primitives';
 import { ProductCard } from './product-card';
-import { FitFinderDialog, SizeGuideDialog } from './size-dialogs';
 import { useStore } from './store-context';
 import type { StoreProduct } from './types';
+
+// Size dialogs (form library + schema) load on first use, not with every product page.
+const SizeGuideDialog = dynamic(() => import('./size-dialogs').then((m) => m.SizeGuideDialog), { ssr: false });
+const FitFinderDialog = dynamic(() => import('./size-dialogs').then((m) => m.FitFinderDialog), { ssr: false });
 
 function Gallery({ product, tone }: { product: StoreProduct; tone: string }) {
   const [i, setI] = useState(0);
@@ -71,6 +75,8 @@ export function ProductView({
   const [qty, setQty] = useState(1);
   const [pop, setPop] = useState(false);
   const [dialog, setDialog] = useState<'fit' | 'guide' | null>(null);
+  const [dialogsLoaded, setDialogsLoaded] = useState(false);
+  if (dialog && !dialogsLoaded) setDialogsLoaded(true);
   const liked = wishlist.has(product.slug);
   const total = formatMoney({ ...product.price, amountMinor: product.price.amountMinor * qty });
 
@@ -225,7 +231,7 @@ export function ProductView({
         </Button>
       </div>
 
-      {product.sizeChart && (
+      {product.sizeChart && dialogsLoaded && (
         <>
           <SizeGuideDialog chart={product.sizeChart} open={dialog === 'guide'} onOpenChange={(o) => setDialog(o ? 'guide' : null)} />
           <FitFinderDialog chart={product.sizeChart} open={dialog === 'fit'} onOpenChange={(o) => setDialog(o ? 'fit' : null)}

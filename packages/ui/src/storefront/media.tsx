@@ -20,6 +20,7 @@ export function ProductImage({
         src={media.src}
         alt={media.alt}
         loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : undefined}
         // Square box so cut-out photos of any shape line up in grids. No `cutout` glow: on a photo it reads as a white halo in dark mode.
         className={cn('aspect-square w-full object-contain', className)}
       />
@@ -29,9 +30,17 @@ export function ProductImage({
 }
 
 /** Editorial photo slot. Demo panels are gradients with a garment silhouette and film grain. */
-export function PanelView({ panel, className }: { panel: Panel; className?: string }) {
+export function PanelView({ panel, className, priority }: { panel: Panel; className?: string; priority?: boolean }) {
   if (panel.type === 'image') {
-    return <img src={panel.src} alt={panel.alt} loading="lazy" className={cn('size-full object-cover', className)} />;
+    return (
+      <img
+        src={panel.src}
+        alt={panel.alt}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : undefined}
+        className={cn('size-full object-cover', className)}
+      />
+    );
   }
   return (
     <div
