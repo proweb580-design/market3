@@ -16,7 +16,7 @@ export function MenuSheet() {
         <SheetTitle className="label-xs px-6 pt-6 font-normal text-muted-foreground">{store.name}</SheetTitle>
         <SheetDescription className="sr-only">Навигация по магазину</SheetDescription>
         <nav className="flex flex-col px-6 pt-8">
-          {[...store.footer.menu, { label: 'Wishlist', path: '/wishlist' }].map((item) => (
+          {[...store.footer.menu, { label: 'Избранное', path: '/wishlist' }].map((item) => (
             <Link
               key={item.path + item.label}
               href={href(item.path)}

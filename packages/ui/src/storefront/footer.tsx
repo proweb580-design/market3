@@ -30,7 +30,7 @@ export function Footer() {
           {store.hero?.subtitle && <p className="mt-3 max-w-xs text-sm text-muted-foreground">{store.hero.subtitle}</p>}
         </div>
 
-        <LinkColumn title="Shop">
+        <LinkColumn title="Магазин">
           {store.footer.menu.map((l) => (
             <li key={l.label}>
               <Link href={href(l.path)} className={linkCls}>
@@ -40,7 +40,7 @@ export function Footer() {
           ))}
         </LinkColumn>
 
-        <LinkColumn title="Help">
+        <LinkColumn title="Помощь">
           {store.footer.help.map((l) => (
             <li key={l.label}>
               <Link href={href(l.path)} className={linkCls}>
@@ -51,7 +51,7 @@ export function Footer() {
         </LinkColumn>
 
         {store.footer.socials.length > 0 && (
-          <LinkColumn title="Follow us">
+          <LinkColumn title="Мы в соцсетях">
             {store.footer.socials.map((s) => (
               <li key={s.label}>
                 <a href={s.href} target="_blank" rel="noreferrer" className={linkCls}>

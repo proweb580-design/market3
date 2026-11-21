@@ -179,10 +179,10 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
       paymentBadges: ['Visa', 'Mastercard', 'Apple Pay', 'Google Pay'],
       footer: {
         menu: [
-          { label: 'Shop all', path: '/collections/fw26' },
-          { label: 'Outerwear', path: '/collections/outerwear' },
-          { label: 'Tops', path: '/collections/tops' },
-          { label: 'Lookbook', path: '/lookbook' },
+          { label: 'Все товары', path: '/collections/fw26' },
+          { label: 'Верхняя одежда', path: '/collections/outerwear' },
+          { label: 'Футболки', path: '/collections/tops' },
+          { label: 'Лукбук', path: '/lookbook' },
         ],
         help: [
           { label: 'Доставка', path: '/pages/shipping' },
