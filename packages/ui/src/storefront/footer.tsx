@@ -27,7 +27,6 @@ export function Footer() {
       <div className="reveal grid grid-cols-2 gap-x-6 gap-y-10 px-page py-14 md:grid-cols-12">
         <div className="col-span-2 md:col-span-6">
           <p className="title-xl text-2xl">{store.name}</p>
-          {store.hero?.subtitle && <p className="mt-3 max-w-xs text-sm text-muted-foreground">{store.hero.subtitle}</p>}
         </div>
 
         <LinkColumn title="Магазин">

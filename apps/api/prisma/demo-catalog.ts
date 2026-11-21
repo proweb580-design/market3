@@ -218,7 +218,7 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
         enabled: true,
         eyebrow: '',
         title: 'FW26',
-        subtitle: 'Для тех, кто живёт ночью',
+        subtitle: '',
         panels: [shot('hero-1.webp'), shot('hero-2.webp'), shot('hero-3.webp')],
       },
       featured: {
