@@ -108,6 +108,42 @@
   img {
     user-select: none;
   }
+
+  /* Home intro (storefront/intro.tsx): blur + dim the page before first paint, then lift it. */
+  html[data-intro] {
+    overflow: hidden;
+  }
+  html[data-intro]::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    pointer-events: none;
+    background: rgb(0 0 0 / 0.4);
+    -webkit-backdrop-filter: blur(22px);
+    backdrop-filter: blur(22px);
+    transition: opacity 0.75s ease;
+  }
+  html[data-intro='out']::after,
+  html[data-intro='land']::after {
+    opacity: 0;
+  }
+  .intro-reveal {
+    transition:
+      opacity 0.6s ease 0.3s,
+      transform 0.6s ease 0.3s;
+  }
+  /* !important: these sit in @layer base, and utilities (hover:opacity-60…) would otherwise win. */
+  html[data-intro='in'] .intro-reveal {
+    opacity: 0 !important;
+    transform: translateY(10px);
+    pointer-events: none;
+  }
+  html[data-intro='in'] [data-brand],
+  html[data-intro='out'] [data-brand] {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Roboto_Flex } from 'next/font/google';
 import { ThemeScript } from '@repo/ui/storefront/theme-script';
+import { IntroScript } from '@repo/ui/storefront/intro';
 import { AuthProvider } from './auth-provider';
 import './globals.css';
 
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html lang="ru" className={`${font.variable} h-full`} suppressHydrationWarning>
       <head>
         <ThemeScript />
+        <IntroScript />
       </head>
       <body className="min-h-full">
         <AuthProvider>{children}</AuthProvider>

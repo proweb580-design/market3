@@ -27,17 +27,17 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
       )}
     >
       <div className="grid h-header grid-cols-[1fr_auto_1fr] items-center px-page">
-        <div className="flex items-center">
+        <div className="intro-reveal flex items-center">
           <button type="button" className={cn(iconBtn, '-ml-2')} aria-label="Открыть меню" onClick={() => setOverlay('menu')}>
             <Menu strokeWidth={1.5} className="size-[18px]" />
           </button>
         </div>
 
-        <Link href={href()} aria-label={`${store.name} — главная`} className="label-xs text-sm font-bold tracking-[0.3em] transition-opacity hover:opacity-60" draggable={false}>
+        <Link href={href()} aria-label={`${store.name} — главная`} data-brand className="label-xs text-sm font-bold tracking-[0.3em] transition-opacity hover:opacity-60" draggable={false}>
           {store.name}
         </Link>
 
-        <nav aria-label="Действия" className="-mr-2 flex items-center justify-end gap-0.5">
+        <nav aria-label="Действия" className="intro-reveal -mr-2 flex items-center justify-end gap-0.5">
           <button type="button" className={iconBtn} aria-label="Поиск" onClick={() => setOverlay('search')}>
             <Search strokeWidth={1.5} className="size-4" />
           </button>

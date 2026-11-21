@@ -40,7 +40,7 @@ export function HeroBanner() {
       {/* Light scrim keeps the white title readable on bright photos; a short fade melts the bottom edge into the page. */}
       <div className="pointer-events-none absolute inset-0 bg-black/20" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent to-background" />
-      <div className="absolute inset-x-0 top-[30%] flex flex-col items-center px-page text-center text-white motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-700 motion-safe:delay-300 motion-safe:fill-mode-backwards">
+      <div className="intro-reveal absolute inset-x-0 top-[30%] flex flex-col items-center px-page text-center text-white motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-700 motion-safe:delay-300 motion-safe:fill-mode-backwards">
         <h1 className="title-xl text-6xl drop-shadow-lg sm:text-7xl">{hero.title}</h1>
         {shop && (
           <Link
