@@ -23,7 +23,7 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
         'z-40 w-full print:hidden transition-transform duration-300 motion-reduce:transition-none',
         overlay
           ? 'fixed inset-x-0 top-0 bg-background/30 backdrop-blur-xl'
-          : 'sticky top-0 border-b border-border bg-background',
+          : 'sticky top-0 bg-background/30 backdrop-blur-xl',
         hidden && '-translate-y-full',
       )}
     >
