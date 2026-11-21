@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
@@ -7,16 +8,21 @@ import { formatMoney } from '../lib/format';
 import { Button } from '../components/ui/button';
 import { Checkbox } from '../components/ui/checkbox';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '../components/ui/sheet';
-import { CheckoutDialog } from './checkout-dialog';
 import { ProductImage } from './media';
 import { QuantityStepper } from './primitives';
-import { useStore } from './store-context';
+import { useOverlay, useStore } from './store-context';
+
+// The checkout form and its validation schema load when a cart is first opened, not with every storefront page.
+const CheckoutDialog = dynamic(() => import('./checkout-dialog').then((m) => m.CheckoutDialog), { ssr: false });
 
 /** Reference §2.5: right drawer with free-shipping progress and line items. */
 export function CartSheet() {
-  const { store, cart, productBySlug, setQuantity, cartCount, subtotalMinor, overlay, setOverlay, href } = useStore();
+  const { store, cart, productBySlug, setQuantity, cartCount, subtotalMinor, setOverlay, href } = useStore();
+  const overlay = useOverlay();
   const [agreed, setAgreed] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
+  const [checkoutLoaded, setCheckoutLoaded] = useState(false);
+  if (overlay === 'cart' && !checkoutLoaded) setCheckoutLoaded(true);
 
   const threshold = store.freeShippingThresholdMinor;
   const progress = threshold ? Math.min(100, Math.round((subtotalMinor / threshold) * 100)) : 0;
@@ -99,7 +105,7 @@ export function CartSheet() {
           </Button>
         </div>
       </SheetContent>
-      <CheckoutDialog open={checkingOut} onOpenChange={setCheckingOut} />
+      {checkoutLoaded && <CheckoutDialog open={checkingOut} onOpenChange={setCheckingOut} />}
     </Sheet>
   );
 }

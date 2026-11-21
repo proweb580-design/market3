@@ -49,20 +49,30 @@ function buildShuriken(): Tri[] {
       const faceB: V = [bx * FACE, by * FACE, z];
       const holeA: V = [Math.cos(ha) * HOLE, Math.sin(ha) * HOLE, z];
       const holeB: V = [Math.cos(hb) * HOLE, Math.sin(hb) * HOLE, z];
-      // winding chosen so normals point outwards on both sides
-      const w = (a: V, b: V, c: V): Tri => (side > 0 ? [a, b, c] : [a, c, b]);
-      tris.push(w(faceA, edgeA, edgeB), w(faceA, edgeB, faceB)); // bevel
-      tris.push(w(holeA, faceA, faceB), w(holeA, faceB, holeB)); // flat face
+      // faces and bevels look out along their side's z
+      const up: V = [0, 0, side];
+      tris.push(outward([faceA, edgeA, edgeB], up), outward([faceA, edgeB, faceB], up)); // bevel
+      tris.push(outward([holeA, faceA, faceB], up), outward([holeA, faceB, holeB], up)); // flat face
     }
-    // wall of the hole
+    // wall of the hole, looking into the hole (towards the axis)
     const fa: V = [Math.cos(Math.atan2(ay, ax)) * HOLE, Math.sin(Math.atan2(ay, ax)) * HOLE, THICK];
     const fb: V = [Math.cos(Math.atan2(by, bx)) * HOLE, Math.sin(Math.atan2(by, bx)) * HOLE, THICK];
     const ba: V = [fa[0], fa[1], -THICK];
     const bb: V = [fb[0], fb[1], -THICK];
-    tris.push([fa, ba, bb], [fa, bb, fb]);
+    const axis: V = [-(fa[0] + fb[0]), -(fa[1] + fb[1]), 0];
+    tris.push(outward([fa, ba, bb], axis), outward([fa, bb, fb], axis));
   }
   return tris;
 }
+
+const normal = ([a, b, c]: Tri): V => {
+  const u: V = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const v: V = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+  return [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+};
+const dot = (a: V, b: V) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+/** Winds a triangle so its normal points out of the solid (along `ref`), which lets the renderer skip back faces. */
+const outward = (t: Tri, ref: V): Tri => (dot(normal(t), ref) < 0 ? [t[0], t[2], t[1]] : t);
 
 const MESH = buildShuriken();
 const LIGHT: V = (() => {
@@ -95,6 +105,7 @@ export function LogoMark({ className, spin = true }: { className?: string; spin?
     let prev = performance.now();
     let base: V = [0, 0, 0];
     let tick = 0;
+    const drawn = { rx: NaN, ry: NaN }; // rotation of the last drawn frame
 
     const draw = () => {
       const s = state.current;
@@ -126,11 +137,9 @@ export function LogoMark({ className, spin = true }: { className?: string; spin?
       const faces: { pts: [number, number][]; z: number; shade: number }[] = [];
       for (const tri of MESH) {
         const [a, b, c] = tri.map(rot) as Tri;
-        const u: V = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
-        const v: V = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
-        let nx = u[1] * v[2] - u[2] * v[1];
-        let ny = u[2] * v[0] - u[0] * v[2];
-        let nz = u[0] * v[1] - u[1] * v[0];
+        let [nx, ny, nz] = normal([a, b, c]);
+        // closed mesh: a face turned away from the camera (at z = 4) is always covered, so it is never drawn
+        if (dot([nx, ny, nz], [-a[0], -a[1], 4 - a[2]]) <= 0) continue;
         // shade the side that faces the viewer; far faces are painted first and covered (depth sort below)
         if (nz < 0) [nx, ny, nz] = [-nx, -ny, -nz];
         const len = Math.hypot(nx, ny, nz) || 1;
@@ -143,17 +152,28 @@ export function LogoMark({ className, spin = true }: { className?: string; spin?
       ctx.clearRect(0, 0, el.width, el.height);
       ctx.lineJoin = 'round';
       ctx.lineWidth = 0.6 * dpr; // hides hairline seams between triangles
+      // Consecutive faces of the same colour go into one path: same picture, far fewer fill/stroke calls.
+      let color = '';
+      const flush = () => {
+        if (!color) return;
+        ctx.fill();
+        ctx.stroke();
+      };
       for (const f of faces) {
         const [r, g, b] = mix(shadow, highlight, f.shade);
-        ctx.fillStyle = ctx.strokeStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
-        ctx.beginPath();
+        const next = `rgb(${r | 0},${g | 0},${b | 0})`;
+        if (next !== color) {
+          flush();
+          color = next;
+          ctx.fillStyle = ctx.strokeStyle = color;
+          ctx.beginPath();
+        }
         ctx.moveTo(...f.pts[0]!);
         ctx.lineTo(...f.pts[1]!);
         ctx.lineTo(...f.pts[2]!);
         ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
       }
+      flush();
     };
 
     const loop = (now: number) => {
@@ -171,11 +191,26 @@ export function LogoMark({ className, spin = true }: { className?: string; spin?
         const rest = -14 + 360 * Math.round((s.rx + 14) / 360);
         s.rx += (rest - s.rx) * 0.02;
       }
-      draw();
+      // At rest (reduced motion, no spin) the picture doesn't change: skip the redraw, but still notice theme changes.
+      if (Math.abs(s.rx - drawn.rx) + Math.abs(s.ry - drawn.ry) > 0.01 || tick % 30 === 0) {
+        draw();
+        drawn.rx = s.rx;
+        drawn.ry = s.ry;
+      } else tick++;
       frame = requestAnimationFrame(loop);
     };
-    frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
+    // Drawing a frame is real work: run only while the emblem is on screen (the header scrolls away).
+    const io = new IntersectionObserver(([entry]) => {
+      cancelAnimationFrame(frame);
+      if (!entry?.isIntersecting) return;
+      prev = performance.now();
+      frame = requestAnimationFrame(loop);
+    });
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(frame);
+    };
   }, [spin]);
 
   const down = (e: PointerEvent<HTMLCanvasElement>) => {

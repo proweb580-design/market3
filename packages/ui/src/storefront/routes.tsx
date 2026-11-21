@@ -34,9 +34,9 @@ async function StoreLayoutBody({
   children: ReactNode;
 }) {
   const { store: slug } = await params;
-  const store = await getStore(slug);
+  // Both reads at once: one after the other they doubled the wait whenever the cache was cold.
+  const [store, products] = await Promise.all([getStore(slug), getProducts(slug)]);
   if (!store) notFound();
-  const products = await getProducts(slug);
   return (
     <StoreShell store={store} products={products} basePath={basePath(slug)} variant={variant} extras={extras}>
       {children}
