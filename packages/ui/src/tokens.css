@@ -95,6 +95,10 @@
   }
   html {
     -webkit-tap-highlight-color: transparent;
+    scrollbar-width: none;
+  }
+  html::-webkit-scrollbar {
+    display: none;
   }
   /* Photos and links don't lift off as a drag ghost. shortcut: WebKit/Blink only, Firefox still drags — add draggable={false} if it matters. */
   img,
