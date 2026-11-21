@@ -42,6 +42,10 @@ const PHOTOS = {
   'track-jacket.webp': { alt: 'Коричневая олимпийка', width: 705, height: 605 },
   'hoodie.webp': { alt: 'Двухцветное худи с эффектом стирки', width: 723, height: 558 },
   'tee-black.webp': { alt: 'Чёрная футболка с белым кантом', width: 614, height: 631 },
+  'rally-jacket.webp': { alt: 'Мотокуртка из экокожи с чёрно-белыми вставками и нашивками', width: 722, height: 549 },
+  'sprint-tee.webp': { alt: 'Чёрная джерси-футболка с белым кантом и принтом на груди', width: 594, height: 537 },
+  'shade-pullover.webp': { alt: 'Серый пуловер с балаклавой и молнией, эффект стирки', width: 517, height: 726 },
+  'orbit-tee.webp': { alt: 'Графитовая футболка с серым кантом и металлической звездой', width: 712, height: 666 },
   // Street-style shots for the hero and the "Follow along" block (full photos, not cut out).
   'hero-1.webp': { alt: 'Чёрный пуховик и серые широкие джинсы у строительного забора', width: 640, height: 800 },
   'hero-2.webp': { alt: 'Укороченный чёрный пуховик и тёмные джинсы в Париже', width: 627, height: 910 },
@@ -53,7 +57,7 @@ const PHOTOS = {
 } as const;
 type Photo = keyof typeof PHOTOS;
 
-type DemoProduct = { slug: string; title: string; kind: GarmentKind; color: { name: string; hex: string }; price: number; gender?: ProductInput['gender']; photo: Photo };
+type DemoProduct = { slug: string; title: string; kind: GarmentKind; color: { name: string; hex: string }; price: number; gender?: ProductInput['gender']; fabric?: string; photo: Photo };
 
 const products: DemoProduct[] = [
   { slug: 'quilt-puffer-black', title: 'Quilt Puffer (Black)', kind: 'puffer', color: { name: 'Black', hex: '#141414' }, price: 300, photo: 'puffer-black.webp' },
@@ -64,6 +68,10 @@ const products: DemoProduct[] = [
   { slug: 'signal-tee-black', title: 'Signal Tee (Black)', kind: 'tee', color: { name: 'Black', hex: '#151515' }, price: 60, photo: 'tee-black.webp' },
   { slug: 'quilt-puffer-stone', title: 'Quilt Puffer (Stone)', kind: 'puffer', color: { name: 'Stone', hex: '#8f8a83' }, price: 300, gender: 'WOMAN', photo: 'puffer-pink-hood.webp' },
   { slug: 'frost-parka-black', title: 'Frost Parka (Black)', kind: 'puffer', color: { name: 'Black', hex: '#121212' }, price: 380, photo: 'puffer-fur.webp' },
+  { slug: 'rally-jacket-black', title: 'Rally Jacket (Black)', kind: 'fleece', color: { name: 'Black', hex: '#141414' }, price: 260, fabric: 'Экокожа', photo: 'rally-jacket.webp' },
+  { slug: 'sprint-tee-black', title: 'Sprint Tee (Black)', kind: 'tee', color: { name: 'Black', hex: '#121212' }, price: 70, photo: 'sprint-tee.webp' },
+  { slug: 'shade-pullover-grey', title: 'Shade Pullover (Washed Grey)', kind: 'hoodie', color: { name: 'Washed Grey', hex: '#6b6b6b' }, price: 190, photo: 'shade-pullover.webp' },
+  { slug: 'orbit-tee-charcoal', title: 'Orbit Tee (Charcoal)', kind: 'tee', color: { name: 'Charcoal', hex: '#4a4a4c' }, price: 65, photo: 'orbit-tee.webp' },
 ];
 /** Earlier demo products that had no photo of their own: archived on re-seed (not deleted, orders may point at them). */
 const RETIRED = ['storm-fleece-fog', 'cloud-hoodie-ice', 'signal-tee-bone', 'static-tee-grey', 'mono-tee-black'];
@@ -123,7 +131,7 @@ export async function seedDemoCatalog(db: PrismaClient, organizationId: string) 
   for (const [i, p] of products.entries()) {
     const isTee = p.kind === 'tee';
     const sizes = isTee ? SIZES.slice(0, 5) : SIZES;
-    const fabric = isTee ? 'Хлопок' : p.kind === 'puffer' ? 'Нейлон' : 'Флис';
+    const fabric = p.fabric ?? (isTee ? 'Хлопок' : p.kind === 'puffer' ? 'Нейлон' : 'Флис');
     const input: ProductInput = {
       slug: p.slug,
       title: p.title,
