@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Heart, Menu, Search, ShoppingBag, User } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -14,14 +15,16 @@ const iconBtn =
 export function Header({ overlay = false }: { overlay?: boolean }) {
   const { store, href, variant, cartCount, wishlist, setOverlay } = useStore();
   const web = variant === 'web';
+  const hidden = useHideOnScroll();
 
   return (
     <header
       className={cn(
-        'z-40 w-full',
+        'z-40 w-full transition-transform duration-300 motion-reduce:transition-none',
         overlay
-          ? 'absolute inset-x-0 top-0 bg-background/30 backdrop-blur-xl'
-          : 'relative border-b border-border',
+          ? 'fixed inset-x-0 top-0 bg-background/30 backdrop-blur-xl'
+          : 'sticky top-0 border-b border-border bg-background',
+        hidden && '-translate-y-full',
       )}
     >
       <div className="grid h-header grid-cols-[1fr_auto_1fr] items-center px-page">
@@ -62,4 +65,26 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
       </div>
     </header>
   );
+}
+
+/** Hidden while the page scrolls down; back once scrolling stops or goes up. */
+function useHideOnScroll() {
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    let lastY = window.scrollY;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setHidden(y > lastY && y > 80);
+      lastY = y;
+      clearTimeout(timer);
+      timer = setTimeout(() => setHidden(false), 250);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      clearTimeout(timer);
+    };
+  }, []);
+  return hidden;
 }

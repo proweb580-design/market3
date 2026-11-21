@@ -96,6 +96,14 @@
   html {
     -webkit-tap-highlight-color: transparent;
   }
+  /* Photos and links don't lift off as a drag ghost. shortcut: WebKit/Blink only, Firefox still drags — add draggable={false} if it matters. */
+  img,
+  a {
+    -webkit-user-drag: none;
+  }
+  img {
+    user-select: none;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);

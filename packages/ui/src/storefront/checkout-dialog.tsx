@@ -100,7 +100,7 @@ export function CheckoutDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92svh] max-w-lg gap-0 overflow-y-auto rounded-lg p-6">
+      <DialogContent className="max-h-[92svh] max-w-lg gap-0 overflow-y-auto rounded-lg p-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <DialogTitle className="label-xs font-bold">Оформление заказа</DialogTitle>
         <DialogDescription className="mt-1 text-xs text-muted-foreground">Оплата проходит на защищённой платёжной странице.</DialogDescription>
 
