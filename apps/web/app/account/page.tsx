@@ -67,6 +67,7 @@ export default function AccountPage() {
       <Section title="Profile"><Profile me={me} onSaved={(profile) => setMe({ ...me, profile })} /></Section>
       <Section title="Telegram"><TelegramLink me={me} onChanged={loadMe} /></Section>
       <Section title="Devices"><Sessions /></Section>
+      <Section title="Выйти из учётной записи"><Button variant="outline" onClick={leave}>Выйти</Button></Section>
       <Section title="Delete account"><DeleteAccount onDeleted={leave} /></Section>
     </main>
   );
