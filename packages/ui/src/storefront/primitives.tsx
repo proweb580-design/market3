@@ -17,11 +17,13 @@ export function OptionChip({
       type="button"
       aria-pressed={selected}
       className={cn(
-        'label-xs inline-flex h-8 min-w-10 items-center justify-center rounded-sm border px-2.5 font-bold transition-colors',
+        'label-xs inline-flex h-11 min-w-12 items-center justify-center rounded-md border px-3 font-bold transition-all duration-200 active:scale-95 disabled:active:scale-100',
         selected
-          ? 'border-primary bg-primary text-primary-foreground'
-          : 'border-border hover:border-foreground',
-        unavailable && 'text-muted-foreground line-through decoration-1',
+          ? 'border-primary bg-primary text-primary-foreground shadow-md'
+          : 'border-border bg-background hover:border-foreground hover:shadow-sm',
+        // Sold out: muted with a diagonal strike, the common storefront convention.
+        unavailable &&
+          'cursor-not-allowed border-dashed text-muted-foreground/60 hover:border-border hover:shadow-none [background-image:linear-gradient(to_top_right,transparent_calc(50%-0.5px),var(--color-border)_50%,transparent_calc(50%+0.5px))]',
         className,
       )}
       {...props}
