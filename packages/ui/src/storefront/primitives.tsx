@@ -17,7 +17,7 @@ export function OptionChip({
       type="button"
       aria-pressed={selected}
       className={cn(
-        'label-xs inline-flex h-11 min-w-12 items-center justify-center rounded-md border px-3 font-bold transition-all duration-200 active:scale-95 disabled:active:scale-100',
+        'label-xs inline-flex h-9 min-w-10 items-center justify-center rounded-md border px-2.5 font-bold transition-all duration-200 active:scale-95 disabled:active:scale-100',
         selected
           ? 'border-primary bg-primary text-primary-foreground shadow-md'
           : 'border-border bg-background hover:border-foreground hover:shadow-sm',

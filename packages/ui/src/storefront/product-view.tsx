@@ -113,7 +113,7 @@ export function ProductView({
           <div className="mt-6 flex flex-col gap-5">
             <fieldset>
               <legend className="label-xs mb-2 text-muted-foreground">Размер{size && ` — ${size}`}</legend>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(3.25rem,1fr))] gap-2 [&>button]:min-w-0">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1.5 [&>button]:min-w-0">
                 {product.sizes.map((s) => (
                   <OptionChip key={s.label} selected={size === s.label} unavailable={!s.inStock} disabled={!s.inStock} onClick={() => setSize(s.label)} aria-label={`Размер ${s.label}${s.inStock ? '' : ', нет в наличии'}`}>
                     {s.label}
