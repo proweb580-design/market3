@@ -57,14 +57,10 @@ function Gallery({ product, tone }: { product: StoreProduct; tone: string }) {
 export function ProductView({
   product,
   collection,
-  prevSlug,
-  nextSlug,
   related,
 }: {
   product: StoreProduct;
   collection: { slug: string; title: string };
-  prevSlug?: string;
-  nextSlug?: string;
   related: StoreProduct[];
 }) {
   const { store, href, addToCart, setOverlay, wishlist, toggleWishlist, setPrimaryAction, nativePrimary } = useStore();
@@ -166,21 +162,6 @@ export function ProductView({
               <Heart onAnimationEnd={() => setPop(false)} className={cn('size-4', liked && 'fill-red-500 text-red-500', pop && 'motion-safe:animate-[heart-pop_400ms_ease-out]')} />
             </Button>
           </div>
-          <div className="label-xs mt-4 flex justify-between text-muted-foreground">
-            {prevSlug ? (
-              <Link href={href(`/products/${prevSlug}`)} className="hover:text-foreground">
-                ‹ Назад
-              </Link>
-            ) : (
-              <span />
-            )}
-            {nextSlug && (
-              <Link href={href(`/products/${nextSlug}`)} className="hover:text-foreground">
-                Далее ›
-              </Link>
-            )}
-          </div>
-
           <div className="mt-8 border-t border-border pt-6">
             <TrustBar items={store.trust} />
             <PaymentBadges className="mt-5" />

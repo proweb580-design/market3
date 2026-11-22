@@ -150,9 +150,8 @@ export function FeaturedCarousel() {
             {current.title}
           </Link>
           <p className="label-xs tabular-nums text-muted-foreground">{formatMoney(current.price)}</p>
-          <div className="mt-2 flex items-center gap-3">
+          <div className="mt-2">
             <Swatches colors={current.colors} selected={current.colors[0]!.name} />
-            <span className="label-xs text-muted-foreground">{current.sizes.map((s) => s.label).join('  ')}</span>
           </div>
         </div>
       </div>

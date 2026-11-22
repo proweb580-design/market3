@@ -73,15 +73,11 @@ async function ProductBody({ params }: { params: ItemParams }) {
   if (!product) notFound();
   const context = product.collections.at(-1);
   const collection = (context && (await getCollection(store, context))) || { slug: '', title: 'Все товары', products: await getProducts(store) };
-  const list = collection.products;
-  const at = list.findIndex((p) => p.slug === slug);
   return (
     <ProductView
       product={product}
       collection={{ slug: collection.slug, title: collection.title }}
-      prevSlug={at > 0 ? list[at - 1]!.slug : undefined}
-      nextSlug={at < list.length - 1 ? list[at + 1]!.slug : undefined}
-      related={list.filter((p) => p.slug !== slug)}
+      related={collection.products.filter((p) => p.slug !== slug)}
     />
   );
 }
