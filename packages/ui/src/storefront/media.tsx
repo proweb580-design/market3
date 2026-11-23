@@ -8,18 +8,21 @@ export function ProductImage({
   tone,
   className,
   priority,
+  eager,
 }: {
   media: Media;
   tone: string;
   className?: string;
   priority?: boolean;
+  /** Load now without raising fetch priority: for images that animate into view, where lazy loading paints them half-decoded mid-motion. */
+  eager?: boolean;
 }) {
   if (media.type === 'image') {
     return (
       <img
         src={media.src}
         alt={media.alt}
-        loading={priority ? 'eager' : 'lazy'}
+        loading={priority || eager ? 'eager' : 'lazy'}
         fetchPriority={priority ? 'high' : undefined}
         // Square box so cut-out photos of any shape line up in grids. No `cutout` glow: on a photo it reads as a white halo in dark mode.
         className={cn('aspect-square w-full object-contain', className)}

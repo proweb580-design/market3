@@ -143,13 +143,10 @@ export function FeaturedCarousel() {
                 filter: offset === 0 ? 'none' : 'blur(3px)',
                 zIndex: offset === 0 ? 2 : 1,
                 pointerEvents: hidden ? 'none' : undefined,
-                // Own compositor layer: repainting the moving blurred image left torn fragments behind it in Chrome.
-                willChange: 'transform, opacity, filter',
-                backfaceVisibility: 'hidden',
                 transition: jumped ? 'opacity 700ms' : 'transform 700ms cubic-bezier(.2,.7,.2,1), opacity 700ms, filter 700ms',
               }}
             >
-              <ProductImage media={p.media[0]!} tone={p.colors[0]!.hex} priority={offset === 0} />
+              <ProductImage media={p.media[0]!} tone={p.colors[0]!.hex} priority={offset === 0} eager />
             </Link>
           );
         })}
