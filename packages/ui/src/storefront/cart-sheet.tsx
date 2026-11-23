@@ -9,6 +9,7 @@ import { Button } from '../components/ui/button';
 import { Checkbox } from '../components/ui/checkbox';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '../components/ui/sheet';
 import { ProductImage } from './media';
+import { NavBlock } from './nav-block';
 import { QuantityStepper } from './primitives';
 import { useOverlay, useStore } from './store-context';
 
@@ -63,9 +64,9 @@ export function CartSheet() {
                 const color = p.colors.find((c) => c.name === line.color) ?? p.colors[0]!;
                 return (
                   <li key={`${line.productSlug}-${line.size}-${line.color}`} className="flex gap-4 py-4">
-                    <Link href={href(`/products/${p.slug}`)} onClick={() => setOverlay(null)} className="w-16 shrink-0">
+                    <NavBlock href={href(`/products/${p.slug}`)} onNavigate={() => setOverlay(null)} label={p.title} className="w-16 shrink-0">
                       <ProductImage media={p.media[0]!} tone={color.hex} />
-                    </Link>
+                    </NavBlock>
                     <div className="flex min-w-0 flex-1 flex-col gap-2">
                       <div className="flex justify-between gap-2">
                         <div>

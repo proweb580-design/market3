@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatMoney } from '../lib/format';
 import { PanelView, ProductImage } from './media';
+import { NavBlock } from './nav-block';
 import { ProductCard } from './product-card';
 import { SectionHeading, Swatches } from './primitives';
 import { useStore } from './store-context';
@@ -249,13 +250,13 @@ export function CollectionsRow() {
       <SectionHeading title="Collections" />
       <div className="mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:overflow-visible">
         {store.collections.map((c, i) => (
-          <Link key={c.title + i} href={href(`/collections/${c.slug}`)} className="reveal group w-[70vw] shrink-0 snap-start md:w-auto">
+          <NavBlock key={c.title + i} href={href(`/collections/${c.slug}`)} className="reveal group w-[70vw] shrink-0 snap-start md:w-auto">
             <div className="aspect-[3/4] overflow-hidden rounded-sm">
               <PanelView panel={c.panel} className="transition-transform duration-700 group-hover:scale-[1.04]" />
             </div>
             <p className="label-xs mt-2 font-bold">{c.title}</p>
             <p className="label-xs text-muted-foreground">Shop now</p>
-          </Link>
+          </NavBlock>
         ))}
       </div>
     </section>

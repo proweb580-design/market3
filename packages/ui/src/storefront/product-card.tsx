@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatMoney } from '../lib/format';
 import { ProductImage } from './media';
+import { NavBlock } from './nav-block';
 import { Swatches } from './primitives';
 import { useStore } from './store-context';
 import type { StoreProduct } from './types';
@@ -26,9 +27,9 @@ export function ProductCard({ product, className, quickAdd = true }: { product: 
   return (
     <article className={cn('reveal group flex flex-col', className)}>
       <div className="relative">
-        <Link href={url} aria-label={product.title} className="block px-[8%] py-[6%]">
+        <NavBlock href={url} label={product.title} className="px-[8%] py-[6%]">
           <ProductImage media={media} tone={color.hex} className="transition-transform duration-500 group-hover:scale-[1.03]" />
-        </Link>
+        </NavBlock>
         {product.media.length > 1 && (
           <>
             <button type="button" className={cn(arrow, 'left-0')} aria-label="Предыдущее фото" onClick={() => step(-1)}>
