@@ -53,7 +53,7 @@ export function ProductCard({ product, className, quickAdd = true }: { product: 
           <Heart
             strokeWidth={1.5}
             onAnimationEnd={() => setPop(false)}
-            className={cn('size-3.5', liked && 'fill-red-500 text-red-500', pop && 'motion-safe:animate-[heart-pop_400ms_ease-out]')}
+            className={cn('size-5', liked && 'fill-red-500 text-red-500', pop && 'motion-safe:animate-[heart-pop_400ms_ease-out]')}
           />
         </button>
       </div>
