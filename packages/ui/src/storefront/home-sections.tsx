@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatMoney } from '../lib/format';
 import { PanelView, ProductImage } from './media';
@@ -67,6 +67,10 @@ export function FeaturedCarousel() {
   const section = useRef<HTMLElement>(null);
   const [onScreen, setOnScreen] = useState(false);
   const n = items.length;
+  const prevActive = useRef(active);
+  useEffect(() => {
+    prevActive.current = active;
+  });
   const go = (d: number) => setActive((a) => (a + d + n) % n);
 
   // Autoplay only while the carousel is in view: off screen its blurred cross-fades are paint work nobody sees.
@@ -121,9 +125,10 @@ export function FeaturedCarousel() {
         onDragStart={(e) => e.preventDefault()}
       >
         {items.map((p, i) => {
-          let offset = i - active;
-          if (offset > n / 2) offset -= n;
-          if (offset < -n / 2) offset += n;
+          const wrap = (o: number) => (o > n / 2 ? o - n : o < -n / 2 ? o + n : o);
+          const offset = wrap(i - active);
+          // An item wrapping from one end to the other would slide across the centre; jump it and only fade.
+          const jumped = Math.abs(offset - wrap(i - prevActive.current)) > 1;
           const hidden = Math.abs(offset) > 1;
           return (
             <Link
@@ -138,19 +143,13 @@ export function FeaturedCarousel() {
                 filter: offset === 0 ? 'none' : 'blur(3px)',
                 zIndex: offset === 0 ? 2 : 1,
                 pointerEvents: hidden ? 'none' : undefined,
-                transition: 'transform 700ms cubic-bezier(.2,.7,.2,1), opacity 700ms, filter 700ms',
+                transition: jumped ? 'opacity 700ms' : 'transform 700ms cubic-bezier(.2,.7,.2,1), opacity 700ms, filter 700ms',
               }}
             >
               <ProductImage media={p.media[0]!} tone={p.colors[0]!.hex} priority={offset === 0} />
             </Link>
           );
         })}
-        <button type="button" onClick={() => go(-1)} aria-label="Предыдущий товар" className="absolute left-[22%] top-1/2 z-10 -translate-y-1/2 p-2 opacity-60 hover:opacity-100 max-md:left-0">
-          <ChevronLeft strokeWidth={1.25} className="size-5" />
-        </button>
-        <button type="button" onClick={() => go(1)} aria-label="Следующий товар" className="absolute right-[22%] top-1/2 z-10 -translate-y-1/2 p-2 opacity-60 hover:opacity-100 max-md:right-0">
-          <ChevronRight strokeWidth={1.25} className="size-5" />
-        </button>
       </div>
 
       <div className="mx-auto max-w-sm" aria-live="polite">
