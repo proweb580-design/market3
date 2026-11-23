@@ -1,20 +1,23 @@
 'use client';
 
 import { orderCheckoutSchema, type Quote } from '@repo/shared';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Check, ChevronRight, CreditCard, MapPin, Navigation, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { formatMoney } from '../lib/format';
 import { cn } from '../lib/utils';
 import { CheckoutError, placeOrder, quoteCart } from './checkout-client';
 import { ProductImage } from './media';
-import { PICKUP_CITY, PICKUP_POINTS, type PickupPoint } from './pickup-points';
+import { PICKUP_CITY, type PickupPoint } from './pickup-points';
 import { QuantityStepper } from './primitives';
 import { useStore, variantFor } from './store-context';
+
+// The map (Leaflet + its CSS) loads only when the buyer opens the pickup picker.
+const PickupPicker = dynamic(() => import('./pickup-map').then((m) => m.PickupPicker), { ssr: false });
 
 type Fields = { email: string; name: string; line1: string; city: string; postalCode: string };
 const EMPTY: Fields = { email: '', name: '', line1: '', city: '', postalCode: '' };
@@ -102,7 +105,7 @@ export function CheckoutView() {
           ? // Pickup goes in the ordinary address fields, so the order and admin screens need no changes.
             {
               name: form.name,
-              line1: point ? `Пункт выдачи: ${point.name}, ${point.district}` : '-',
+              line1: point ? `Пункт выдачи: ${point.name}${point.address ? `, ${point.address}` : ''}` : '-',
               city: PICKUP_CITY,
               postalCode: point?.index ?? '-',
               country: 'UZ',
@@ -236,7 +239,7 @@ export function CheckoutView() {
                     <span className="flex-1">
                       <span className="block text-sm font-medium">{point.name}</span>
                       <span className="block text-xs text-muted-foreground">
-                        {point.district}, {point.index}
+                        {[point.address, point.index].filter(Boolean).join(', ')}
                       </span>
                     </span>
                   ) : (
@@ -258,39 +261,17 @@ export function CheckoutView() {
             )}
           </Panel>
 
-          <Dialog open={picking} onOpenChange={setPicking}>
-            <DialogContent className="max-h-[85svh] max-w-md gap-0 overflow-y-auto rounded-2xl p-6">
-              <DialogTitle className="text-lg font-bold">Пункты выдачи · {PICKUP_CITY}</DialogTitle>
-              <DialogDescription className="mt-1 text-xs text-muted-foreground">Отделения почты. Заберите заказ с паспортом.</DialogDescription>
-              <ul className="mt-4 flex flex-col gap-2">
-                {PICKUP_POINTS.map((p) => (
-                  <li key={p.id}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPoint(p);
-                        setPointMissing(false);
-                        setPicking(false);
-                      }}
-                      className={cn(
-                        'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors',
-                        point?.id === p.id ? 'border-foreground' : 'border-border hover:border-foreground/40',
-                      )}
-                    >
-                      <MapPin className="size-4 shrink-0 text-muted-foreground" />
-                      <span className="flex-1">
-                        <span className="block text-sm font-medium">{p.name}</span>
-                        <span className="block text-xs text-muted-foreground">
-                          {p.district}, {p.index}
-                        </span>
-                      </span>
-                      {point?.id === p.id && <Check className="size-4" />}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </DialogContent>
-          </Dialog>
+          {picking && (
+            <PickupPicker
+              selected={point}
+              onClose={() => setPicking(false)}
+              onConfirm={(p) => {
+                setPoint(p);
+                setPointMissing(false);
+                setPicking(false);
+              }}
+            />
+          )}
 
           <Panel title={`Товары · ${count}`}>
             <ul className="divide-y divide-border">
