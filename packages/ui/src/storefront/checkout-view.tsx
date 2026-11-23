@@ -264,6 +264,7 @@ export function CheckoutView() {
           {picking && (
             <PickupPicker
               selected={point}
+              shipping={quote ? (quote.shippingMinor === 0 ? 'бесплатно' : money(quote.shippingMinor)) : undefined}
               onClose={() => setPicking(false)}
               onConfirm={(p) => {
                 setPoint(p);

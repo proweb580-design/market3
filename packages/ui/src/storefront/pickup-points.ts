@@ -1,7 +1,7 @@
 import offices from './tashkent-post-offices.json';
 
 /** A post office the buyer collects the parcel from. `index` goes into the order's postal code. */
-export type PickupPoint = { id: string; name: string; address: string; index: string; lat: number; lon: number };
+export type PickupPoint = { id: string; name: string; address: string; index: string; lat: number; lon: number; hours: string; phone: string };
 
 export const PICKUP_CITY = 'Ташкент';
 
