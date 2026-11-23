@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -64,6 +65,7 @@ export function FeaturedCarousel() {
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
   const dragged = useRef(false);
+  const router = useRouter();
   const section = useRef<HTMLElement>(null);
   const [onScreen, setOnScreen] = useState(false);
   const n = items.length;
@@ -120,8 +122,7 @@ export function FeaturedCarousel() {
           }
         }}
         onPointerCancel={() => (touchX.current = null)}
-        // A drag must not open the product it ended on, nor start the browser's native image/link drag.
-        onClickCapture={(e) => dragged.current && e.preventDefault()}
+        // Stop the browser's native image drag; slides skip their click after a drag via `dragged`.
         onDragStart={(e) => e.preventDefault()}
       >
         {items.map((p, i) => {
@@ -131,11 +132,12 @@ export function FeaturedCarousel() {
           const jumped = Math.abs(offset - wrap(i - prevActive.current)) > 1;
           const hidden = Math.abs(offset) > 1;
           return (
-            <Link
+            // Not an <a>: a link would flash its URL in the browser's status bar on hover. Keyboard and screen
+            // readers reach the product through the title link under the carousel.
+            <div
               key={p.slug}
-              href={href(`/products/${p.slug}`)}
-              tabIndex={offset === 0 ? 0 : -1}
-              aria-hidden={offset !== 0}
+              aria-hidden
+              onClick={() => !dragged.current && router.push(href(`/products/${p.slug}`))}
               className="absolute left-1/2 top-1/2 w-[min(42vw,420px)] max-md:w-[64vw]"
               style={{
                 transform: `translate(-50%, -50%) translateX(${offset * 105}%) scale(${offset === 0 ? 1 : 0.6})`,
@@ -147,7 +149,7 @@ export function FeaturedCarousel() {
               }}
             >
               <ProductImage media={p.media[0]!} tone={p.colors[0]!.hex} priority={offset === 0} eager />
-            </Link>
+            </div>
           );
         })}
       </div>
