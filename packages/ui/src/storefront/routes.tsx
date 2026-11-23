@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { Suspense, type ReactNode } from 'react';
+import { CheckoutView } from './checkout-view';
 import { CollectionView } from './collection-view';
 import { getCollection, getProduct, getProducts, getStore } from './api';
 import { HomeView } from './home-view';
@@ -128,6 +129,7 @@ export const LookbookRoute = ({ params }: { params: StoreParams }) => (
   </Suspense>
 );
 export const WishlistRoute = () => <WishlistView />;
+export const CheckoutRoute = () => <CheckoutView />;
 
 export async function productTitle(params: ItemParams) {
   const { store, slug } = await params;

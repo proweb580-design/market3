@@ -1,7 +1,6 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { formatMoney } from '../lib/format';
@@ -13,17 +12,12 @@ import { NavBlock } from './nav-block';
 import { QuantityStepper } from './primitives';
 import { useOverlay, useStore } from './store-context';
 
-// The checkout form and its validation schema load when a cart is first opened, not with every storefront page.
-const CheckoutDialog = dynamic(() => import('./checkout-dialog').then((m) => m.CheckoutDialog), { ssr: false });
-
 /** Reference §2.5: right drawer with free-shipping progress and line items. */
 export function CartSheet() {
   const { store, cart, productBySlug, setQuantity, cartCount, subtotalMinor, setOverlay, href } = useStore();
   const overlay = useOverlay();
   const [agreed, setAgreed] = useState(false);
-  const [checkingOut, setCheckingOut] = useState(false);
-  const [checkoutLoaded, setCheckoutLoaded] = useState(false);
-  if (overlay === 'cart' && !checkoutLoaded) setCheckoutLoaded(true);
+  const router = useRouter();
 
   const threshold = store.freeShippingThresholdMinor;
   const progress = threshold ? Math.min(100, Math.round((subtotalMinor / threshold) * 100)) : 0;
@@ -101,12 +95,14 @@ export function CartSheet() {
             <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-px" />
             Я согласен с условиями продажи и политикой конфиденциальности
           </label>
-          <Button className="mt-4 w-full" disabled={!agreed || cart.length === 0} onClick={() => setCheckingOut(true)}>
+          <Button className="mt-4 w-full" disabled={!agreed || cart.length === 0} onClick={() => {
+              setOverlay(null);
+              router.push(href('/checkout'));
+            }}>
             Оформить заказ · {money(subtotalMinor)}
           </Button>
         </div>
       </SheetContent>
-      {checkoutLoaded && <CheckoutDialog open={checkingOut} onOpenChange={setCheckingOut} />}
     </Sheet>
   );
 }

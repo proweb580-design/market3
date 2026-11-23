@@ -13,7 +13,7 @@ test('a guest buys a T-shirt: cart → checkout → payment page → confirmed o
   await page.getByRole('checkbox', { name: /Я согласен/ }).click();
   await page.getByRole('button', { name: /^Оформить заказ/ }).click();
 
-  // Checkout dialog: totals come from the server (60.00 item + 10.00 flat shipping, free-shipping starts at 150.00).
+  // Checkout page: totals come from the server (60.00 item + 10.00 flat shipping, free-shipping starts at 150.00).
   await expect(page.getByText('Итого').last()).toBeVisible();
   await expect(page.getByText('$70.00').first()).toBeVisible();
 
