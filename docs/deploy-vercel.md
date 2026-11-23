@@ -75,6 +75,14 @@ Supabase → Authentication → **URL Configuration**:
 Без этого ссылки из писем (подтверждение, сброс пароля) не откроются. Встроенная почта Supabase ограничена несколькими письмами в час — для реального запуска нужен свой SMTP
 (Authentication → Emails → SMTP Settings).
 
+**Вход через Google** (кнопка «Continue with Google» на `/login` и `/register`):
+1. Google Cloud Console → APIs & Services → Credentials → Create OAuth client ID (тип *Web application*).
+   Authorized redirect URI: `https://<ref>.supabase.co/auth/v1/callback` (точный адрес показан в Supabase на шаге 2).
+   На экране OAuth consent screen укажите название и домен магазина.
+2. Supabase → Authentication → **Sign In / Providers → Google**: включить, вставить Client ID и Client Secret.
+   Секрет хранится только в Supabase — в `.env` и в репозиторий его не добавлять.
+3. Redirect URLs из пункта выше (`…/auth/callback`) уже подходят: после Google покупатель возвращается туда же, что и из писем.
+
 ## 5. Stripe
 
 Stripe (Test mode) → Developers → Webhooks → Add endpoint:

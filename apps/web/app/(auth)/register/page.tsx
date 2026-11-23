@@ -43,6 +43,7 @@ function RegisterForm() {
       error={error}
       notice={notice}
       onSubmit={submit}
+      googleNext={next}
       footer={<span>Already registered? <FooterLink href={`/login${q}`}>Sign in</FooterLink></span>}
     >
       <Field id="email" label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" />

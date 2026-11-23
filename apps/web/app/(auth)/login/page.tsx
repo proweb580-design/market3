@@ -34,6 +34,7 @@ function LoginForm() {
       busy={busy}
       error={error}
       onSubmit={submit}
+      googleNext={next}
       footer={
         <>
           <span>No account? <FooterLink href={`/register${q}`}>Create one</FooterLink></span>
