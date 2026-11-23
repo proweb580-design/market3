@@ -63,6 +63,7 @@ export function FeaturedCarousel() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
+  const dragged = useRef(false);
   const section = useRef<HTMLElement>(null);
   const [onScreen, setOnScreen] = useState(false);
   const n = items.length;
@@ -99,14 +100,25 @@ export function FeaturedCarousel() {
     >
       <SectionHeading title={featured.title} eyebrow={featured.subtitle} />
       <div
-        className="reveal relative mx-auto h-[min(62vw,520px)] max-md:h-[78vw]"
-        onTouchStart={(e) => (touchX.current = e.touches[0]!.clientX)}
-        onTouchEnd={(e) => {
-          if (touchX.current === null) return;
-          const dx = e.changedTouches[0]!.clientX - touchX.current;
-          if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
-          touchX.current = null;
+        className="reveal relative mx-auto h-[min(62vw,520px)] cursor-grab touch-pan-y select-none active:cursor-grabbing max-md:h-[78vw]"
+        // Pointer events cover mouse drag and touch swipe alike.
+        onPointerDown={(e) => {
+          touchX.current = e.clientX;
+          dragged.current = false;
         }}
+        onPointerUp={(e) => {
+          if (touchX.current === null) return;
+          const dx = e.clientX - touchX.current;
+          touchX.current = null;
+          if (Math.abs(dx) > 40) {
+            dragged.current = true;
+            go(dx < 0 ? 1 : -1);
+          }
+        }}
+        onPointerCancel={() => (touchX.current = null)}
+        // A drag must not open the product it ended on, nor start the browser's native image/link drag.
+        onClickCapture={(e) => dragged.current && e.preventDefault()}
+        onDragStart={(e) => e.preventDefault()}
       >
         {items.map((p, i) => {
           let offset = i - active;
