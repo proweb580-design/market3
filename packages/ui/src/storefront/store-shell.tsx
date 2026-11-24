@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { CartSheet } from './cart-sheet';
+import { CartToast } from './cart-toast';
 import { Footer } from './footer';
 import { Header } from './header';
 import { Intro } from './intro';
@@ -29,6 +30,7 @@ function Chrome({ basePath, children }: { basePath: string; children: ReactNode 
       <MenuSheet />
       <SearchSheet />
       <CartSheet />
+      <CartToast />
     </>
   );
 }

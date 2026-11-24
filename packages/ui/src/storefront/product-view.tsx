@@ -63,7 +63,7 @@ export function ProductView({
   collection: { slug: string; title: string };
   related: StoreProduct[];
 }) {
-  const { store, href, addToCart, setOverlay, wishlist, toggleWishlist, setPrimaryAction, nativePrimary } = useStore();
+  const { store, href, addToCart, wishlist, toggleWishlist, setPrimaryAction, nativePrimary } = useStore();
   const firstInStock = product.sizes.find((s) => s.inStock)?.label;
   const [size, setSize] = useState<string | undefined>(firstInStock);
   const [color, setColor] = useState(product.colors[0]!);
@@ -79,7 +79,6 @@ export function ProductView({
   const add = () => {
     if (!size) return;
     addToCart({ productSlug: product.slug, size, color: color.name, quantity: qty });
-    setOverlay('cart');
   };
 
   // Offer "add to cart" as the page's main action; a host (Telegram MainButton) may render it natively.

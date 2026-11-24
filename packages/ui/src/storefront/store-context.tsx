@@ -42,6 +42,8 @@ interface StoreContextValue {
   productBySlug: (slug: string) => StoreProduct | undefined;
   cart: CartLine[];
   addToCart: (line: CartLine) => void;
+  /** The last line added (with a timestamp so re-adding the same item shows the toast again). */
+  lastAdded: { line: CartLine; at: number } | null;
   setQuantity: (line: CartLine, quantity: number) => void;
   clearCart: () => void;
   host: StoreHost | null;
@@ -87,6 +89,7 @@ export function StoreProvider({
   children: ReactNode;
 }) {
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [lastAdded, setLastAdded] = useState<{ line: CartLine; at: number } | null>(null);
   const [host, setHost] = useState<StoreHost | null>(null);
   const loaded = useRef(false);
   const storageKey = `cart:${store.slug}`;
@@ -129,6 +132,7 @@ export function StoreProvider({
         ? lines.map((l) => (sameLine(l, line) ? { ...l, quantity: Math.min(l.quantity + line.quantity, 10) } : l))
         : [...lines, line],
     );
+    setLastAdded({ line, at: Date.now() });
   }, []);
 
   const setQuantity = useCallback((line: CartLine, quantity: number) => {
@@ -209,6 +213,7 @@ export function StoreProvider({
       productBySlug,
       cart,
       addToCart,
+      lastAdded,
       setQuantity,
       clearCart,
       host,
@@ -222,7 +227,7 @@ export function StoreProvider({
       nativePrimary,
       setNativePrimary,
     };
-  }, [store, products, variant, href, productBySlug, bySlug, cart, addToCart, setQuantity, clearCart, host, wishlist, toggleWishlist, nativePrimary]);
+  }, [store, products, variant, href, productBySlug, bySlug, cart, addToCart, lastAdded, setQuantity, clearCart, host, wishlist, toggleWishlist, nativePrimary]);
 
   return (
     <StoreContext value={value}>

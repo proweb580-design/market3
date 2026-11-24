@@ -13,7 +13,7 @@ import type { StoreProduct } from './types';
 
 /** Reference §3.1: cut-out on page background, in-card image arrows, wishlist, swatches and quick-add sizes. */
 export function ProductCard({ product, className, quickAdd = true }: { product: StoreProduct; className?: string; quickAdd?: boolean }) {
-  const { href, wishlist, toggleWishlist, addToCart, setOverlay } = useStore();
+  const { href, wishlist, toggleWishlist, addToCart } = useStore();
   const [mediaIndex, setMediaIndex] = useState(0);
   const [color, setColor] = useState(product.colors[0]!);
   const [pop, setPop] = useState(false);
@@ -75,7 +75,6 @@ export function ProductCard({ product, className, quickAdd = true }: { product: 
                   disabled={!s.inStock}
                   onClick={() => {
                     addToCart({ productSlug: product.slug, size: s.label, color: color.name, quantity: 1 });
-                    setOverlay('cart');
                   }}
                   className="label-xs text-muted-foreground transition-colors hover:text-foreground disabled:line-through disabled:opacity-50"
                   aria-label={`Добавить размер ${s.label} в корзину`}
