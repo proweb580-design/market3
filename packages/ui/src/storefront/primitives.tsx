@@ -137,25 +137,26 @@ export function TrustBar({ items }: { items: StoreConfig['trust'] }) {
   );
 }
 
-/** Grey card logos: Mastercard, МИР, Visa. */
+/** Card logos in brand colours: Mastercard, МИР, Visa. */
 export function PaymentBadges({ className }: { className?: string }) {
   return (
-    <ul className={cn('flex items-center gap-3 text-muted-foreground', className)} aria-label="Способы оплаты">
+    <ul className={cn('flex items-center gap-3', className)} aria-label="Способы оплаты">
       <li title="Mastercard">
         <svg viewBox="0 0 34 22" className="h-5 w-auto" role="img" aria-label="Mastercard">
-          <circle cx="12" cy="11" r="9" fill="currentColor" opacity="0.55" />
-          <circle cx="22" cy="11" r="9" fill="currentColor" opacity="0.85" />
+          <circle cx="12" cy="11" r="9" fill="#EB001B" />
+          <circle cx="22" cy="11" r="9" fill="#F79E1B" />
+          <path d="M17 3.52a9 9 0 0 1 0 14.96a9 9 0 0 1 0-14.96z" fill="#FF5F00" />
         </svg>
       </li>
       <li title="МИР">
         <svg viewBox="0 0 48 22" className="h-5 w-auto" role="img" aria-label="МИР">
-          <text x="0" y="17" fill="currentColor" fontSize="17" fontWeight="900" fontStyle="italic" fontFamily="Arial, sans-serif" letterSpacing="-0.5">МИР</text>
+          <text x="0" y="17" fill="#0F754E" fontSize="17" fontWeight="900" fontStyle="italic" fontFamily="Arial, sans-serif" letterSpacing="-0.5">МИР</text>
         </svg>
       </li>
       <li title="Visa">
         <svg viewBox="0 0 44 26" className="h-6 w-auto" role="img" aria-label="Visa">
-          <rect width="44" height="26" rx="3" fill="currentColor" opacity="0.85" />
-          <text x="22" y="18" textAnchor="middle" fill="var(--color-background, #fff)" fontSize="13" fontWeight="900" fontStyle="italic" fontFamily="Arial, sans-serif">VISA</text>
+          <rect width="44" height="26" rx="3" fill="#1A1F71" />
+          <text x="22" y="18" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="900" fontStyle="italic" fontFamily="Arial, sans-serif">VISA</text>
         </svg>
       </li>
     </ul>
