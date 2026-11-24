@@ -12,6 +12,7 @@ import { OrderView } from './order-view';
 import { ProductView } from './product-view';
 import { PageSkeleton, ShellSkeleton } from './skeletons';
 import { StoreShell } from './store-shell';
+import { SupportView } from './support-view';
 import { WishlistView } from './wishlist-view';
 
 /**
@@ -152,6 +153,7 @@ export const LookbookRoute = ({ params }: { params: StoreParams }) => (
 async function InfoBody({ params }: { params: ItemParams }) {
   const { store: slug, slug: page } = await params;
   const store = await getStore(slug);
+  if (store && page === 'support') return <SupportView />;
   const info = store && infoPage(page, store);
   if (!info) notFound();
   return <InfoView page={info} />;

@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import type { SupportMessage } from '@repo/shared';
 import { randomToken, safeEqualHex, sha256 } from '../../common/crypto.js';
 import type { AppRequest, Tenant } from '../../common/principal.js';
 import { SecretBox } from '../../common/secret-box.js';
@@ -29,6 +30,14 @@ interface BotSecrets {
   botToken: string;
   webhookSecret: string;
 }
+
+const SUPPORT_TOPICS: Record<SupportMessage['topic'], string> = {
+  order: 'Заказ',
+  delivery: 'Доставка',
+  returns: 'Возврат',
+  product: 'Товар',
+  other: 'Другое',
+};
 
 const isHttps = (url?: string) => !!url && url.startsWith('https://');
 const trimSlash = (url: string) => url.replace(/\/+$/, '');
@@ -72,6 +81,39 @@ export class TelegramService {
     if (own?.status === 'ACTIVE') return this.openSecrets(own.secretEncrypted).botToken;
     if (this.env.TELEGRAM_BOT_TOKEN) return this.env.TELEGRAM_BOT_TOKEN;
     throw new ServiceUnavailableException('Telegram is not configured for this store');
+  }
+
+  // ── storefront support ──
+
+  /**
+   * Forwards a buyer's support message to every active store member with a linked Telegram account,
+   * through the store's bot. Plain text only (no parse_mode), so buyer input can't inject markup.
+   */
+  async sendSupport(storeSlug: string, msg: SupportMessage) {
+    const org = await this.db.organization.findFirst({ where: { slug: storeSlug, deletedAt: null, status: 'ACTIVE' }, select: { id: true, name: true } });
+    if (!org) throw new NotFoundException('Store not found');
+    const members = await this.db.organizationMember.findMany({
+      where: { organizationId: org.id, status: 'ACTIVE', user: { telegramAccount: { isNot: null } } },
+      select: { user: { select: { telegramAccount: { select: { telegramId: true } } } } },
+    });
+    const chats = members.map((m) => Number(m.user.telegramAccount!.telegramId));
+    if (!chats.length) throw new ServiceUnavailableException('Support is unavailable right now');
+    const token = await this.botTokenFor(org.id);
+
+    const text = [
+      `Новое обращение в поддержку — ${org.name}`,
+      `Тема: ${SUPPORT_TOPICS[msg.topic]}`,
+      `От: ${msg.name} <${msg.email}>`,
+      ...(msg.orderNumber ? [`Заказ: ${msg.orderNumber}`] : []),
+      '',
+      msg.message,
+    ].join('\n');
+    const sent = await Promise.allSettled(chats.map((chat) => this.bot.sendMessage(token, chat, text)));
+    const failed = sent.filter((r) => r.status === 'rejected');
+    // A member who never opened the bot can't be messaged; that's fine as long as someone got it.
+    if (failed.length) this.logger.warn(`Support message: ${failed.length}/${chats.length} deliveries failed for ${storeSlug}`);
+    if (failed.length === chats.length) throw new ServiceUnavailableException('Support is unavailable right now');
+    return { ok: true };
   }
 
   // ── sign-in ──

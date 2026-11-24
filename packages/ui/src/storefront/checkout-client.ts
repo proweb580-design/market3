@@ -1,4 +1,4 @@
-import type { OrderCheckoutInput, Quote } from '@repo/shared';
+import type { OrderCheckoutInput, Quote, SupportMessage } from '@repo/shared';
 
 /** Browser-side calls of the public checkout API. Prices come back from the server; nothing here decides money. */
 
@@ -44,6 +44,10 @@ export async function placeOrder(store: string, input: OrderCheckoutInput, token
     throw error;
   }
 }
+
+/** Support form → the store team's Telegram. */
+export const sendSupportMessage = (store: string, message: SupportMessage) =>
+  call<{ ok: true }>(`${encodeURIComponent(store)}/support`, { method: 'POST', body: JSON.stringify(message) });
 
 /** Signed-in buyer's wishlist for one store (the server keeps it per account). */
 export const fetchWishlist = (store: string, token: string) =>

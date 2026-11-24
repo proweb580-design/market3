@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Headers, HttpCode, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
-import { SkipThrottle } from '@nestjs/throttler';
-import { connectBotSchema, telegramAuthSchema, telegramRefreshSchema } from '@repo/shared';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { connectBotSchema, supportMessageSchema, type SupportMessage, telegramAuthSchema, telegramRefreshSchema } from '@repo/shared';
 import { z } from 'zod';
 import { CurrentPrincipal, CurrentTenant, Public, Req, RequirePermissions, UserOnly } from '../../common/decorators.js';
 import type { AppRequest, Principal, Tenant } from '../../common/principal.js';
@@ -92,5 +92,21 @@ export class TelegramIntegrationController {
   @RequirePermissions('org.integrations.manage')
   disconnect(@Req() req: AppRequest, @CurrentTenant() t: Tenant) {
     return this.telegram.disconnect(req, t);
+  }
+}
+
+/** Storefront "Поддержка" form → the store team's Telegram. */
+@ApiTags('storefront')
+@Controller('storefront/:store')
+export class SupportController {
+  constructor(private readonly telegram: TelegramService) {}
+
+  @Post('support')
+  @HttpCode(200)
+  @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiZodBody(supportMessageSchema)
+  support(@Param('store') store: string, @Body(new ZodPipe(supportMessageSchema)) body: SupportMessage) {
+    return this.telegram.sendSupport(store, body);
   }
 }

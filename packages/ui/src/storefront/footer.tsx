@@ -17,6 +17,9 @@ function LinkColumn({ title, children }: { title: string; children: ReactNode })
 }
 
 /** Site footer: brand, link columns and the legal bar, on one grid. Reviews live on the home page. */
+// Every store has the support form, so its link is always shown (last in «Помощь»).
+const SUPPORT = { label: 'Поддержка', path: '/pages/support' };
+
 export function Footer() {
   const { store, href } = useStore();
   const year = new Date().getFullYear();
@@ -39,7 +42,7 @@ export function Footer() {
         </LinkColumn>
 
         <LinkColumn title="Помощь">
-          {store.footer.help.map((l) => (
+          {[...store.footer.help.filter((l) => l.path !== SUPPORT.path), SUPPORT].map((l) => (
             <li key={l.label}>
               <Link href={href(l.path)} className={linkCls}>
                 {l.label}

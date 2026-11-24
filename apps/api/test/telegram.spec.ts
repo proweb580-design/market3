@@ -265,4 +265,27 @@ describe.skipIf(!TEST_DB)('Telegram Mini App sign-in, sessions, linking and bran
       expect((await owner.get(`/organizations/${org.id}/integrations/telegram`).expect(200)).body).toMatchObject({ connected: false, usingPlatformBot: true });
     });
   });
+  describe('storefront support form', () => {
+    const msg = { name: 'Ann', email: 'ann@example.com', topic: 'delivery', orderNumber: '1042', message: 'Where is my parcel? <b>hi</b>' };
+    const send = (slug: string, body: object = msg) => t.http().post(`/api/v1/storefront/${slug}/support`).send(body);
+
+    it('reaches team members with linked Telegram in plain text; refuses bad input, unknown stores and teams nobody can receive', async () => {
+      const owner = await t.user('support-owner');
+      const org = await t.createOrg(owner);
+      await send(org.slug).expect(503); // nobody linked yet
+
+      const { startParam } = (await owner.post('/telegram/link-code').expect(201)).body;
+      const id = tgId();
+      await auth(initDataFor(PLATFORM_BOT, { id }, { startParam }), org.slug).expect(201);
+
+      expect((await send(org.slug).expect(200)).body).toEqual({ ok: true });
+      expect(bot.sendMessage).toHaveBeenCalledTimes(1);
+      const [token, chat, text, button] = bot.sendMessage.mock.calls[0]!;
+      expect([token, chat, button]).toEqual([PLATFORM_BOT, id, undefined]);
+      for (const part of ['Доставка', 'Ann <ann@example.com>', 'Заказ: 1042', 'Where is my parcel? <b>hi</b>']) expect(text).toContain(part);
+
+      await send(org.slug, { ...msg, email: 'nope', extra: 1 }).expect(400);
+      await send('no-such-store').expect(404);
+    });
+  });
 });

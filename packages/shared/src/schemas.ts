@@ -106,6 +106,17 @@ export const auditQuerySchema = paginationQuerySchema.extend({
 // ── Telegram ──
 export const telegramAuthSchema = z.object({ initData: z.string().min(1).max(8192), store: orgSlug }).strict();
 export const telegramRefreshSchema = z.object({ refreshToken: z.string().min(20).max(200) }).strict();
+/** Storefront "Поддержка" form; delivered to the store team in Telegram. */
+export const supportMessageSchema = z
+  .object({
+    name: z.string().trim().min(1).max(80),
+    email,
+    orderNumber: z.string().trim().max(20).optional(),
+    topic: z.enum(['order', 'delivery', 'returns', 'product', 'other']),
+    message: z.string().trim().min(10).max(2000),
+  })
+  .strict();
+export type SupportMessage = z.infer<typeof supportMessageSchema>;
 export const connectBotSchema = z
   .object({ botToken: z.string().regex(/^\d+:[A-Za-z0-9_-]{30,}$/, 'Paste the token from @BotFather') })
   .strict();
