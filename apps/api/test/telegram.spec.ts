@@ -63,6 +63,9 @@ describe.skipIf(!TEST_DB)('Telegram Mini App sign-in, sessions, linking and bran
     deleteWebhook: vi.fn<BotApi['deleteWebhook']>(async () => undefined),
     setChatMenuButton: vi.fn<BotApi['setChatMenuButton']>(async () => undefined),
     sendMessage: vi.fn<BotApi['sendMessage']>(async () => undefined),
+    sendButtons: vi.fn<BotApi['sendButtons']>(async () => 777),
+    editButtons: vi.fn<BotApi['editButtons']>(async () => undefined),
+    answerCallback: vi.fn<BotApi['answerCallback']>(async () => undefined),
   };
   let store: { id: string; slug: string };
 
@@ -265,27 +268,82 @@ describe.skipIf(!TEST_DB)('Telegram Mini App sign-in, sessions, linking and bran
       expect((await owner.get(`/organizations/${org.id}/integrations/telegram`).expect(200)).body).toMatchObject({ connected: false, usingPlatformBot: true });
     });
   });
-  describe('storefront support form', () => {
+  describe('support: form, tickets and the support bot', () => {
+    const SUPPORT_BOT = '3333333333:AAsupportBotTokenForTestsOnly_000000000000';
     const msg = { name: 'Ann', email: 'ann@example.com', topic: 'delivery', orderNumber: '1042', message: 'Where is my parcel? <b>hi</b>' };
     const send = (slug: string, body: object = msg) => t.http().post(`/api/v1/storefront/${slug}/support`).send(body);
+    const hook = (id: string, secret: string, update: object) =>
+      t.http().post(`/api/v1/support/webhook/${id}`).set('X-Telegram-Bot-Api-Secret-Token', secret).send(update);
 
-    it('reaches team members with linked Telegram in plain text; refuses bad input, unknown stores and teams nobody can receive', async () => {
+    it('saves every ticket for the dashboard; without a group it DMs team members who linked Telegram', async () => {
       const owner = await t.user('support-owner');
       const org = await t.createOrg(owner);
-      await send(org.slug).expect(503); // nobody linked yet
+      await send(org.slug).expect(200); // nobody to notify — still saved
+      expect(bot.sendMessage).not.toHaveBeenCalled();
 
       const { startParam } = (await owner.post('/telegram/link-code').expect(201)).body;
       const id = tgId();
       await auth(initDataFor(PLATFORM_BOT, { id }, { startParam }), org.slug).expect(201);
+      await send(org.slug).expect(200);
+      const [token, chat, text] = bot.sendMessage.mock.calls[0]!;
+      expect([token, chat]).toEqual([PLATFORM_BOT, id]);
+      for (const part of ['Доставка', 'Ann <ann@example.com>', 'Заказ: 1042', 'Where is my parcel? <b>hi</b>', 'Новое']) expect(text).toContain(part);
 
-      expect((await send(org.slug).expect(200)).body).toEqual({ ok: true });
-      expect(bot.sendMessage).toHaveBeenCalledTimes(1);
-      const [token, chat, text, button] = bot.sendMessage.mock.calls[0]!;
-      expect([token, chat, button]).toEqual([PLATFORM_BOT, id, undefined]);
-      for (const part of ['Доставка', 'Ann <ann@example.com>', 'Заказ: 1042', 'Where is my parcel? <b>hi</b>']) expect(text).toContain(part);
+      const list = (await owner.get(`/organizations/${org.id}/support/tickets`).expect(200)).body;
+      expect(list).toMatchObject({ total: 2, open: 2, items: [{ status: 'NEW', email: 'ann@example.com', topic: 'delivery' }, {}] });
+      expect(list.items[0]).not.toHaveProperty('telegramChatId');
 
       await send(org.slug, { ...msg, email: 'nope', extra: 1 }).expect(400);
       await send('no-such-store').expect(404);
+      const stranger = await t.user('support-stranger');
+      await stranger.get(`/organizations/${org.id}/support/tickets`).expect(403);
+    });
+
+    it('binds a group with the one-time code, posts tickets there, and the buttons and dashboard move them through statuses', async () => {
+      const owner = await t.user('support-bot-owner');
+      const org = await t.createOrg(owner);
+      bot.getMe.mockResolvedValueOnce({ id: 3333333333, username: 'help_bot', first_name: 'Help' });
+      const connected = (await owner.put(`/organizations/${org.id}/integrations/telegram-support`, { botToken: SUPPORT_BOT }).expect(200)).body;
+      expect(JSON.stringify(connected)).not.toContain(SUPPORT_BOT);
+      const code: string = connected.bot.bindCode;
+      expect(bot.setWebhook).toHaveBeenCalledWith(SUPPORT_BOT, expect.stringMatching(/\/api\/v1\/support\/webhook\/[0-9a-f-]{36}$/), expect.any(String), ['message', 'callback_query']);
+      const [, url, secret] = bot.setWebhook.mock.calls[0]!;
+      const integrationId = url.split('/').pop()!;
+
+      // The same bot can't double as the store bot.
+      bot.getMe.mockResolvedValueOnce({ id: 3333333333, username: 'help_bot', first_name: 'Help' });
+      await owner.put(`/organizations/${org.id}/integrations/telegram`, { botToken: SUPPORT_BOT }).expect(409);
+
+      const GROUP = -1001234567890;
+      await hook(integrationId, 'wrong-secret', {}).expect(401);
+      await hook(integrationId, secret, { message: { text: '/bind@help_bot not-the-code', chat: { id: GROUP, type: 'supergroup', title: 'Team' } } }).expect(200);
+      expect((await owner.get(`/organizations/${org.id}/integrations/telegram-support`).expect(200)).body.bot.chatId).toBeNull();
+      await hook(integrationId, secret, { message: { text: `/bind@help_bot ${code}`, chat: { id: GROUP, type: 'supergroup', title: 'Team' } } }).expect(200);
+      expect((await owner.get(`/organizations/${org.id}/integrations/telegram-support`).expect(200)).body.bot).toMatchObject({ chatId: GROUP, chatTitle: 'Team', bindCode: null });
+
+      await send(org.slug).expect(200);
+      const [token, chat, text, buttons] = bot.sendButtons.mock.calls[0]!;
+      expect([token, chat]).toEqual([SUPPORT_BOT, GROUP]);
+      expect(text).toContain('Ann <ann@example.com>');
+      const ticket = (await owner.get(`/organizations/${org.id}/support/tickets`).expect(200)).body.items[0];
+      expect(buttons.map((b) => b.data)).toEqual([`IN_PROGRESS:${ticket.id}`, `RESOLVED:${ticket.id}`]);
+
+      // A button pressed outside the bound group does nothing.
+      await hook(integrationId, secret, { callback_query: { id: 'cb0', data: `RESOLVED:${ticket.id}`, from: { first_name: 'Eve' }, message: { chat: { id: 42 } } } }).expect(200);
+      expect(bot.answerCallback).toHaveBeenLastCalledWith(SUPPORT_BOT, 'cb0', 'Обращение не найдено');
+
+      await hook(integrationId, secret, { callback_query: { id: 'cb1', data: `IN_PROGRESS:${ticket.id}`, from: { first_name: 'Max' }, message: { chat: { id: GROUP } } } }).expect(200);
+      expect(bot.editButtons).toHaveBeenLastCalledWith(SUPPORT_BOT, GROUP, 777, expect.stringContaining('В работе — Max'), [{ text: '✅ Решено', data: `RESOLVED:${ticket.id}` }]);
+      expect((await owner.get(`/organizations/${org.id}/support/tickets?status=IN_PROGRESS`).expect(200)).body.items[0]).toMatchObject({ id: ticket.id, assignee: 'Max' });
+
+      const done = (await owner.patch(`/organizations/${org.id}/support/tickets/${ticket.id}`, { status: 'RESOLVED' }).expect(200)).body;
+      expect(done).toMatchObject({ status: 'RESOLVED', assignee: 'Max' });
+      expect(done.resolvedAt).toBeTruthy();
+      expect(bot.editButtons).toHaveBeenLastCalledWith(SUPPORT_BOT, GROUP, 777, expect.stringContaining('Решено — Max'), [{ text: '↩️ Открыть снова', data: `NEW:${ticket.id}` }]);
+      expect((await owner.get(`/organizations/${org.id}/support/tickets`).expect(200)).body.open).toBe(0);
+
+      await owner.del(`/organizations/${org.id}/integrations/telegram-support`).expect(204);
+      expect(bot.deleteWebhook).toHaveBeenCalledWith(SUPPORT_BOT);
     });
   });
 });

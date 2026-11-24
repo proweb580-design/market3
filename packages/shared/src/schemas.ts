@@ -117,6 +117,17 @@ export const supportMessageSchema = z
   })
   .strict();
 export type SupportMessage = z.infer<typeof supportMessageSchema>;
+export const SUPPORT_TOPIC_LABEL: Record<SupportMessage['topic'], string> = {
+  order: 'Заказ',
+  delivery: 'Доставка',
+  returns: 'Возврат',
+  product: 'Товар',
+  other: 'Другое',
+};
+export const SUPPORT_TICKET_STATUSES = ['NEW', 'IN_PROGRESS', 'RESOLVED'] as const;
+export type SupportTicketStatus = (typeof SUPPORT_TICKET_STATUSES)[number];
+export const supportTicketsQuerySchema = paginationQuerySchema.extend({ status: z.enum(SUPPORT_TICKET_STATUSES).optional() }).strict();
+export const supportTicketUpdateSchema = z.object({ status: z.enum(SUPPORT_TICKET_STATUSES) }).strict();
 export const connectBotSchema = z
   .object({ botToken: z.string().regex(/^\d+:[A-Za-z0-9_-]{30,}$/, 'Paste the token from @BotFather') })
   .strict();

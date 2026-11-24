@@ -86,6 +86,70 @@ function TelegramBot() {
   );
 }
 
+interface SupportBot {
+  connected: boolean;
+  bot: { username: string; webhook: boolean; bindCode: string | null; chatId: number | null; chatTitle: string | null } | null;
+}
+
+/** The second bot: buyer messages go to the team's Telegram group with Take / Resolved buttons. */
+function SupportBotCard() {
+  const org = useOrg();
+  const path = `/organizations/${org.id}/integrations/telegram-support`;
+  const status = useLoad<SupportBot>(path);
+  const [token, setToken] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function connect() {
+    setBusy(true);
+    setError(null);
+    try {
+      await api(path, { method: 'PUT', body: { botToken: token.trim() } });
+      setToken('');
+      await status.reload();
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card title="Support bot">
+      <Async state={status}>
+        {(s) => (
+          <div className="flex flex-col items-start gap-3 text-xs">
+            {s.connected && s.bot ? (
+              <>
+                {s.bot.chatId != null ? (
+                  <p>@{s.bot.username} posts support messages to <b>{s.bot.chatTitle ?? 'your group'}</b>. Anyone there can press “Take” or “Resolved”; the Support page shows the same status.</p>
+                ) : (
+                  <>
+                    <p>@{s.bot.username} is connected. Now add it to your team’s Telegram group and send this message there:</p>
+                    <code className="select-all rounded bg-muted px-2 py-1">/bind@{s.bot.username} {s.bot.bindCode}</code>
+                    <Button variant="outline" onClick={() => void status.reload()}>I sent it — check</Button>
+                  </>
+                )}
+                {!s.bot.webhook && <p className="text-muted-foreground">Telegram can’t reach this API (it needs a public HTTPS address), so the bot won’t receive commands here.</p>}
+                <ActionButton variant="outline" confirm="Disconnect the support bot? Messages will still appear on the Support page." run={async () => { await api(path, { method: 'DELETE' }); await status.reload(); }}>Disconnect</ActionButton>
+              </>
+            ) : (
+              <>
+                <p className="text-muted-foreground">Create a separate bot in @BotFather for support (not your store bot) and paste its token. Buyer messages will then arrive in your team’s Telegram group, where the owner or a manager takes and resolves them. Until then they appear on the Support page and as direct messages to members who linked Telegram.</p>
+                <form onSubmit={(e) => { e.preventDefault(); void connect(); }} className="flex w-full max-w-md items-end gap-2">
+                  <div className="flex-1"><TextField label="Support bot token" value={token} onChange={setToken} type="password" /></div>
+                  <Button type="submit" disabled={busy || !token}>{busy ? 'Connecting…' : 'Connect'}</Button>
+                </form>
+                <ErrorLine error={error} />
+              </>
+            )}
+          </div>
+        )}
+      </Async>
+    </Card>
+  );
+}
+
 interface Key { id: string; name: string; prefix: string; scopes: string[]; lastUsedAt: string | null; expiresAt: string | null; revokedAt: string | null }
 
 const ORG_SCOPES = Object.entries(PERMISSIONS).filter(([, p]) => p.scope === 'ORGANIZATION').map(([key, p]) => ({ key, description: p.description }));
@@ -151,6 +215,7 @@ export default function SettingsPage() {
       <PageHead title="Settings" />
       <General />
       <TelegramBot />
+      <SupportBotCard />
       <ApiKeys />
     </>
   );

@@ -10,7 +10,6 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import type { SupportMessage } from '@repo/shared';
 import { randomToken, safeEqualHex, sha256 } from '../../common/crypto.js';
 import type { AppRequest, Tenant } from '../../common/principal.js';
 import { SecretBox } from '../../common/secret-box.js';
@@ -30,14 +29,6 @@ interface BotSecrets {
   botToken: string;
   webhookSecret: string;
 }
-
-const SUPPORT_TOPICS: Record<SupportMessage['topic'], string> = {
-  order: 'Заказ',
-  delivery: 'Доставка',
-  returns: 'Возврат',
-  product: 'Товар',
-  other: 'Другое',
-};
 
 const isHttps = (url?: string) => !!url && url.startsWith('https://');
 const trimSlash = (url: string) => url.replace(/\/+$/, '');
@@ -83,37 +74,24 @@ export class TelegramService {
     throw new ServiceUnavailableException('Telegram is not configured for this store');
   }
 
-  // ── storefront support ──
+  // ── team notifications ──
 
   /**
-   * Forwards a buyer's support message to every active store member with a linked Telegram account,
-   * through the store's bot. Plain text only (no parse_mode), so buyer input can't inject markup.
+   * Fallback delivery for support tickets when no support group is bound: a direct message from the store bot
+   * to every active member with a linked Telegram account. Best effort — the ticket is already saved.
    */
-  async sendSupport(storeSlug: string, msg: SupportMessage) {
-    const org = await this.db.organization.findFirst({ where: { slug: storeSlug, deletedAt: null, status: 'ACTIVE' }, select: { id: true, name: true } });
-    if (!org) throw new NotFoundException('Store not found');
+  async notifyTeam(organizationId: string, text: string) {
     const members = await this.db.organizationMember.findMany({
-      where: { organizationId: org.id, status: 'ACTIVE', user: { telegramAccount: { isNot: null } } },
+      where: { organizationId, status: 'ACTIVE', user: { telegramAccount: { isNot: null } } },
       select: { user: { select: { telegramAccount: { select: { telegramId: true } } } } },
     });
-    const chats = members.map((m) => Number(m.user.telegramAccount!.telegramId));
-    if (!chats.length) throw new ServiceUnavailableException('Support is unavailable right now');
-    const token = await this.botTokenFor(org.id);
-
-    const text = [
-      `Новое обращение в поддержку — ${org.name}`,
-      `Тема: ${SUPPORT_TOPICS[msg.topic]}`,
-      `От: ${msg.name} <${msg.email}>`,
-      ...(msg.orderNumber ? [`Заказ: ${msg.orderNumber}`] : []),
-      '',
-      msg.message,
-    ].join('\n');
-    const sent = await Promise.allSettled(chats.map((chat) => this.bot.sendMessage(token, chat, text)));
-    const failed = sent.filter((r) => r.status === 'rejected');
-    // A member who never opened the bot can't be messaged; that's fine as long as someone got it.
-    if (failed.length) this.logger.warn(`Support message: ${failed.length}/${chats.length} deliveries failed for ${storeSlug}`);
-    if (failed.length === chats.length) throw new ServiceUnavailableException('Support is unavailable right now');
-    return { ok: true };
+    if (!members.length) return;
+    const token = await this.botTokenFor(organizationId).catch(() => null);
+    if (!token) return;
+    const sent = await Promise.allSettled(members.map((m) => this.bot.sendMessage(token, Number(m.user.telegramAccount!.telegramId), text)));
+    // A member who never opened the bot can't be messaged.
+    const failed = sent.filter((r) => r.status === 'rejected').length;
+    if (failed) this.logger.warn(`Team notification: ${failed}/${members.length} deliveries failed`);
   }
 
   // ── sign-in ──
@@ -288,10 +266,10 @@ export class TelegramService {
       throw error;
     }
     const taken = await this.db.integration.findFirst({
-      where: { kind: 'TELEGRAM_BOT', organizationId: { not: tenant.organizationId }, publicConfig: { path: ['botId'], equals: me.id } },
+      where: { kind: 'TELEGRAM_BOT', publicConfig: { path: ['botId'], equals: me.id }, NOT: { organizationId: tenant.organizationId, provider: 'telegram' } },
       select: { id: true },
     });
-    if (taken) throw new ConflictException('This bot is already connected to another store');
+    if (taken) throw new ConflictException('This bot is already in use (another store, or your support bot)');
 
     const org = await this.db.organization.findUniqueOrThrow({ where: { id: tenant.organizationId }, select: { slug: true } });
     const secrets: BotSecrets = { botToken, webhookSecret: randomToken(24) };
@@ -335,7 +313,7 @@ export class TelegramService {
   /** Bot updates. Authentic only with the secret token Telegram echoes back (set at setWebhook). */
   async handleUpdate(integrationId: string, secretHeader: string | undefined, update: unknown) {
     const row = await this.db.integration.findFirst({
-      where: { id: integrationId, kind: 'TELEGRAM_BOT', status: 'ACTIVE' },
+      where: { id: integrationId, kind: 'TELEGRAM_BOT', provider: 'telegram', status: 'ACTIVE' },
       include: { organization: { select: { slug: true, name: true, status: true } } },
     });
     if (!row) throw new NotFoundException();

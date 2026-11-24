@@ -6,11 +6,23 @@ export const BOT_API = Symbol('BOT_API');
 
 export interface BotApi {
   getMe(token: string): Promise<{ id: number; username: string; first_name: string }>;
-  setWebhook(token: string, url: string, secretToken: string): Promise<void>;
+  setWebhook(token: string, url: string, secretToken: string, allowedUpdates?: string[]): Promise<void>;
   deleteWebhook(token: string): Promise<void>;
   setChatMenuButton(token: string, text: string, webAppUrl: string): Promise<void>;
   sendMessage(token: string, chatId: number, text: string, button?: { text: string; webAppUrl: string }): Promise<void>;
+  /** A message with one row of callback buttons; returns its message_id. */
+  sendButtons(token: string, chatId: number, text: string, buttons: CallbackButton[]): Promise<number>;
+  editButtons(token: string, chatId: number, messageId: number, text: string, buttons: CallbackButton[]): Promise<void>;
+  answerCallback(token: string, callbackQueryId: string, text?: string): Promise<void>;
 }
+
+export interface CallbackButton {
+  text: string;
+  /** callback_data, at most 64 bytes. */
+  data: string;
+}
+
+const keyboard = (buttons: CallbackButton[]) => ({ inline_keyboard: buttons.length ? [buttons.map((b) => ({ text: b.text, callback_data: b.data }))] : [] });
 
 export class BotApiError extends Error {}
 
@@ -32,8 +44,8 @@ export class HttpBotApi implements BotApi {
     return this.call<{ id: number; username: string; first_name: string }>(token, 'getMe');
   }
 
-  async setWebhook(token: string, url: string, secretToken: string) {
-    await this.call(token, 'setWebhook', { url, secret_token: secretToken, allowed_updates: ['message'], drop_pending_updates: true });
+  async setWebhook(token: string, url: string, secretToken: string, allowedUpdates = ['message']) {
+    await this.call(token, 'setWebhook', { url, secret_token: secretToken, allowed_updates: allowedUpdates, drop_pending_updates: true });
   }
 
   async deleteWebhook(token: string) {
@@ -50,5 +62,18 @@ export class HttpBotApi implements BotApi {
       text,
       ...(button ? { reply_markup: { inline_keyboard: [[{ text: button.text, web_app: { url: button.webAppUrl } }]] } } : {}),
     });
+  }
+
+  async sendButtons(token: string, chatId: number, text: string, buttons: CallbackButton[]) {
+    const sent = await this.call<{ message_id: number }>(token, 'sendMessage', { chat_id: chatId, text, reply_markup: keyboard(buttons) });
+    return sent.message_id;
+  }
+
+  async editButtons(token: string, chatId: number, messageId: number, text: string, buttons: CallbackButton[]) {
+    await this.call(token, 'editMessageText', { chat_id: chatId, message_id: messageId, text, reply_markup: keyboard(buttons) });
+  }
+
+  async answerCallback(token: string, callbackQueryId: string, text?: string) {
+    await this.call(token, 'answerCallbackQuery', { callback_query_id: callbackQueryId, ...(text ? { text } : {}) });
   }
 }

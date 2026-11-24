@@ -18,6 +18,7 @@ const NAV = [
   ['/size-charts', 'Size charts'],
   ['/media', 'Media'],
   ['/orders', 'Orders'],
+  ['/support', 'Support'],
   ['/storefront', 'Storefront'],
   ['/team', 'Team'],
   ['/billing', 'Billing'],
