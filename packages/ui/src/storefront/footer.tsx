@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { PaymentBadges } from './primitives';
 import { useStore } from './store-context';
 
 const heading = 'label-xs font-bold';
@@ -66,7 +65,6 @@ export function Footer() {
         <p className="label-xs text-muted-foreground">
           © {year} {store.name}. Все права защищены.
         </p>
-        <PaymentBadges />
       </div>
 
       <p

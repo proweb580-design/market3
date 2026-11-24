@@ -13,7 +13,7 @@ import { cn } from '../lib/utils';
 import { CheckoutError, placeOrder, quoteCart } from './checkout-client';
 import { ProductImage } from './media';
 import { PICKUP_CITY, type PickupPoint } from './pickup-points';
-import { QuantityStepper } from './primitives';
+import { PaymentBadges, QuantityStepper } from './primitives';
 import { useStore, variantFor } from './store-context';
 
 // The map (Leaflet + its CSS) loads only when the buyer opens the pickup picker.
@@ -348,6 +348,7 @@ export function CheckoutView() {
               <div className="flex-1">
                 <p className="font-medium">Оплата картой</p>
                 <p className="text-xs text-muted-foreground">любого банка, на защищённой странице</p>
+                <PaymentBadges className="mt-2" />
               </div>
               <span className="flex size-6 items-center justify-center rounded-full bg-foreground text-background">
                 <Check className="size-3.5" strokeWidth={3} />
