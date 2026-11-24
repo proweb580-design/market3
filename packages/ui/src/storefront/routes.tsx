@@ -4,6 +4,7 @@ import { CheckoutView } from './checkout-view';
 import { CollectionView } from './collection-view';
 import { getCollection, getProduct, getProducts, getStore } from './api';
 import { HomeView } from './home-view';
+import { InfoView, infoPage } from './info-view';
 import { LookbookView } from './lookbook-view';
 import { OrderView } from './order-view';
 import { ProductView } from './product-view';
@@ -128,6 +129,20 @@ export const LookbookRoute = ({ params }: { params: StoreParams }) => (
     <LookbookBody params={params} />
   </Suspense>
 );
+async function InfoBody({ params }: { params: ItemParams }) {
+  const { store: slug, slug: page } = await params;
+  const store = await getStore(slug);
+  const info = store && infoPage(page, store);
+  if (!info) notFound();
+  return <InfoView page={info} />;
+}
+
+export const InfoRoute = ({ params }: { params: ItemParams }) => (
+  <Suspense fallback={<PageSkeleton />}>
+    <InfoBody params={params} />
+  </Suspense>
+);
+
 export const WishlistRoute = () => <WishlistView />;
 export const CheckoutRoute = () => <CheckoutView />;
 
