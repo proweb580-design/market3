@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import { notFound } from 'next/navigation';
 import { Suspense, type ReactNode } from 'react';
 import { CheckoutView } from './checkout-view';
@@ -46,11 +48,29 @@ async function StoreLayoutBody({
   );
 }
 
+/** Tab title: the store's name, and "<page> — <store>" on inner pages. */
+export async function storeMetadata(params: StoreParams): Promise<Metadata> {
+  const { store: slug } = await params;
+  const name = (await getStore(slug))?.name;
+  return name ? { title: { default: name, template: `%s — ${name}` } } : {};
+}
+
+// Stores render on request anyway; saying so lets storeMetadata read params without blocking prefetch.
+async function DynamicMarker() {
+  await connection();
+  return null;
+}
+
 export function StoreLayoutRoute(props: Parameters<typeof StoreLayoutBody>[0]) {
   return (
-    <Suspense fallback={<ShellSkeleton />}>
-      <StoreLayoutBody {...props} />
-    </Suspense>
+    <>
+      <Suspense>
+        <DynamicMarker />
+      </Suspense>
+      <Suspense fallback={<ShellSkeleton />}>
+        <StoreLayoutBody {...props} />
+      </Suspense>
+    </>
   );
 }
 

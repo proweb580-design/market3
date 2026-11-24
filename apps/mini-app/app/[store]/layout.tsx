@@ -1,5 +1,7 @@
-import { StoreLayoutRoute } from '@repo/ui/storefront/routes';
+import { StoreLayoutRoute, storeMetadata } from '@repo/ui/storefront/routes';
 import { TelegramBridge } from '../telegram-bridge';
+
+export const generateMetadata = ({ params }: LayoutProps<'/[store]'>) => storeMetadata(params);
 
 export default function StoreLayout({ children, params }: LayoutProps<'/[store]'>) {
   return (
