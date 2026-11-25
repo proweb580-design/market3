@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@repo/ui/components/ui/button';
+import { Skeleton } from '@repo/ui/components/ui/skeleton';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../auth-provider';
-import { Orders, Section, type Me } from './sections';
+import { Orders, OrdersSkeleton, Section, type Me } from './sections';
 
 export default function AccountPage() {
   const router = useRouter();
@@ -36,21 +37,28 @@ export default function AccountPage() {
       </main>
     );
   }
-  if (!me) return <main className="mx-auto max-w-xl px-6 py-24"><p className="text-xs text-muted-foreground" aria-busy="true">Загрузка…</p></main>;
-
+  // The page frame renders at once; orders start loading in parallel with /auth/me instead of after it.
   return (
     <main className="mx-auto max-w-xl px-6 py-16">
       <Link href="/" className="label-xs text-muted-foreground hover:text-foreground">← Вернуться в магазин</Link>
       <div className="mt-8 flex items-end justify-between gap-4">
-        <div>
-          <p className="label-xs text-muted-foreground">Аккаунт</p>
-          <h1 className="title-xl text-4xl">{me.profile?.displayName || me.email || 'Мой аккаунт'}</h1>
-          {me.email && <p className="mt-1 text-xs text-muted-foreground">{me.email}</p>}
-        </div>
-        <Button variant="outline" onClick={leave}>Выйти</Button>
+        {me ? (
+          <div>
+            <p className="label-xs text-muted-foreground">Аккаунт</p>
+            <h1 className="title-xl text-4xl">{me.profile?.displayName || me.email || 'Мой аккаунт'}</h1>
+            {me.email && <p className="mt-1 text-xs text-muted-foreground">{me.email}</p>}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2" aria-busy="true" aria-label="Загрузка аккаунта">
+            <p className="label-xs text-muted-foreground">Аккаунт</p>
+            <Skeleton className="h-9 w-56" />
+            <Skeleton className="h-3 w-40" />
+          </div>
+        )}
+        <Button variant="outline" onClick={leave} disabled={status !== 'signedIn'}>Выйти</Button>
       </div>
 
-      {me.organizations.length > 0 && (
+      {me && me.organizations.length > 0 && (
         <Section title="Мои магазины">
           <ul className="flex flex-col gap-2 text-xs">
             {me.organizations.map((o) => (
@@ -63,7 +71,7 @@ export default function AccountPage() {
         </Section>
       )}
 
-      <Section title="История заказов"><Orders /></Section>
+      <Section title="История заказов">{status === 'signedIn' ? <Orders /> : <OrdersSkeleton />}</Section>
     </main>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
+import { Skeleton } from '@repo/ui/components/ui/skeleton';
 import { formatMoney } from '@repo/ui/lib/format';
 import { api, ApiError } from '../../lib/api';
 
@@ -40,6 +41,25 @@ interface OrderRow {
 
 const STATUS_LABEL: Record<string, string> = { PENDING_PAYMENT: 'Ожидает оплаты', PAID: 'Оплачен', FULFILLED: 'Отправлен', CANCELED: 'Отменён', REFUNDED: 'Возвращён' };
 
+export function OrdersSkeleton() {
+  return (
+    <ul className="divide-y divide-border" aria-busy="true" aria-label="Загружаем заказы">
+      {Array.from({ length: 3 }, (_, i) => (
+        <li key={i} className="flex items-center justify-between gap-4 py-3">
+          <span className="flex flex-col gap-2">
+            <Skeleton className="h-3 w-40" />
+            <Skeleton className="h-3 w-56" />
+          </span>
+          <span className="flex flex-col items-end gap-2">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-12" />
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function Orders() {
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +78,7 @@ export function Orders() {
   }, []);
 
   if (error) return <p role="alert" className="text-xs text-destructive">{error}</p>;
-  if (!orders) return <p className="text-xs text-muted-foreground" aria-busy="true">Загружаем заказы…</p>;
+  if (!orders) return <OrdersSkeleton />;
   if (orders.length === 0) return <p className="text-xs text-muted-foreground">Заказов пока нет.</p>;
   return (
     <ul className="divide-y divide-border">
