@@ -70,7 +70,7 @@ function TelegramBot() {
               </>
             ) : (
               <>
-                <p className="text-muted-foreground">{s.usingPlatformBot ? 'Сейчас магазин открывается через бота платформы.' : 'Бот не подключён.'} Чтобы подключить свой: создайте бота в @BotFather (/newbot), скопируйте токен и вставьте его сюда. Токен хранится в зашифрованном виде (нужен тариф с Telegram-магазином).</p>
+                <p className="text-muted-foreground">{s.usingPlatformBot ? 'Сейчас магазин открывается через бота платформы.' : 'Бот не подключён.'} Чтобы подключить свой: создайте бота в @BotFather (/newbot), скопируйте токен и вставьте его сюда. Токен хранится в зашифрованном виде.</p>
                 <form onSubmit={(e) => { e.preventDefault(); void connect(); }} className="flex w-full max-w-md items-end gap-2">
                   <div className="flex-1"><TextField label="Токен бота" value={token} onChange={setToken} type="password" /></div>
                   <Button type="submit" disabled={busy || !token}>{busy ? 'Подключаем…' : 'Подключить'}</Button>

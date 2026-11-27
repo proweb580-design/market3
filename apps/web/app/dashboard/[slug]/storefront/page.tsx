@@ -202,7 +202,6 @@ function Editor({ initial }: { initial: Doc }) {
           <TextField label="Когда закончится" type="datetime-local" value={dropAt} onChange={setDropAt} />
         </div>
         <PanelEditor panel={sec.drop.panel} onChange={(panel) => setSec('drop', { panel })} />
-        <p className="text-[11px] text-muted-foreground">Нужен тариф с отсчётом до дропа.</p>
       </Block>
 
       <Block title="Плитки коллекций" enabled={sec.collections.enabled} onEnabled={(enabled) => setSec('collections', { enabled })}>
@@ -249,7 +248,6 @@ function Editor({ initial }: { initial: Doc }) {
             ))}
             <p className="text-[11px] text-muted-foreground">Чтобы добавить фото, выберите или загрузите его ниже.</p>
             <NewLookbookItem orgId={org.id} onAdd={(mediaId) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: [...d.lookbook.items, { mediaId, tag: '', title: '', caption: '' }] } }))} />
-            <p className="text-[11px] text-muted-foreground">Нужен тариф с лукбуком.</p>
           </>
         )}
       </Block>

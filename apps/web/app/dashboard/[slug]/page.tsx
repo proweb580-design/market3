@@ -3,22 +3,15 @@
 import Link from 'next/link';
 import { Button } from '@repo/ui/components/ui/button';
 import { formatMoney } from '@repo/ui/lib/format';
-import { Async, Card, PageHead, STATUS_LABEL, SUBSCRIPTION_LABEL, date, dateTime, roleName, useLoad } from '../kit';
+import { Async, Card, PageHead, STATUS_LABEL, dateTime, roleName, useLoad } from '../kit';
 import { useOrg } from '../org-context';
 
-interface Subscription {
-  plan: { name: string; code: string } | null;
-  subscription: { status: string; currentPeriodEnd: string } | null;
-  features: Record<string, { enabled: boolean; limit: number | null }>;
-  usage: Record<string, number>;
-}
 interface OrderRow { id: string; number: number; status: string; currency: string; totalMinor: number; contactEmail: string | null; createdAt: string }
 
 /** The owner's home: what needs doing now, the latest orders, shortcuts. */
 export default function Overview() {
   const org = useOrg();
   const base = `/dashboard/${org.slug}`;
-  const sub = useLoad<Subscription>(`/organizations/${org.id}/subscription`);
   const toShip = useLoad<{ total: number }>(`/organizations/${org.id}/orders?status=PAID&pageSize=1`);
   const unpaid = useLoad<{ total: number }>(`/organizations/${org.id}/orders?status=PENDING_PAYMENT&pageSize=1`);
   const tickets = useLoad<{ open: number }>(`/organizations/${org.id}/support/tickets?pageSize=1`);
@@ -71,23 +64,6 @@ export default function Overview() {
         </Async>
       </Card>
 
-      <Card title="Тариф">
-        <Async state={sub}>
-          {(s) => {
-            const limit = s.features['products.max']?.limit;
-            return (
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                <p>
-                  <b>{s.plan?.name ?? 'Не выбран'}</b>
-                  {s.subscription && s.plan?.code !== 'FREE' ? ` · ${SUBSCRIPTION_LABEL[s.subscription.status] ?? s.subscription.status} до ${date(s.subscription.currentPeriodEnd)}` : ''}
-                  <span className="text-muted-foreground"> · товаров: {s.usage['products.max'] ?? 0}{limit === null || limit === undefined ? '' : ` из ${limit}`}</span>
-                </p>
-                <Link href={`${base}/billing`} className="underline">Сменить тариф</Link>
-              </div>
-            );
-          }}
-        </Async>
-      </Card>
     </>
   );
 }

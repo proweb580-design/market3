@@ -12,23 +12,8 @@ export const STATUS_LABEL: Record<string, string> = { PENDING_PAYMENT: 'Ждёт
 export const PRODUCT_STATUS: Record<string, string> = { ACTIVE: 'В продаже', DRAFT: 'Черновик', ARCHIVED: 'В архиве' };
 export const SOURCE_LABEL: Record<string, string> = { WEB: 'сайт', TELEGRAM: 'Telegram', API: 'API' };
 export const PAYMENT_LABEL: Record<string, string> = { PENDING: 'ожидает', SUCCEEDED: 'оплачено', FAILED: 'ошибка', CANCELED: 'отменено', REFUNDED: 'возвращено', PARTIALLY_REFUNDED: 'частичный возврат' };
-export const SUBSCRIPTION_LABEL: Record<string, string> = { TRIALING: 'пробный период', ACTIVE: 'активен', PAST_DUE: 'просрочен', CANCELED: 'отменён', EXPIRED: 'истёк' };
 const ROLE_LABEL: Record<string, string> = { ORG_OWNER: 'Владелец', ORG_ADMIN: 'Администратор', ORG_MANAGER: 'Менеджер', ORG_STAFF: 'Сотрудник' };
 export const roleName = (r: { key: string; name: string }) => ROLE_LABEL[r.key] ?? r.name;
-export const FEATURE_LABEL: Record<string, string> = {
-  'products.max': 'Товаров в каталоге',
-  'members.max': 'Сотрудников',
-  'storage.mb': 'Место для фото, МБ',
-  'api.requests_per_day': 'Запросов к API в день',
-  api_access: 'API и ключи доступа',
-  telegram_mini_app: 'Магазин внутри Telegram',
-  custom_domain: 'Свой домен',
-  lookbook: 'Лукбук',
-  music_player: 'Музыкальный плеер',
-  drop_countdown: 'Отсчёт до дропа',
-  remove_branding: 'Без логотипа платформы',
-};
-
 export const date = (iso: string) => new Date(iso).toLocaleDateString('ru-RU');
 export const dateTime = (iso: string) => new Date(iso).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' });
 

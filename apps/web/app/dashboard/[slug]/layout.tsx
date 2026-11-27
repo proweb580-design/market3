@@ -24,7 +24,6 @@ const NAV = [
 const MORE = [
   ['/size-charts', 'Таблицы размеров'],
   ['/team', 'Сотрудники'],
-  ['/billing', 'Тариф'],
 ] as const;
 
 /** Loads the store's own details (currency) before showing any page that prints prices. */
@@ -57,7 +56,7 @@ export default function OrgLayout({ children }: { children: ReactNode }) {
     return (
       <main className="px-6 py-10 text-sm">
         <p>Магазин не найден, или у вас нет к нему доступа.</p>
-        <Link href="/dashboard" className="mt-4 inline-block underline">← Мои магазины</Link>
+        <Link href="/account" className="mt-4 inline-block underline">← В аккаунт</Link>
       </main>
     );
   }
