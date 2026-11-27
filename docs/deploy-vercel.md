@@ -42,6 +42,7 @@ pnpm --filter @repo/api db:seed-demo
 | `PUBLIC_WEB_URL` | `https://market3-web.vercel.app` | нет |
 | `PUBLIC_MINI_APP_URL` | `https://market3-mini-app.vercel.app` | нет |
 | `PLAN_LIMITS` | не задавать (= `false`): один владелец, все функции без лимитов. `true` — платформа с тарифами для многих брендов | нет |
+| `OWNER_LOGIN` | не задавать (= `admin`): короткий логин владельца в кабинете вместо email. Нужен `SUPABASE_SERVICE_ROLE_KEY` | нет |
 | `PUBLIC_API_URL` | адрес самого API (`https://market3-api.vercel.app`) | нет |
 | `TELEGRAM_BOT_TOKEN` | токен бота из @BotFather | да |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API → `service_role` / secret key. **Только здесь**, для загрузки фото в кабинете бренда | да |

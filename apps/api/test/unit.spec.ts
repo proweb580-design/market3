@@ -112,6 +112,20 @@ describe('global rate limit', () => {
   });
 });
 
+describe('owner short login', () => {
+  it('refuses any other login, and says so when Supabase is not configured — without touching the network', async () => {
+    const t = await createTestApp();
+    try {
+      const post = (login: string) => t.http().post('/api/v1/auth/owner-login').send({ login, password: 'whatever' });
+      await post('root').expect(401);
+      await post(' Admin ').expect(503); // the right login (trimmed, any case), but no SUPABASE_SERVICE_ROLE_KEY in tests
+      await t.http().post('/api/v1/auth/owner-login').send({ login: 'admin' }).expect(400);
+    } finally {
+      await t.close();
+    }
+  });
+});
+
 describe('EntitlementsService plan switch', () => {
   // Free plan: no Telegram, 10 products; the store already has 10.
   const db = {

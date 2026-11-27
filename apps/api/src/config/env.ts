@@ -44,6 +44,8 @@ const envSchema = z
      * whatever the subscription says. Turn on to run the platform as a paid service for many brands.
      */
     PLAN_LIMITS: z.stringbool().default(false),
+    /** Short login for the store owner on the dashboard sign-in ("admin" + their own password); it stands for the owner's email. */
+    OWNER_LOGIN: z.string().trim().min(3).max(64).default('admin'),
 
     // Telegram Mini App.
     /** Platform bot (from @BotFather): opens any store. Brands may connect their own bot instead. Server-only. */

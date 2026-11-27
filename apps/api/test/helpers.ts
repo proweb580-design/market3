@@ -64,7 +64,7 @@ export async function createTestApp(envOverrides: Record<string, string> = {}, o
       parseEnv({
         NODE_ENV: 'test',
         CORS_ORIGINS: 'http://localhost:3000',
-        DATABASE_URL: TEST_DB ?? 'postgresql://nobody:nothing@127.0.0.1:1/none',
+        DATABASE_URL: TEST_DB || 'postgresql://nobody:nothing@127.0.0.1:1/none',
         THROTTLE_LIMIT: '100000',
         PLAN_LIMITS: 'true',
         ...envOverrides,
@@ -84,7 +84,7 @@ export async function createTestApp(envOverrides: Record<string, string> = {}, o
   await app.init();
 
   const http = () => request(app.getHttpServer());
-  const db: Db = createPrismaClient(TEST_DB ?? 'postgresql://nobody:nothing@127.0.0.1:1/none');
+  const db: Db = createPrismaClient(TEST_DB || 'postgresql://nobody:nothing@127.0.0.1:1/none');
 
   async function sign(o: TokenOptions = {}) {
     const claims: Record<string, unknown> = { user_metadata: { email_verified: o.emailVerified ?? true } };
