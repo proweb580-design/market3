@@ -31,14 +31,7 @@ export function MenuSheet() {
         </nav>
         <div className="mt-auto flex items-center justify-between border-t border-border px-6 py-5">
           <div>{variant === 'web' && store.telegramBot && <TelegramIconLink bot={store.telegramBot} className="size-9" />}</div>
-          {variant === 'web' && (
-            <div className="flex items-center gap-4">
-              <Link href="/login" onClick={close} className="label-xs hover:opacity-60">
-                Аккаунт
-              </Link>
-              <ThemeToggle className="inline-flex size-8 items-center justify-center" />
-            </div>
-          )}
+          {variant === 'web' && <ThemeToggle className="inline-flex size-8 items-center justify-center" />}
         </div>
       </SheetContent>
     </Sheet>
