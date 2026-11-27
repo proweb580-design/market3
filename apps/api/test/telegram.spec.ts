@@ -63,6 +63,7 @@ describe.skipIf(!TEST_DB)('Telegram Mini App sign-in, sessions, linking and bran
     deleteWebhook: vi.fn<BotApi['deleteWebhook']>(async () => undefined),
     setChatMenuButton: vi.fn<BotApi['setChatMenuButton']>(async () => undefined),
     sendMessage: vi.fn<BotApi['sendMessage']>(async () => undefined),
+    sendPhoto: vi.fn<BotApi['sendPhoto']>(async () => undefined),
     sendButtons: vi.fn<BotApi['sendButtons']>(async () => 777),
     editButtons: vi.fn<BotApi['editButtons']>(async () => undefined),
     answerCallback: vi.fn<BotApi['answerCallback']>(async () => undefined),
@@ -217,7 +218,7 @@ describe.skipIf(!TEST_DB)('Telegram Mini App sign-in, sessions, linking and bran
       expect(res.body).toMatchObject({ connected: true, bot: { username: 'brand_bot', webhook: true, menuButton: true } });
       expect(JSON.stringify(res.body)).not.toContain(BRAND_BOT);
       expect(bot.setWebhook).toHaveBeenCalledWith(BRAND_BOT, expect.stringMatching(/^https:\/\/api\.example\.com\/api\/v1\/telegram\/webhook\/[0-9a-f-]{36}$/), expect.any(String));
-      expect(bot.setChatMenuButton).toHaveBeenCalledWith(BRAND_BOT, 'Open store', `https://mini.example.com/${org.slug}`);
+      expect(bot.setChatMenuButton).toHaveBeenCalledWith(BRAND_BOT, '🛍 Магазин', `https://mini.example.com/${org.slug}`);
 
       const row = await t.db.integration.findFirstOrThrow({ where: { organizationId: org.id } });
       expect(row.secretEncrypted).not.toContain(BRAND_BOT.split(':')[1]);
@@ -254,13 +255,23 @@ describe.skipIf(!TEST_DB)('Telegram Mini App sign-in, sessions, linking and bran
       await owner.put(`/organizations/${org.id}/integrations/telegram`, { botToken: token }).expect(200);
       const [, url, secret] = bot.setWebhook.mock.calls[0]!;
       const path = new URL(url).pathname;
-      const update = { update_id: 1, message: { message_id: 1, text: '/start', chat: { id: 555, type: 'private' } } };
+      const update = { update_id: 1, message: { message_id: 1, text: '/start', chat: { id: 555, type: 'private' }, from: { id: 555, first_name: 'Ann' } } };
 
       await t.http().post(path).send(update).expect(401);
       await t.http().post(path).set('X-Telegram-Bot-Api-Secret-Token', 'wrong').send(update).expect(401);
       expect(bot.sendMessage).not.toHaveBeenCalled();
       await t.http().post(path).set('X-Telegram-Bot-Api-Secret-Token', secret).send(update).expect(200, { ok: true });
-      expect(bot.sendMessage).toHaveBeenCalledWith(token, 555, expect.stringContaining(org.slug.replace(/^org-/, 'Org org-')), { text: 'Open store', webAppUrl: `https://mini.example.com/${org.slug}` });
+      // No hero photo yet: a text greeting with the open-store button.
+      const storeUrl = `https://mini.example.com/${org.slug}`;
+      expect(bot.sendMessage).toHaveBeenCalledWith(token, 555, expect.stringMatching(new RegExp(`^Здравствуйте, Ann![^]*${org.slug.replace(/^org-/, 'Org org-')}`)), { text: '🛍 Открыть магазин', webAppUrl: storeUrl });
+      expect(bot.sendPhoto).not.toHaveBeenCalled();
+      // With a hero photo: the photo (demo paths resolved against the Mini App host) with Mini App buttons.
+      await t.db.homeSection.create({ data: { organizationId: org.id, type: 'HERO', config: { panels: [{ type: 'art', from: '#000', to: '#111', alt: '' }, { type: 'image', src: '/demo/hero-1.webp', alt: '' }] } } });
+      await t.http().post(path).set('X-Telegram-Bot-Api-Secret-Token', secret).send(update).expect(200);
+      expect(bot.sendPhoto).toHaveBeenCalledWith(token, 555, 'https://mini.example.com/demo/hero-1.webp', expect.stringContaining('Ann'), [
+        [{ text: '🛍 Открыть магазин', webAppUrl: storeUrl }],
+        [{ text: '♡ Избранное', webAppUrl: `${storeUrl}/wishlist` }],
+      ]);
       await t.http().post(`/api/v1/telegram/webhook/${randomUUID()}`).set('X-Telegram-Bot-Api-Secret-Token', secret).send(update).expect(404);
 
       await owner.del(`/organizations/${org.id}/integrations/telegram`).expect(204);

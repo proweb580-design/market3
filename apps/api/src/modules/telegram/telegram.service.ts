@@ -289,7 +289,7 @@ export class TelegramService {
     }
     if (isHttps(this.env.PUBLIC_MINI_APP_URL)) {
       await this.bot
-        .setChatMenuButton(botToken, 'Open store', this.storeUrl(org.slug))
+        .setChatMenuButton(botToken, '🛍 Магазин', this.storeUrl(org.slug))
         .then(() => (publicConfig.menuButton = true))
         .catch((e: unknown) => this.logger.warn(`setChatMenuButton failed: ${String(e)}`));
     }
@@ -320,15 +320,41 @@ export class TelegramService {
     const secrets = this.openSecrets(row.secretEncrypted);
     if (!secretHeader || !safeEqualHex(sha256(secretHeader), sha256(secrets.webhookSecret))) throw new UnauthorizedException();
 
-    const message = (update as { message?: { text?: string; chat?: { id?: number } } })?.message;
+    const message = (update as { message?: { text?: string; chat?: { id?: number }; from?: { first_name?: string } } })?.message;
     const chatId = message?.chat?.id;
     if (typeof chatId === 'number' && message?.text?.startsWith('/start') && row.organization.status === 'ACTIVE') {
-      const url = this.storeUrl(row.organization.slug);
-      await this.bot
-        .sendMessage(secrets.botToken, chatId, `${row.organization.name} — tap to open the store.`, isHttps(url) ? { text: 'Open store', webAppUrl: url } : undefined)
-        .catch((e: unknown) => this.logger.warn(`sendMessage failed: ${String(e)}`));
+      await this.sendWelcome(secrets.botToken, chatId, row.organizationId, row.organization, message.from?.first_name);
     }
     return { ok: true };
+  }
+
+  /** /start: a greeting, then the store's first hero photo with Mini App buttons; plain text when there is no usable photo. */
+  private async sendWelcome(token: string, chatId: number, organizationId: string, org: { slug: string; name: string }, firstName?: string) {
+    const url = this.storeUrl(org.slug);
+    const greeting = `Здравствуйте${firstName ? `, ${firstName}` : ''}! 👋
+
+Это ${org.name}. Каталог, корзина, избранное и заказы — в мини-приложении, прямо в Telegram.`;
+    const fallback = () =>
+      this.bot.sendMessage(token, chatId, greeting, isHttps(url) ? { text: '🛍 Открыть магазин', webAppUrl: url } : undefined).catch((e: unknown) => this.logger.warn(`sendMessage failed: ${String(e)}`));
+
+    const photo = isHttps(url) ? await this.heroPhoto(organizationId) : null;
+    if (!photo) return fallback();
+    await this.bot
+      .sendPhoto(token, chatId, photo, greeting, [[{ text: '🛍 Открыть магазин', webAppUrl: url }], [{ text: '♡ Избранное', webAppUrl: `${url}/wishlist` }]])
+      .catch((e: unknown) => {
+        this.logger.warn(`sendPhoto failed, sending text: ${String(e)}`);
+        return fallback();
+      });
+  }
+
+  /** Absolute HTTPS URL of the first photo in the store's hero section (demo photos live on the Mini App's own host). */
+  private async heroPhoto(organizationId: string) {
+    const hero = await this.db.homeSection.findFirst({ where: { organizationId, type: 'HERO', isEnabled: true }, select: { config: true } });
+    const panels = (hero?.config as { panels?: { type: string; src?: string }[] } | null)?.panels ?? [];
+    const src = panels.find((p) => p.type === 'image' && p.src)?.src;
+    if (!src) return null;
+    const abs = src.startsWith('/') ? `${trimSlash(this.env.PUBLIC_MINI_APP_URL)}${src}` : src;
+    return isHttps(abs) ? abs : null;
   }
 }
 

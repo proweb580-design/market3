@@ -10,10 +10,17 @@ export interface BotApi {
   deleteWebhook(token: string): Promise<void>;
   setChatMenuButton(token: string, text: string, webAppUrl: string): Promise<void>;
   sendMessage(token: string, chatId: number, text: string, button?: { text: string; webAppUrl: string }): Promise<void>;
+  /** A photo (by HTTPS URL) with a caption and rows of Mini App buttons. */
+  sendPhoto(token: string, chatId: number, photoUrl: string, caption: string, rows: WebAppButton[][]): Promise<void>;
   /** A message with one row of callback buttons; returns its message_id. */
   sendButtons(token: string, chatId: number, text: string, buttons: CallbackButton[]): Promise<number>;
   editButtons(token: string, chatId: number, messageId: number, text: string, buttons: CallbackButton[]): Promise<void>;
   answerCallback(token: string, callbackQueryId: string, text?: string): Promise<void>;
+}
+
+export interface WebAppButton {
+  text: string;
+  webAppUrl: string;
 }
 
 export interface CallbackButton {
@@ -61,6 +68,15 @@ export class HttpBotApi implements BotApi {
       chat_id: chatId,
       text,
       ...(button ? { reply_markup: { inline_keyboard: [[{ text: button.text, web_app: { url: button.webAppUrl } }]] } } : {}),
+    });
+  }
+
+  async sendPhoto(token: string, chatId: number, photoUrl: string, caption: string, rows: WebAppButton[][]) {
+    await this.call(token, 'sendPhoto', {
+      chat_id: chatId,
+      photo: photoUrl,
+      caption,
+      reply_markup: { inline_keyboard: rows.map((r) => r.map((b) => ({ text: b.text, web_app: { url: b.webAppUrl } }))) },
     });
   }
 

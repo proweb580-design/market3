@@ -36,9 +36,10 @@ Mini App ──POST /api/v1/telegram/auth { initData, store }──▶ API
 
 **Бот бренда** (кабинет, право `org.integrations.manage`, тариф с `telegram_mini_app`):
 `PUT /organizations/:orgId/integrations/telegram { botToken }` → проверка токена через `getMe` → шифрованное хранение →
-`setWebhook` (если задан HTTPS `PUBLIC_API_URL`) и кнопка меню «Open store» (если HTTPS `PUBLIC_MINI_APP_URL`).
+`setWebhook` (если задан HTTPS `PUBLIC_API_URL`) и кнопка меню «🛍 Магазин» (если HTTPS `PUBLIC_MINI_APP_URL`).
 Webhook бота `/telegram/webhook/:id` принимает обновления только с секретным заголовком `X-Telegram-Bot-Api-Secret-Token`;
-на `/start` бот отвечает кнопкой открытия магазина. Токен из API никогда не возвращается.
+на `/start` бот здоровается по имени и присылает первое фото из hero-блока витрины с кнопками «Открыть магазин» и «Избранное»
+(нет фото или Telegram его не принял — тот же текст с кнопкой магазина). Токен из API никогда не возвращается.
 
 ## Настройка
 
