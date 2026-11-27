@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatMoney } from '../lib/format';
@@ -215,26 +215,32 @@ export function DropCountdown() {
   const parts: [string, number | null][] = [
     ['Дней', s === null ? null : Math.floor(s / 86400)],
     ['Часов', s === null ? null : Math.floor(s / 3600) % 24],
-    ['Мин', s === null ? null : Math.floor(s / 60) % 60],
-    ['Сек', s === null ? null : s % 60],
+    ['Минут', s === null ? null : Math.floor(s / 60) % 60],
+    ['Секунд', s === null ? null : s % 60],
   ];
 
   return (
     <section className="px-page pt-24" aria-label={drop.title}>
       <div className="reveal relative h-[min(46vw,520px)] min-h-[320px] overflow-hidden rounded-sm">
         <PanelView panel={drop.panel} />
-        <div className="absolute inset-0 bg-black/45" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-black/30" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center text-white sm:px-6">
           <p className="label-xs opacity-80">{drop.eyebrow}</p>
           <h2 className="title-xl mt-2 max-w-[14ch] text-4xl sm:text-6xl">{drop.title}</h2>
-          <div className="mt-6 flex gap-5 sm:gap-8" role="timer" aria-live="off">
-            {parts.map(([label, value]) => (
-              <div key={label} className="flex flex-col items-center">
-                <span key={value} className="title-xl text-3xl tabular-nums sm:text-4xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-2 motion-safe:duration-300">
-                  {value === null ? '--' : String(value).padStart(2, '0')}
-                </span>
-                <span className="label-xs mt-1 opacity-70">{label}</span>
-              </div>
+          <div className="mt-8 flex items-start gap-1.5 sm:gap-3" role="timer" aria-live="off">
+            {parts.map(([label, value], i) => (
+              <Fragment key={label}>
+                {i > 0 && <span aria-hidden className="title-xl pt-3 text-2xl text-white/35 sm:pt-5 sm:text-4xl">:</span>}
+                {/* Frosted tile with a fixed minimum width, so the row doesn't shift as digits change. */}
+                <div className="flex min-w-14 flex-col items-center rounded-md border border-white/15 bg-white/10 px-2 py-3 backdrop-blur-md sm:min-w-24 sm:py-5">
+                  <span className="overflow-hidden">
+                    <span key={value} className="title-xl block text-2xl leading-none tabular-nums sm:text-5xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-2 motion-safe:duration-300">
+                      {value === null ? '--' : String(value).padStart(2, '0')}
+                    </span>
+                  </span>
+                  <span className="mt-2 text-[9px] uppercase tracking-[0.14em] text-white/60 sm:text-[10px]">{label}</span>
+                </div>
+              </Fragment>
             ))}
           </div>
         </div>
