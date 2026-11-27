@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@repo/ui/components/ui/button';
 import { api } from '../../../../lib/api';
-import { ActionButton, Async, Card, ErrorLine, PageHead, Select, TextField, errText, useLoad } from '../../kit';
+import { ActionButton, Async, Card, ErrorLine, PageHead, Select, TextField, date, errText, roleName, useLoad } from '../../kit';
 import { useOrg } from '../../org-context';
 
 interface Member {
@@ -43,12 +43,12 @@ function Invite({ roles, onDone }: { roles: Role[]; onDone: () => void }) {
   return (
     <form onSubmit={(e) => { e.preventDefault(); void send(); }} className="flex flex-wrap items-end gap-3">
       <TextField label="Email" type="email" value={email} onChange={setEmail} />
-      <Select label="Role" value={roleId} onChange={setRoleId} options={roles.map((r) => ({ value: r.id, label: r.name }))} />
-      <Button type="submit" disabled={busy || !email}>{busy ? 'Inviting…' : 'Invite'}</Button>
+      <Select label="Роль" value={roleId} onChange={setRoleId} options={roles.map((r) => ({ value: r.id, label: roleName(r) }))} />
+      <Button type="submit" disabled={busy || !email}>{busy ? 'Приглашаем…' : 'Пригласить'}</Button>
       <div className="w-full"><ErrorLine error={error} /></div>
       {link && (
         <p role="status" className="w-full break-all text-xs">
-          Send this link to the person (it is shown only once and works for 7 days): <b>{link}</b>
+          Отправьте эту ссылку сотруднику (показывается один раз, действует 7 дней): <b>{link}</b>
         </p>
       )}
     </form>
@@ -75,20 +75,20 @@ export default function TeamPage() {
 
   return (
     <>
-      <PageHead title="Team" subtitle="People who can work in this store." />
-      <Card title="Members">
+      <PageHead title="Сотрудники" subtitle="Кто может работать в этом магазине." />
+      <Card title="Команда">
         <ErrorLine error={error} />
         <Async state={members}>
           {(rows) => (
             <ul className="divide-y divide-border text-xs">
               {rows.map((m) => (
                 <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 py-2">
-                  <span><b>{m.user.profile?.displayName ?? m.user.email}</b><span className="block text-muted-foreground">{m.user.email}{m.status !== 'ACTIVE' ? ` · ${m.status.toLowerCase()}` : ''}</span></span>
+                  <span><b>{m.user.profile?.displayName ?? m.user.email}</b><span className="block text-muted-foreground">{m.user.email}{m.status !== 'ACTIVE' ? ' · приостановлен' : ''}</span></span>
                   <span className="flex items-center gap-2">
-                    <select aria-label={`Role of ${m.user.email}`} value={m.role.id} onChange={(e) => void changeRole(m.id, e.target.value)} className="h-8 rounded-md border border-input bg-transparent px-2 text-xs">
-                      {(roles.data ?? [m.role]).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                    <select aria-label={`Роль ${m.user.email}`} value={m.role.id} onChange={(e) => void changeRole(m.id, e.target.value)} className="h-8 rounded-md border border-input bg-transparent px-2 text-xs">
+                      {(roles.data ?? [m.role]).map((r) => <option key={r.id} value={r.id}>{roleName(r)}</option>)}
                     </select>
-                    <ActionButton variant="outline" confirm={`Remove ${m.user.email ?? 'this member'} from the store?`} run={async () => { await api(`/organizations/${org.id}/members/${m.id}`, { method: 'DELETE' }); await members.reload(); }}>Remove</ActionButton>
+                    <ActionButton variant="outline" confirm={`Убрать ${m.user.email ?? 'сотрудника'} из магазина?`} run={async () => { await api(`/organizations/${org.id}/members/${m.id}`, { method: 'DELETE' }); await members.reload(); }}>Убрать</ActionButton>
                   </span>
                 </li>
               ))}
@@ -96,20 +96,20 @@ export default function TeamPage() {
           )}
         </Async>
       </Card>
-      <Card title="Invite someone">
+      <Card title="Пригласить сотрудника">
         <Async state={roles}>{(r) => <Invite roles={r} onDone={() => void invites.reload()} />}</Async>
       </Card>
-      <Card title="Pending invitations">
+      <Card title="Приглашения">
         <Async state={invites}>
           {(rows) =>
             rows.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No pending invitations.</p>
+              <p className="text-xs text-muted-foreground">Нет ожидающих приглашений.</p>
             ) : (
               <ul className="divide-y divide-border text-xs">
                 {rows.map((i) => (
                   <li key={i.id} className="flex items-center justify-between gap-3 py-2">
-                    <span><b>{i.email}</b> <span className="text-muted-foreground">as {i.role.name} · expires {new Date(i.expiresAt).toLocaleDateString()}</span></span>
-                    <ActionButton variant="outline" run={async () => { await api(`/organizations/${org.id}/invitations/${i.id}`, { method: 'DELETE' }); await invites.reload(); }}>Revoke</ActionButton>
+                    <span><b>{i.email}</b> <span className="text-muted-foreground">{roleName(roles.data?.find((r) => r.id === i.role.id) ?? { key: '', name: i.role.name })} · до {date(i.expiresAt)}</span></span>
+                    <ActionButton variant="outline" run={async () => { await api(`/organizations/${org.id}/invitations/${i.id}`, { method: 'DELETE' }); await invites.reload(); }}>Отозвать</ActionButton>
                   </li>
                 ))}
               </ul>

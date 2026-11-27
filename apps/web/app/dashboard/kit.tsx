@@ -8,9 +8,31 @@ import { api, ApiError } from '../../lib/api';
 
 /** Small building blocks shared by the dashboard pages. Plain on purpose — styling is refined later. */
 
-export const STATUS_LABEL: Record<string, string> = { PENDING_PAYMENT: 'Waiting for payment', PAID: 'Paid — to fulfil', FULFILLED: 'Fulfilled', CANCELED: 'Canceled', REFUNDED: 'Refunded' };
+export const STATUS_LABEL: Record<string, string> = { PENDING_PAYMENT: 'Ждёт оплаты', PAID: 'Оплачен — отправить', FULFILLED: 'Отправлен', CANCELED: 'Отменён', REFUNDED: 'Возврат' };
+export const PRODUCT_STATUS: Record<string, string> = { ACTIVE: 'В продаже', DRAFT: 'Черновик', ARCHIVED: 'В архиве' };
+export const SOURCE_LABEL: Record<string, string> = { WEB: 'сайт', TELEGRAM: 'Telegram', API: 'API' };
+export const PAYMENT_LABEL: Record<string, string> = { PENDING: 'ожидает', SUCCEEDED: 'оплачено', FAILED: 'ошибка', CANCELED: 'отменено', REFUNDED: 'возвращено', PARTIALLY_REFUNDED: 'частичный возврат' };
+export const SUBSCRIPTION_LABEL: Record<string, string> = { TRIALING: 'пробный период', ACTIVE: 'активен', PAST_DUE: 'просрочен', CANCELED: 'отменён', EXPIRED: 'истёк' };
+const ROLE_LABEL: Record<string, string> = { ORG_OWNER: 'Владелец', ORG_ADMIN: 'Администратор', ORG_MANAGER: 'Менеджер', ORG_STAFF: 'Сотрудник' };
+export const roleName = (r: { key: string; name: string }) => ROLE_LABEL[r.key] ?? r.name;
+export const FEATURE_LABEL: Record<string, string> = {
+  'products.max': 'Товаров в каталоге',
+  'members.max': 'Сотрудников',
+  'storage.mb': 'Место для фото, МБ',
+  'api.requests_per_day': 'Запросов к API в день',
+  api_access: 'API и ключи доступа',
+  telegram_mini_app: 'Магазин внутри Telegram',
+  custom_domain: 'Свой домен',
+  lookbook: 'Лукбук',
+  music_player: 'Музыкальный плеер',
+  drop_countdown: 'Отсчёт до дропа',
+  remove_branding: 'Без логотипа платформы',
+};
 
-export const errText = (e: unknown) => (e instanceof ApiError ? e.message : 'Something went wrong. Please try again.');
+export const date = (iso: string) => new Date(iso).toLocaleDateString('ru-RU');
+export const dateTime = (iso: string) => new Date(iso).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' });
+
+export const errText = (e: unknown) => (e instanceof ApiError ? e.message : 'Что-то пошло не так. Попробуйте ещё раз.');
 
 /** Loads `path` from the API; `null` skips loading. `reload()` refetches. */
 export function useLoad<T>(path: string | null) {
@@ -52,7 +74,7 @@ export function PageHead({ title, actions, subtitle }: { title: string; subtitle
 
 export const ErrorLine = ({ error }: { error: string | null }) => (error ? <p role="alert" className="text-xs text-destructive">{error}</p> : null);
 
-export function Loading({ what = 'Loading' }: { what?: string }) {
+export function Loading({ what = 'Загрузка' }: { what?: string }) {
   return <p className="text-xs text-muted-foreground" aria-busy="true">{what}…</p>;
 }
 
@@ -147,7 +169,7 @@ export function ActionButton({ children, run, variant = 'default', confirm: ask,
           }
         }}
       >
-        {busy ? 'Please wait…' : children}
+        {busy ? 'Подождите…' : children}
       </Button>
       <ErrorLine error={error} />
     </span>

@@ -18,18 +18,18 @@ export default function CollectionsPage() {
   const list = useLoad<Row[]>(`/organizations/${org.id}/collections`);
   return (
     <>
-      <PageHead title="Collections" actions={<Button asChild><Link href={`/dashboard/${org.slug}/collections/new`}>New collection</Link></Button>} />
+      <PageHead title="Коллекции" subtitle="Подборки товаров: новинки, сезон, категории." actions={<Button asChild><Link href={`/dashboard/${org.slug}/collections/new`}>+ Новая коллекция</Link></Button>} />
       <Async state={list}>
         {(rows) =>
           rows.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No collections yet.</p>
+            <p className="text-xs text-muted-foreground">Коллекций пока нет.</p>
           ) : (
             <ul className="divide-y divide-border rounded-md border border-border">
               {rows.map((c) => (
                 <li key={c.id}>
                   <Link href={`/dashboard/${org.slug}/collections/${c.id}`} className="flex items-center justify-between px-3 py-2 text-xs hover:bg-muted">
-                    <span><b>{c.title}</b> <span className="text-muted-foreground">/collections/{c.slug}</span></span>
-                    <span className="text-muted-foreground">{c.productCount} products · {c.isPublished ? 'published' : 'hidden'}</span>
+                    <b>{c.title}</b>
+                    <span className="text-muted-foreground">товаров: {c.productCount} · {c.isPublished ? 'показывается' : 'скрыта'}</span>
                   </Link>
                 </li>
               ))}

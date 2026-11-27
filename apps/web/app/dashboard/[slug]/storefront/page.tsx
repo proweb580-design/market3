@@ -12,14 +12,15 @@ type Doc = StorefrontContent;
 type Sections = Doc['sections'];
 
 const ART: Panel = { type: 'art', from: '#3b3f46', to: '#16181b', alt: '' };
+const TRUST_ICONS = { truck: 'Доставка', shield: 'Гарантия', returns: 'Возврат', globe: 'По всему миру' };
 
 const DEFAULTS: Doc = {
   settings: { freeShippingThresholdMinor: null, shippingFlatMinor: 0, trust: [], paymentBadges: [], footer: { menu: [], help: [], socials: [] } },
   sections: {
-    hero: { enabled: false, eyebrow: '', title: 'New collection', subtitle: '', panels: [ART] },
-    featured: { enabled: false, title: 'Featured', subtitle: '', productSlugs: [] },
-    grid: { enabled: false, title: 'New in', collection: '' },
-    drop: { enabled: false, eyebrow: 'Next drop', title: 'Coming soon', endsAt: new Date(Date.now() + 30 * 86_400_000).toISOString(), panel: ART },
+    hero: { enabled: false, eyebrow: '', title: 'Новая коллекция', subtitle: '', panels: [ART] },
+    featured: { enabled: false, title: 'Выбор сезона', subtitle: '', productSlugs: [] },
+    grid: { enabled: false, title: 'Новинки', collection: '' },
+    drop: { enabled: false, eyebrow: 'Следующий дроп', title: 'Скоро', endsAt: new Date(Date.now() + 30 * 86_400_000).toISOString(), panel: ART },
     collections: { enabled: false, slugs: [] },
     social: { enabled: false, handle: '', panels: [] },
   },
@@ -47,7 +48,7 @@ const linksToLines = (links: Record<string, string>[], key: string) => links.map
 
 function Block({ title, enabled, onEnabled, children }: { title: string; enabled?: boolean; onEnabled?: (v: boolean) => void; children: ReactNode }) {
   return (
-    <Card title={title} actions={onEnabled ? <Check label="Show on the store" checked={!!enabled} onChange={onEnabled} /> : undefined}>
+    <Card title={title} actions={onEnabled ? <Check label="Показывать" checked={!!enabled} onChange={onEnabled} /> : undefined}>
       <div className="flex flex-col gap-3">{children}</div>
     </Card>
   );
@@ -59,7 +60,7 @@ function PanelEditor({ panel, onChange, onRemove }: { panel: Panel; onChange: (p
   const lib = useLibrary();
   return (
     <div className="flex items-start gap-3">
-      {panel.type === 'image' ? <img src={panel.src} alt={panel.alt} className="size-16 rounded-sm object-cover" /> : <span className="size-16 rounded-sm" style={{ background: `linear-gradient(${panel.from}, ${panel.to})` }} title="Placeholder artwork" />} {/* eslint-disable-line @next/next/no-img-element */}
+      {panel.type === 'image' ? <img src={panel.src} alt={panel.alt} className="size-16 rounded-sm object-cover" /> : <span className="size-16 rounded-sm" style={{ background: `linear-gradient(${panel.from}, ${panel.to})` }} title="Заглушка" />} {/* eslint-disable-line @next/next/no-img-element */}
       <div className="flex flex-col gap-1">
         <MediaPicker
           orgId={org.id}
@@ -70,8 +71,8 @@ function PanelEditor({ panel, onChange, onRemove }: { panel: Panel; onChange: (p
             if (m?.url) onChange({ type: 'image', src: m.url, alt: m.alt ?? '' });
           }}
         />
-        {panel.type === 'image' && <TextField label="Description (alt text)" value={panel.alt} onChange={(alt) => onChange({ ...panel, alt })} />}
-        {onRemove && <Button type="button" variant="ghost" size="sm" className="self-start" onClick={onRemove}>Remove</Button>}
+        {panel.type === 'image' && <TextField label="Описание фото" value={panel.alt} onChange={(alt) => onChange({ ...panel, alt })} />}
+        {onRemove && <Button type="button" variant="ghost" size="sm" className="self-start" onClick={onRemove}>Убрать</Button>}
       </div>
     </div>
   );
@@ -81,7 +82,7 @@ function Panels({ panels, onChange, max }: { panels: Panel[]; onChange: (p: Pane
   return (
     <div className="flex flex-col gap-3">
       {panels.map((p, i) => <PanelEditor key={i} panel={p} onChange={(x) => onChange(panels.map((y, j) => (j === i ? x : y)))} onRemove={panels.length > 0 ? () => onChange(panels.filter((_, j) => j !== i)) : undefined} />)}
-      {panels.length < max && <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => onChange([...panels, ART])}>Add picture</Button>}
+      {panels.length < max && <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => onChange([...panels, ART])}>+ Добавить фото</Button>}
     </div>
   );
 }
@@ -111,7 +112,7 @@ function Editor({ initial }: { initial: Doc }) {
     setError(null);
     const thresholdMinor = threshold.trim() ? toMinor(threshold) : null;
     const flatMinor = flat.trim() ? toMinor(flat) : 0;
-    if ((threshold.trim() && thresholdMinor === null) || flatMinor === null) return setError('Shipping amounts must look like 150 or 9.90.');
+    if ((threshold.trim() && thresholdMinor === null) || flatMinor === null) return setError('Суммы доставки пишите так: 150 или 9.90.');
     const endsAt = new Date(dropAt);
     const candidate: Doc = {
       ...doc,
@@ -140,137 +141,124 @@ function Editor({ initial }: { initial: Doc }) {
   const lb = doc.lookbook;
   return (
     <form onSubmit={(e) => { e.preventDefault(); void save(); }}>
-      <Block title="Shipping and footer">
+      <Block title="Доставка">
         <div className="grid gap-3 sm:grid-cols-2">
-          <TextField label={`Free shipping from (${org.currency})`} value={threshold} onChange={setThreshold} hint="Empty = never free" />
-          <TextField label={`Flat shipping fee (${org.currency})`} value={flat} onChange={setFlat} hint="Charged below the threshold" />
+          <TextField label={`Бесплатная доставка от (${org.currency})`} value={threshold} onChange={setThreshold} hint="Пусто — всегда платная" />
+          <TextField label={`Стоимость доставки (${org.currency})`} value={flat} onChange={setFlat} hint="Если заказ дешевле порога" />
         </div>
+      </Block>
+
+      <Block title="Подвал сайта">
         <div className="grid gap-3 md:grid-cols-3">
-          <TextArea label="Menu links" rows={4} value={menu} onChange={setMenu} hint="One per line: Label | /collections/new" />
-          <TextArea label="Help links" rows={4} value={help} onChange={setHelp} hint="Label | /pages/shipping" />
-          <TextArea label="Social links" rows={4} value={socials} onChange={setSocials} hint="Instagram | https://instagram.com/…" />
+          <TextArea label="Меню" rows={4} value={menu} onChange={setMenu} hint="По одной в строке: Название | /collections/new" />
+          <TextArea label="Помощь" rows={4} value={help} onChange={setHelp} hint="Название | /pages/shipping" />
+          <TextArea label="Соцсети" rows={4} value={socials} onChange={setSocials} hint="Instagram | https://instagram.com/…" />
         </div>
         <fieldset className="flex flex-col gap-2">
-          <legend className="label-xs mb-1">Reassurance bar (up to 4)</legend>
+          <legend className="label-xs mb-1">Преимущества магазина (до 4)</legend>
           {doc.settings.trust.map((t, i) => (
             <div key={i} className="grid items-end gap-2 sm:grid-cols-[8rem_1fr_2fr_auto]">
-              <Select label="Icon" value={t.icon} onChange={(icon) => setDoc((d) => ({ ...d, settings: { ...d.settings, trust: d.settings.trust.map((x, j) => (j === i ? { ...x, icon: icon as typeof t.icon } : x)) } }))} options={['truck', 'shield', 'returns', 'globe'].map((v) => ({ value: v, label: v }))} />
-              <TextField label="Title" value={t.title} onChange={(title) => setDoc((d) => ({ ...d, settings: { ...d.settings, trust: d.settings.trust.map((x, j) => (j === i ? { ...x, title } : x)) } }))} />
-              <TextField label="Text" value={t.text} onChange={(text) => setDoc((d) => ({ ...d, settings: { ...d.settings, trust: d.settings.trust.map((x, j) => (j === i ? { ...x, text } : x)) } }))} />
+              <Select label="Иконка" value={t.icon} onChange={(icon) => setDoc((d) => ({ ...d, settings: { ...d.settings, trust: d.settings.trust.map((x, j) => (j === i ? { ...x, icon: icon as typeof t.icon } : x)) } }))} options={Object.entries(TRUST_ICONS).map(([value, label]) => ({ value, label }))} />
+              <TextField label="Заголовок" value={t.title} onChange={(title) => setDoc((d) => ({ ...d, settings: { ...d.settings, trust: d.settings.trust.map((x, j) => (j === i ? { ...x, title } : x)) } }))} />
+              <TextField label="Текст" value={t.text} onChange={(text) => setDoc((d) => ({ ...d, settings: { ...d.settings, trust: d.settings.trust.map((x, j) => (j === i ? { ...x, text } : x)) } }))} />
               <Button type="button" variant="ghost" size="sm" onClick={() => setDoc((d) => ({ ...d, settings: { ...d.settings, trust: d.settings.trust.filter((_, j) => j !== i) } }))}>✕</Button>
             </div>
           ))}
-          {doc.settings.trust.length < 4 && <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => setDoc((d) => ({ ...d, settings: { ...d.settings, trust: [...d.settings.trust, { icon: 'truck', title: '', text: '' }] } }))}>Add</Button>}
+          {doc.settings.trust.length < 4 && <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => setDoc((d) => ({ ...d, settings: { ...d.settings, trust: [...d.settings.trust, { icon: 'truck', title: '', text: '' }] } }))}>+ Добавить</Button>}
         </fieldset>
       </Block>
 
-      <Block title="Banner (top of the home page)" enabled={sec.hero.enabled} onEnabled={(enabled) => setSec('hero', { enabled })}>
+      <Block title="Баннер вверху главной" enabled={sec.hero.enabled} onEnabled={(enabled) => setSec('hero', { enabled })}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <TextField label="Title" value={sec.hero.title} onChange={(title) => setSec('hero', { title })} />
+          <TextField label="Заголовок" value={sec.hero.title} onChange={(title) => setSec('hero', { title })} />
         </div>
         <Panels panels={sec.hero.panels} max={5} onChange={(panels) => setSec('hero', { panels: panels.length ? panels : [ART] })} />
       </Block>
 
-      <Block title="Featured products" enabled={sec.featured.enabled} onEnabled={(enabled) => setSec('featured', { enabled })}>
+      <Block title="Избранные товары" enabled={sec.featured.enabled} onEnabled={(enabled) => setSec('featured', { enabled })}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <TextField label="Title" value={sec.featured.title} onChange={(title) => setSec('featured', { title })} />
-          <TextField label="Subtitle" value={sec.featured.subtitle} onChange={(subtitle) => setSec('featured', { subtitle })} />
+          <TextField label="Заголовок" value={sec.featured.title} onChange={(title) => setSec('featured', { title })} />
+          <TextField label="Подзаголовок" value={sec.featured.subtitle} onChange={(subtitle) => setSec('featured', { subtitle })} />
         </div>
         <fieldset className="grid gap-1 sm:grid-cols-2">
-          <legend className="label-xs mb-1">Products (up to 12)</legend>
+          <legend className="label-xs mb-1">Товары (до 12)</legend>
           {(products.data?.items ?? []).map((p) => <Check key={p.slug} label={p.title} checked={sec.featured.productSlugs.includes(p.slug)} onChange={(on) => setSec('featured', { productSlugs: on ? [...sec.featured.productSlugs, p.slug].slice(0, 12) : sec.featured.productSlugs.filter((s) => s !== p.slug) })} />)}
         </fieldset>
       </Block>
 
-      <Block title="Product grid" enabled={sec.grid.enabled} onEnabled={(enabled) => setSec('grid', { enabled })}>
+      <Block title="Сетка товаров из коллекции" enabled={sec.grid.enabled} onEnabled={(enabled) => setSec('grid', { enabled })}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <TextField label="Title" value={sec.grid.title} onChange={(title) => setSec('grid', { title })} />
-          <Select label="Collection" value={sec.grid.collection} onChange={(collection) => setSec('grid', { collection })} options={[{ value: '', label: 'Choose…' }, ...(collections.data ?? []).map((c) => ({ value: c.slug, label: c.title }))]} />
+          <TextField label="Заголовок" value={sec.grid.title} onChange={(title) => setSec('grid', { title })} />
+          <Select label="Коллекция" value={sec.grid.collection} onChange={(collection) => setSec('grid', { collection })} options={[{ value: '', label: 'Выберите…' }, ...(collections.data ?? []).map((c) => ({ value: c.slug, label: c.title }))]} />
         </div>
       </Block>
 
-      <Block title="Drop countdown" enabled={sec.drop.enabled} onEnabled={(enabled) => setSec('drop', { enabled })}>
+      <details className="mb-6">
+        <summary className="mb-4 cursor-pointer text-xs text-muted-foreground">Дополнительные блоки: отсчёт до дропа, соцсети, отзывы, лукбук</summary>
+      <Block title="Отсчёт до дропа" enabled={sec.drop.enabled} onEnabled={(enabled) => setSec('drop', { enabled })}>
         <div className="grid gap-3 sm:grid-cols-3">
-          <TextField label="Small heading" value={sec.drop.eyebrow} onChange={(eyebrow) => setSec('drop', { eyebrow })} />
-          <TextField label="Title" value={sec.drop.title} onChange={(title) => setSec('drop', { title })} />
-          <TextField label="Ends at" type="datetime-local" value={dropAt} onChange={setDropAt} />
+          <TextField label="Надзаголовок" value={sec.drop.eyebrow} onChange={(eyebrow) => setSec('drop', { eyebrow })} />
+          <TextField label="Заголовок" value={sec.drop.title} onChange={(title) => setSec('drop', { title })} />
+          <TextField label="Когда закончится" type="datetime-local" value={dropAt} onChange={setDropAt} />
         </div>
         <PanelEditor panel={sec.drop.panel} onChange={(panel) => setSec('drop', { panel })} />
-        <p className="text-[11px] text-muted-foreground">Needs a plan with the drop countdown.</p>
+        <p className="text-[11px] text-muted-foreground">Нужен тариф с отсчётом до дропа.</p>
       </Block>
 
-      <Block title="Collection tiles" enabled={sec.collections.enabled} onEnabled={(enabled) => setSec('collections', { enabled })}>
+      <Block title="Плитки коллекций" enabled={sec.collections.enabled} onEnabled={(enabled) => setSec('collections', { enabled })}>
         <fieldset className="grid gap-1 sm:grid-cols-2">
-          <legend className="label-xs mb-1">Collections (up to 8)</legend>
+          <legend className="label-xs mb-1">Коллекции (до 8)</legend>
           {(collections.data ?? []).map((c) => <Check key={c.slug} label={c.title} checked={sec.collections.slugs.includes(c.slug)} onChange={(on) => setSec('collections', { slugs: on ? [...sec.collections.slugs, c.slug].slice(0, 8) : sec.collections.slugs.filter((s) => s !== c.slug) })} />)}
         </fieldset>
       </Block>
 
-      <Block title="Social feed" enabled={sec.social.enabled} onEnabled={(enabled) => setSec('social', { enabled })}>
-        <TextField label="Handle" value={sec.social.handle} onChange={(handle) => setSec('social', { handle })} placeholder="@yourbrand" />
+      <Block title="Лента соцсетей" enabled={sec.social.enabled} onEnabled={(enabled) => setSec('social', { enabled })}>
+        <TextField label="Аккаунт" value={sec.social.handle} onChange={(handle) => setSec('social', { handle })} placeholder="@yourbrand" />
         <Panels panels={sec.social.panels} max={10} onChange={(panels) => setSec('social', { panels })} />
       </Block>
 
-      <Block title="Reviews">
+      <Block title="Отзывы">
         {doc.testimonials.map((t, i) => (
           <div key={i} className="grid items-start gap-2 sm:grid-cols-[10rem_8rem_1fr_auto]">
-            <TextField label="Author" value={t.author} onChange={(author) => setDoc((d) => ({ ...d, testimonials: d.testimonials.map((x, j) => (j === i ? { ...x, author } : x)) }))} />
-            <TextField label="Place" value={t.location} onChange={(location) => setDoc((d) => ({ ...d, testimonials: d.testimonials.map((x, j) => (j === i ? { ...x, location } : x)) }))} />
-            <TextArea label="Quote" rows={2} value={t.quote} onChange={(quote) => setDoc((d) => ({ ...d, testimonials: d.testimonials.map((x, j) => (j === i ? { ...x, quote } : x)) }))} />
+            <TextField label="Автор" value={t.author} onChange={(author) => setDoc((d) => ({ ...d, testimonials: d.testimonials.map((x, j) => (j === i ? { ...x, author } : x)) }))} />
+            <TextField label="Город" value={t.location} onChange={(location) => setDoc((d) => ({ ...d, testimonials: d.testimonials.map((x, j) => (j === i ? { ...x, location } : x)) }))} />
+            <TextArea label="Отзыв" rows={2} value={t.quote} onChange={(quote) => setDoc((d) => ({ ...d, testimonials: d.testimonials.map((x, j) => (j === i ? { ...x, quote } : x)) }))} />
             <Button type="button" variant="ghost" size="sm" className="mt-5" onClick={() => setDoc((d) => ({ ...d, testimonials: d.testimonials.filter((_, j) => j !== i) }))}>✕</Button>
           </div>
         ))}
-        <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => setDoc((d) => ({ ...d, testimonials: [...d.testimonials, { author: '', location: '', quote: '' }] }))}>Add review</Button>
+        <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => setDoc((d) => ({ ...d, testimonials: [...d.testimonials, { author: '', location: '', quote: '' }] }))}>+ Добавить отзыв</Button>
       </Block>
 
-      <Block title="Music player">
-        <p className="text-[11px] text-muted-foreground">Needs a plan with the music player. Upload audio in the Media section or here.</p>
-        {doc.playlist.map((t, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-md border border-border p-3">
-            <div className="grid gap-2 sm:grid-cols-3">
-              <TextField label="Title" value={t.title} onChange={(title) => setDoc((d) => ({ ...d, playlist: d.playlist.map((x, j) => (j === i ? { ...x, title } : x)) }))} />
-              <TextField label="Artist" value={t.artist} onChange={(artist) => setDoc((d) => ({ ...d, playlist: d.playlist.map((x, j) => (j === i ? { ...x, artist } : x)) }))} />
-              <TextField label="Length (seconds)" type="number" value={String(t.durationSec)} onChange={(v) => setDoc((d) => ({ ...d, playlist: d.playlist.map((x, j) => (j === i ? { ...x, durationSec: Number(v) || 1 } : x)) }))} />
-            </div>
-            <p className="label-xs">Cover</p>
-            <MediaPicker orgId={org.id} selected={t.coverMediaId ? [t.coverMediaId] : []} multiple={false} onChange={([id]) => setDoc((d) => ({ ...d, playlist: d.playlist.map((x, j) => (j === i ? { ...x, coverMediaId: id ?? null } : x)) }))} />
-            <p className="label-xs">Audio</p>
-            <MediaPicker orgId={org.id} kind="audio" selected={t.audioMediaId ? [t.audioMediaId] : []} multiple={false} onChange={([id]) => setDoc((d) => ({ ...d, playlist: d.playlist.map((x, j) => (j === i ? { ...x, audioMediaId: id ?? null } : x)) }))} />
-            <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => setDoc((d) => ({ ...d, playlist: d.playlist.filter((_, j) => j !== i) }))}>Remove track</Button>
-          </div>
-        ))}
-        <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => setDoc((d) => ({ ...d, playlist: [...d.playlist, { title: '', artist: '', durationSec: 180, coverMediaId: null, audioMediaId: null }] }))}>Add track</Button>
-      </Block>
-
-      <Block title="Lookbook" enabled={!!lb} onEnabled={(on) => setDoc((d) => ({ ...d, lookbook: on ? { title: 'Lookbook', subtitle: '', items: [] } : null }))}>
+      <Block title="Лукбук" enabled={!!lb} onEnabled={(on) => setDoc((d) => ({ ...d, lookbook: on ? { title: 'Lookbook', subtitle: '', items: [] } : null }))}>
         {lb && (
           <>
             <div className="grid gap-3 sm:grid-cols-2">
-              <TextField label="Title" value={lb.title} onChange={(title) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, title } }))} />
-              <TextField label="Subtitle" value={lb.subtitle} onChange={(subtitle) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, subtitle } }))} />
+              <TextField label="Заголовок" value={lb.title} onChange={(title) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, title } }))} />
+              <TextField label="Подзаголовок" value={lb.subtitle} onChange={(subtitle) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, subtitle } }))} />
             </div>
             {lb.items.map((it, i) => (
               <div key={i} className="flex flex-col gap-2 rounded-md border border-border p-3">
                 <MediaPicker orgId={org.id} selected={[it.mediaId]} multiple={false} onChange={([id]) => id && setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: d.lookbook.items.map((x, j) => (j === i ? { ...x, mediaId: id } : x)) } }))} />
                 <div className="grid gap-2 sm:grid-cols-3">
-                  <TextField label="Tag" value={it.tag} onChange={(tag) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: d.lookbook.items.map((x, j) => (j === i ? { ...x, tag } : x)) } }))} />
-                  <TextField label="Title" value={it.title} onChange={(title) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: d.lookbook.items.map((x, j) => (j === i ? { ...x, title } : x)) } }))} />
-                  <TextField label="Caption" value={it.caption} onChange={(caption) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: d.lookbook.items.map((x, j) => (j === i ? { ...x, caption } : x)) } }))} />
+                  <TextField label="Тег" value={it.tag} onChange={(tag) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: d.lookbook.items.map((x, j) => (j === i ? { ...x, tag } : x)) } }))} />
+                  <TextField label="Заголовок" value={it.title} onChange={(title) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: d.lookbook.items.map((x, j) => (j === i ? { ...x, title } : x)) } }))} />
+                  <TextField label="Подпись" value={it.caption} onChange={(caption) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: d.lookbook.items.map((x, j) => (j === i ? { ...x, caption } : x)) } }))} />
                 </div>
-                <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: d.lookbook.items.filter((_, j) => j !== i) } }))}>Remove</Button>
+                <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: d.lookbook.items.filter((_, j) => j !== i) } }))}>Убрать</Button>
               </div>
             ))}
-            <p className="text-[11px] text-muted-foreground">To add a photo, upload it in Media first, then pick it for a new item below.</p>
+            <p className="text-[11px] text-muted-foreground">Чтобы добавить фото, выберите или загрузите его ниже.</p>
             <NewLookbookItem orgId={org.id} onAdd={(mediaId) => setDoc((d) => ({ ...d, lookbook: d.lookbook && { ...d.lookbook, items: [...d.lookbook.items, { mediaId, tag: '', title: '', caption: '' }] } }))} />
-            <p className="text-[11px] text-muted-foreground">Needs a plan with the lookbook.</p>
+            <p className="text-[11px] text-muted-foreground">Нужен тариф с лукбуком.</p>
           </>
         )}
       </Block>
+      </details>
 
       <ErrorLine error={error} />
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save storefront'}</Button>
-        {saved && <span role="status" className="text-xs">Saved. Changes appear on the store within a few minutes.</span>}
+        <Button type="submit" disabled={busy}>{busy ? 'Сохраняем…' : 'Сохранить витрину'}</Button>
+        {saved && <span role="status" className="text-xs">Сохранено. Изменения появятся в магазине в течение нескольких минут.</span>}
       </div>
     </form>
   );
@@ -285,7 +273,7 @@ export default function StorefrontPage() {
   const content = useLoad<Parameters<typeof withDefaults>[0]>(`/organizations/${org.id}/storefront`);
   return (
     <>
-      <PageHead title="Storefront" subtitle="What shoppers see on the home page and in the footer." />
+      <PageHead title="Витрина" subtitle="Что покупатели видят на главной странице магазина и внизу сайта." />
       <Async state={content}>{(c) => <Editor initial={withDefaults(c)} />}</Async>
     </>
   );

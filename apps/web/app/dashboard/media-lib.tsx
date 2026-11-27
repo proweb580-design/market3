@@ -53,10 +53,10 @@ async function imageSize(file: File): Promise<{ width?: number; height?: number 
  */
 export async function uploadMedia(orgId: string, file: File, alt?: string): Promise<MediaItem> {
   const allowed = [...IMAGE_TYPES, ...AUDIO_TYPES] as readonly string[];
-  if (!allowed.includes(file.type)) throw new Error('Unsupported file type. Use JPEG, PNG, WebP, AVIF or GIF images (or MP3/M4A/OGG/WAV audio).');
-  if (file.size > maxBytesFor(file.type)) throw new Error(`File is too large (max ${Math.round(maxBytesFor(file.type) / 1_048_576)} MB).`);
+  if (!allowed.includes(file.type)) throw new Error('Такой формат не подходит. Нужны фото JPEG, PNG, WebP, AVIF или GIF (или аудио MP3/M4A/OGG/WAV).');
+  if (file.size > maxBytesFor(file.type)) throw new Error(`Файл слишком большой (максимум ${Math.round(maxBytesFor(file.type) / 1_048_576)} МБ).`);
   const supabase = getSupabase();
-  if (!supabase) throw new Error('Uploads need Supabase to be configured.');
+  if (!supabase) throw new Error('Загрузка файлов не настроена (Supabase).');
 
   const dims = await imageSize(file);
   const intent = await api<{ path: string; token: string; ticket: string }>(`/organizations/${orgId}/media/upload-url`, {
@@ -64,7 +64,7 @@ export async function uploadMedia(orgId: string, file: File, alt?: string): Prom
     body: { mimeType: file.type, sizeBytes: file.size, ...dims, ...(alt ? { alt } : {}) },
   });
   const { error } = await supabase.storage.from('media').uploadToSignedUrl(intent.path, intent.token, file, { contentType: file.type });
-  if (error) throw new Error(`Upload failed: ${error.message}`);
+  if (error) throw new Error(`Не удалось загрузить: ${error.message}`);
   return api<MediaItem>(`/organizations/${orgId}/media`, { method: 'POST', body: { ticket: intent.ticket } });
 }
 
@@ -90,7 +90,7 @@ export function UploadButton({ orgId, onUploaded, accept = 'image' }: { orgId: s
   return (
     <span className="inline-flex flex-col gap-1">
       <input ref={input} type="file" hidden multiple={accept === 'image'} accept={(accept === 'image' ? IMAGE_TYPES : AUDIO_TYPES).join(',')} onChange={(e) => void pick(e.target.files)} />
-      <Button type="button" variant="outline" disabled={busy} onClick={() => input.current?.click()}>{busy ? 'Uploading…' : accept === 'image' ? 'Upload images' : 'Upload audio'}</Button>
+      <Button type="button" variant="outline" disabled={busy} onClick={() => input.current?.click()}>{busy ? 'Загружаем…' : accept === 'image' ? 'Загрузить фото' : 'Загрузить аудио'}</Button>
       <ErrorLine error={error} />
     </span>
   );
@@ -98,7 +98,7 @@ export function UploadButton({ orgId, onUploaded, accept = 'image' }: { orgId: s
 
 export function Thumb({ media, className = 'size-16' }: { media: MediaItem; className?: string }) {
   if (isImage(media)) return <img src={media.url!} alt={media.alt ?? ''} className={`${className} rounded-sm object-cover`} />; // eslint-disable-line @next/next/no-img-element
-  return <span className={`${className} flex items-center justify-center rounded-sm bg-muted text-[10px] text-muted-foreground`}>{media.mimeType.startsWith('audio/') ? 'audio' : 'art'}</span>;
+  return <span className={`${className} flex items-center justify-center rounded-sm bg-muted text-[10px] text-muted-foreground`}>{media.mimeType.startsWith('audio/') ? 'аудио' : 'арт'}</span>;
 }
 
 /** The store's media library as a list you can pick from (single or several), with upload built in. */
@@ -129,19 +129,19 @@ export function MediaPicker({ orgId, selected, onChange, multiple = true, kind =
             <li key={id} className="flex flex-col items-center gap-1 text-[10px]">
               {m ? <Thumb media={m} /> : <span className="size-16 rounded-sm bg-muted" />}
               <span className="flex gap-1">
-                {multiple && i > 0 && <button type="button" aria-label="Move earlier" onClick={() => move(i, -1)}>←</button>}
-                {multiple && i < selected.length - 1 && <button type="button" aria-label="Move later" onClick={() => move(i, 1)}>→</button>}
-                <button type="button" aria-label="Remove" onClick={() => onChange(selected.filter((s) => s !== id))}>✕</button>
+                {multiple && i > 0 && <button type="button" aria-label="Раньше" onClick={() => move(i, -1)}>←</button>}
+                {multiple && i < selected.length - 1 && <button type="button" aria-label="Позже" onClick={() => move(i, 1)}>→</button>}
+                <button type="button" aria-label="Убрать" onClick={() => onChange(selected.filter((s) => s !== id))}>✕</button>
               </span>
             </li>
           );
         })}
       </ul>
       <div className="flex flex-wrap items-start gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={() => setOpen(!open)}>{open ? 'Close library' : kind === 'audio' ? 'Choose audio' : 'Choose from library'}</Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => setOpen(!open)}>{open ? 'Закрыть' : kind === 'audio' ? 'Выбрать аудио' : 'Выбрать из загруженных'}</Button>
         <UploadButton orgId={orgId} accept={kind} onUploaded={(m) => { lib.setData((d) => ({ items: [m, ...(d?.items ?? [])], total: (d?.total ?? 0) + 1 })); toggle(m.id); }} />
       </div>
-      {open && (lib.loading ? <Loading /> : items.length === 0 ? <p className="text-xs text-muted-foreground">The library is empty — upload a file.</p> : (
+      {open && (lib.loading ? <Loading /> : items.length === 0 ? <p className="text-xs text-muted-foreground">Пока ничего не загружено — загрузите файл.</p> : (
         <ul className="flex max-h-60 flex-wrap gap-2 overflow-y-auto rounded-md border border-border p-2">
           {items.map((m) => (
             <li key={m.id}>

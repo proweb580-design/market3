@@ -26,7 +26,7 @@ export default function ProductPage() {
   if (id === 'new') {
     return (
       <>
-        <PageHead title="New product" />
+        <PageHead title="Новый товар" />
         <ProductForm product={null} />
       </>
     );

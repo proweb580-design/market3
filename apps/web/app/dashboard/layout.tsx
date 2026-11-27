@@ -14,12 +14,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     if (status === 'signedOut') router.replace(`/login?next=${encodeURIComponent('/dashboard')}`);
   }, [status, router]);
 
-  if (status !== 'signedIn') return <p className="px-6 py-24 text-xs text-muted-foreground" aria-busy="true">Loading…</p>;
+  if (status !== 'signedIn') return <p className="px-6 py-24 text-xs text-muted-foreground" aria-busy="true">Загрузка…</p>;
   return (
     <div className="min-h-screen">
       <header className="flex items-center justify-between border-b border-border px-6 py-3 text-xs">
-        <Link href="/dashboard" className="label-xs font-bold">Brand dashboard</Link>
-        <Link href="/account" className="text-muted-foreground hover:text-foreground">My account</Link>
+        <Link href="/dashboard" className="label-xs font-bold">Кабинет магазина</Link>
+        <Link href="/account" className="text-muted-foreground hover:text-foreground">Мой аккаунт</Link>
       </header>
       {children}
     </div>

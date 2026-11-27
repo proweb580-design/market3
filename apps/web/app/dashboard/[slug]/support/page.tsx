@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { SUPPORT_TOPIC_LABEL, type SupportTicketStatus } from '@repo/shared';
 import { api } from '../../../../lib/api';
-import { ActionButton, Async, PageHead, Select, useLoad } from '../../kit';
+import { ActionButton, Async, PageHead, Select, dateTime, useLoad } from '../../kit';
 import { useOrg } from '../../org-context';
 
 interface Ticket {
@@ -19,11 +19,11 @@ interface Ticket {
   resolvedAt: string | null;
 }
 
-const STATUS: Record<SupportTicketStatus, string> = { NEW: 'New', IN_PROGRESS: 'In progress', RESOLVED: 'Resolved' };
+const STATUS: Record<SupportTicketStatus, string> = { NEW: 'Новое', IN_PROGRESS: 'В работе', RESOLVED: 'Решено' };
 const NEXT: Record<SupportTicketStatus, [SupportTicketStatus, string][]> = {
-  NEW: [['IN_PROGRESS', 'Take'], ['RESOLVED', 'Resolve']],
-  IN_PROGRESS: [['RESOLVED', 'Resolve']],
-  RESOLVED: [['NEW', 'Reopen']],
+  NEW: [['IN_PROGRESS', 'Взять в работу'], ['RESOLVED', 'Решено']],
+  IN_PROGRESS: [['RESOLVED', 'Решено']],
+  RESOLVED: [['NEW', 'Открыть снова']],
 };
 
 /** Buyer messages from the storefront support form. Status changes also update the Telegram group message. */
@@ -40,14 +40,14 @@ export default function SupportPage() {
 
   return (
     <>
-      <PageHead title="Support" subtitle="Messages from the store's support form. Connect a support bot in Settings to get them in your team's Telegram group." />
+      <PageHead title="Обращения" subtitle="Сообщения покупателей из формы поддержки. Чтобы получать их в Telegram-группу, подключите бота поддержки в Настройках." />
       <div className="mb-4 flex flex-wrap items-end gap-3">
-        <Select label="Status" value={status} onChange={setStatus} options={[{ value: '', label: 'All' }, ...Object.entries(STATUS).map(([value, label]) => ({ value, label }))]} />
+        <Select label="Статус" value={status} onChange={setStatus} options={[{ value: '', label: 'Все' }, ...Object.entries(STATUS).map(([value, label]) => ({ value, label }))]} />
       </div>
       <Async state={list}>
         {({ items, total, open }) =>
           items.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No messages yet.</p>
+            <p className="text-xs text-muted-foreground">Обращений пока нет.</p>
           ) : (
             <>
               <ul className="flex flex-col gap-3">
@@ -56,9 +56,9 @@ export default function SupportPage() {
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <span>
                         <b>{SUPPORT_TOPIC_LABEL[t.topic] ?? t.topic}</b> · {t.name} &lt;<a href={`mailto:${t.email}`} className="underline">{t.email}</a>&gt;
-                        {t.orderNumber && <> · order #{t.orderNumber.replace(/^#/, '')}</>}
+                        {t.orderNumber && <> · заказ №{t.orderNumber.replace(/^#/, '')}</>}
                       </span>
-                      <span className="text-muted-foreground">{new Date(t.createdAt).toLocaleString()}</span>
+                      <span className="text-muted-foreground">{dateTime(t.createdAt)}</span>
                     </div>
                     <p className="mt-2 whitespace-pre-wrap">{t.message}</p>
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
@@ -77,7 +77,7 @@ export default function SupportPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-[11px] text-muted-foreground">{total} shown · {open} open</p>
+              <p className="mt-2 text-[11px] text-muted-foreground">Показано: {total} · открытых: {open}</p>
             </>
           )
         }

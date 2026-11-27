@@ -2,10 +2,9 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-import { PLAN_FEATURES } from '@repo/shared';
 import { formatMoney } from '@repo/ui/lib/format';
 import { api } from '../../../../lib/api';
-import { ActionButton, Async, Card, ErrorLine, PageHead, errText, useLoad } from '../../kit';
+import { ActionButton, Async, Card, FEATURE_LABEL, PAYMENT_LABEL, PageHead, SUBSCRIPTION_LABEL, date, dateTime, errText, useLoad } from '../../kit';
 import { useOrg } from '../../org-context';
 
 interface Plan {
@@ -40,7 +39,7 @@ function ReturnNotice({ onDone }: { onDone: () => void }) {
     api<{ status: string }>(`/organizations/${org.id}/payments/${payment}/sync`, { method: 'POST' })
       .then((p) => {
         if (!live) return;
-        setText(p.status === 'SUCCEEDED' ? 'Payment received — your plan is active.' : p.status === 'PENDING' ? 'We are still waiting for the payment to be confirmed.' : `Payment ${p.status.toLowerCase()}.`);
+        setText(p.status === 'SUCCEEDED' ? 'Оплата получена — тариф активен.' : p.status === 'PENDING' ? 'Ждём подтверждения оплаты.' : `Оплата: ${PAYMENT_LABEL[p.status] ?? p.status}.`);
         onDone();
       })
       .catch((e: unknown) => live && setText(errText(e)));
@@ -66,25 +65,25 @@ function Page() {
 
   return (
     <>
-      <PageHead title="Billing" />
+      <PageHead title="Тариф" />
       <ReturnNotice onDone={reload} />
-      <Card title="Current plan">
+      <Card title="Текущий тариф">
         <Async state={current}>
           {(c) => (
             <div className="flex flex-col items-start gap-2 text-xs">
-              <p><b>{c.plan?.name ?? 'No plan'}</b>{c.subscription ? ` · ${c.subscription.status.toLowerCase()}` : ''}</p>
+              <p><b>{c.plan?.name ?? 'Не выбран'}</b>{c.subscription ? ` · ${SUBSCRIPTION_LABEL[c.subscription.status] ?? c.subscription.status}` : ''}</p>
               {c.subscription && c.plan?.code !== 'FREE' && (
-                <p className="text-muted-foreground">{c.subscription.cancelAtPeriodEnd ? 'Ends' : 'Renews or ends'} on {new Date(c.subscription.currentPeriodEnd).toLocaleDateString()}{c.subscription.trialEndsAt ? ` · trial until ${new Date(c.subscription.trialEndsAt).toLocaleDateString()}` : ''}. Plans are paid per period and are not renewed automatically.</p>
+                <p className="text-muted-foreground">Действует до {date(c.subscription.currentPeriodEnd)}{c.subscription.trialEndsAt ? ` · пробный период до ${date(c.subscription.trialEndsAt)}` : ''}. Тариф оплачивается за период и сам не продлевается.</p>
               )}
               {c.subscription && c.plan?.code !== 'FREE' && (c.subscription.cancelAtPeriodEnd
-                ? <ActionButton variant="outline" run={async () => { await api(`/organizations/${org.id}/subscription/resume`, { method: 'POST' }); await current.reload(); }}>Keep the plan</ActionButton>
-                : <ActionButton variant="outline" confirm="Switch to the Free plan when the current period ends?" run={async () => { await api(`/organizations/${org.id}/subscription/cancel`, { method: 'POST' }); await current.reload(); }}>Cancel at period end</ActionButton>)}
+                ? <ActionButton variant="outline" run={async () => { await api(`/organizations/${org.id}/subscription/resume`, { method: 'POST' }); await current.reload(); }}>Оставить тариф</ActionButton>
+                : <ActionButton variant="outline" confirm="Перейти на бесплатный тариф после окончания периода?" run={async () => { await api(`/organizations/${org.id}/subscription/cancel`, { method: 'POST' }); await current.reload(); }}>Отменить после периода</ActionButton>)}
             </div>
           )}
         </Async>
       </Card>
 
-      <Card title="Plans">
+      <Card title="Тарифы">
         <Async state={plans}>
           {(list) => (
             <ul className="grid gap-4 md:grid-cols-2">
@@ -92,17 +91,17 @@ function Page() {
                 const here = current.data?.plan?.code === p.code;
                 return (
                   <li key={p.id} className="flex flex-col gap-2 rounded-md border border-border p-3 text-xs">
-                    <p className="flex justify-between"><b>{p.name}</b><span className="tabular-nums">{p.priceMinor === 0 ? 'Free' : `${formatMoney({ amountMinor: p.priceMinor, currency: p.currency })} / ${p.interval === 'YEAR' ? 'year' : 'month'}`}</span></p>
+                    <p className="flex justify-between"><b>{p.name}</b><span className="tabular-nums">{p.priceMinor === 0 ? 'Бесплатно' : `${formatMoney({ amountMinor: p.priceMinor, currency: p.currency })} / ${p.interval === 'YEAR' ? 'год' : 'мес'}`}</span></p>
                     {p.description && <p className="text-muted-foreground">{p.description}</p>}
                     <ul className="text-muted-foreground">
                       {Object.entries(p.features).filter(([, f]) => f.enabled).map(([key, f]) => (
-                        <li key={key}>✓ {PLAN_FEATURES[key as keyof typeof PLAN_FEATURES]?.description ?? key}{f.limit !== null && f.limit !== undefined ? `: ${f.limit}` : ''}</li>
+                        <li key={key}>✓ {FEATURE_LABEL[key] ?? key}{f.limit !== null && f.limit !== undefined ? `: ${f.limit}` : ''}</li>
                       ))}
                     </ul>
                     {p.priceMinor > 0 && (
                       <span className="mt-auto flex gap-2">
-                        {p.trialDays > 0 && !here && <ActionButton variant="outline" run={async () => { await api(`/organizations/${org.id}/subscription/trial`, { method: 'POST', body: { planCode: p.code } }); await current.reload(); }}>Try {p.trialDays} days free</ActionButton>}
-                        <ActionButton run={buy(p.code)}>{here ? 'Renew' : 'Choose'}</ActionButton>
+                        {p.trialDays > 0 && !here && <ActionButton variant="outline" run={async () => { await api(`/organizations/${org.id}/subscription/trial`, { method: 'POST', body: { planCode: p.code } }); await current.reload(); }}>{p.trialDays} дней бесплатно</ActionButton>}
+                        <ActionButton run={buy(p.code)}>{here ? 'Продлить' : 'Выбрать'}</ActionButton>
                       </span>
                     )}
                   </li>
@@ -111,19 +110,18 @@ function Page() {
             </ul>
           )}
         </Async>
-        <p className="mt-3 text-[11px] text-muted-foreground">Payments run in the provider’s test mode until live payments are enabled for the platform.</p>
+        <p className="mt-3 text-[11px] text-muted-foreground">Пока платформа не включила настоящие платежи, оплата работает в тестовом режиме.</p>
       </Card>
 
-      <Card title="Recent payments">
+      <Card title="Последние платежи">
         <Async state={payments}>
-          {({ items }) => items.length === 0 ? <p className="text-xs text-muted-foreground">No payments yet.</p> : (
+          {({ items }) => items.length === 0 ? <p className="text-xs text-muted-foreground">Платежей пока нет.</p> : (
             <ul className="divide-y divide-border text-xs">
-              {items.map((p) => <li key={p.id} className="flex justify-between py-2"><span>{new Date(p.createdAt).toLocaleString()} · {p.status.toLowerCase()}</span><span className="tabular-nums">{formatMoney({ amountMinor: p.amountMinor, currency: p.currency })}</span></li>)}
+              {items.map((p) => <li key={p.id} className="flex justify-between py-2"><span>{dateTime(p.createdAt)} · {PAYMENT_LABEL[p.status] ?? p.status}</span><span className="tabular-nums">{formatMoney({ amountMinor: p.amountMinor, currency: p.currency })}</span></li>)}
             </ul>
           )}
         </Async>
       </Card>
-      <ErrorLine error={null} />
     </>
   );
 }

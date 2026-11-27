@@ -78,6 +78,16 @@ describe('catalog view mapping (unit)', () => {
     expect(p.sizes).toEqual([{ label: 'One size', inStock: true }]);
   });
 
+  it('reads Russian option names (Размер, Цвет) like the English ones', () => {
+    const options = [
+      { name: 'Размер', values: [{ id: 's', value: 'S', swatchHex: null }] },
+      { name: 'Цвет', values: [{ id: 'b', value: 'Чёрный', swatchHex: '#111111' }] },
+    ];
+    const p = toStoreProduct(row([{ id: 'v5', priceMinor: 100n, stock: 1, isActive: true, optionValues: [{ optionValueId: 's' }, { optionValueId: 'b' }] }], options), 'USD', [], (k) => k);
+    expect(p.sizes).toEqual([{ label: 'S', inStock: true }]);
+    expect(p.colors).toEqual([{ name: 'Чёрный', hex: '#111111' }]);
+  });
+
   it('rejects inconsistent product documents', () => {
     const base = product('ok');
     expect(productInputSchema.safeParse({ ...base, variants: [{ ...base.variants[0], options: { Size: 'S' } }] }).success).toBe(false);

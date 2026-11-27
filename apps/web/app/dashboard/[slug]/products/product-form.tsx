@@ -90,12 +90,12 @@ export function ProductForm({ product }: { product: ProductDto | null }) {
   const [mediaIds, setMediaIds] = useState<string[]>(product?.media.map((m) => m.id) ?? []);
   const [collectionIds, setCollectionIds] = useState<string[]>(product?.collectionIds ?? []);
   const [options, setOptions] = useState<OptionDraft[]>(
-    product?.options.map((o) => ({ name: o.name, valuesText: o.values.map((v) => (v.swatchHex ? `${v.value} ${v.swatchHex}` : v.value)).join('\n') })) ?? [{ name: 'Size', valuesText: 'S\nM\nL' }],
+    product?.options.map((o) => ({ name: o.name, valuesText: o.values.map((v) => (v.swatchHex ? `${v.value} ${v.swatchHex}` : v.value)).join('\n') })) ?? [{ name: 'Размер', valuesText: 'S\nM\nL' }],
   );
   const [variants, setVariants] = useState<VariantDraft[]>(
     product
       ? product.variants.map((v) => ({ id: v.id, options: v.options, sku: v.sku ?? '', price: fromMinor(v.priceMinor), compare: fromMinor(v.compareAtPriceMinor), stock: String(v.stock), isActive: v.isActive }))
-      : rebuildVariants([{ name: 'Size', valuesText: 'S\nM\nL' }], [{ options: {}, sku: '', price: '', compare: '', stock: '0', isActive: true }]),
+      : rebuildVariants([{ name: 'Размер', valuesText: 'S\nM\nL' }], [{ options: {}, sku: '', price: '', compare: '', stock: '0', isActive: true }]),
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -113,9 +113,9 @@ export function ProductForm({ product }: { product: ProductDto | null }) {
       const priceMinor = toMinor(v.price);
       const compare = v.compare.trim() ? toMinor(v.compare) : null;
       const stock = Number(v.stock);
-      if (priceMinor === null) return setError(`Variant ${i + 1}: enter a price like 49.90`);
-      if (v.compare.trim() && compare === null) return setError(`Variant ${i + 1}: the “compare at” price is not a valid amount`);
-      if (!Number.isInteger(stock) || stock < 0) return setError(`Variant ${i + 1}: stock must be a whole number`);
+      if (priceMinor === null) return setError(`Вариант ${i + 1}: укажите цену, например 49.90`);
+      if (v.compare.trim() && compare === null) return setError(`Вариант ${i + 1}: старая цена указана неверно`);
+      if (!Number.isInteger(stock) || stock < 0) return setError(`Вариант ${i + 1}: количество должно быть целым числом`);
       rows.push({ ...(v.id ? { id: v.id } : {}), options: v.options, sku: v.sku.trim() || null, priceMinor, compareAtPriceMinor: compare, stock, isActive: v.isActive });
     }
     const parsed = productInputSchema.safeParse({
@@ -132,7 +132,7 @@ export function ProductForm({ product }: { product: ProductDto | null }) {
       mediaIds,
       collectionIds,
     });
-    if (!parsed.success) return setError(parsed.error.issues.map((i) => `${i.path.join('.') || 'form'}: ${i.message}`).slice(0, 3).join(' · '));
+    if (!parsed.success) return setError(parsed.error.issues.map((i) => `${i.path.join('.') || 'форма'}: ${i.message}`).slice(0, 3).join(' · '));
 
     setBusy(true);
     try {
@@ -146,61 +146,66 @@ export function ProductForm({ product }: { product: ProductDto | null }) {
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); void save(); }} className="flex flex-col">
-      <Card title="Details">
+      <Card title="Основное">
         <div className="grid gap-3 sm:grid-cols-2">
-          <TextField label="Title" value={title} onChange={(v) => { setTitle(v); if (!slugTouched) setSlug(slugify(v)); }} maxLength={160} />
-          <TextField label="Address (slug)" value={slug} onChange={(v) => { setSlugTouched(true); setSlug(v.toLowerCase()); }} hint="Part of the product link" />
-          <Select label="Status" value={status} onChange={setStatus} options={[{ value: 'DRAFT', label: 'Draft (hidden)' }, { value: 'ACTIVE', label: 'Active (visible)' }, { value: 'ARCHIVED', label: 'Archived (hidden)' }]} />
-          <Select label="For" value={gender} onChange={setGender} options={[{ value: 'UNISEX', label: 'Unisex' }, { value: 'WOMAN', label: 'Women' }, { value: 'MAN', label: 'Men' }]} />
-          <TextField label="Label" value={label} onChange={setLabel} maxLength={24} hint="Small marker above the title, e.g. FW26" />
-          <TextField label="Sort order" type="number" value={sortOrder} onChange={setSortOrder} hint="Lower numbers come first" />
+          <TextField label="Название" value={title} onChange={(v) => { setTitle(v); if (!slugTouched) setSlug(slugify(v)); }} maxLength={160} />
+          <Select label="Показывать в магазине?" value={status} onChange={setStatus} options={[{ value: 'ACTIVE', label: 'Да — в продаже' }, { value: 'DRAFT', label: 'Нет — черновик' }, { value: 'ARCHIVED', label: 'Нет — в архиве' }]} />
+          <Select label="Для кого" value={gender} onChange={setGender} options={[{ value: 'UNISEX', label: 'Унисекс' }, { value: 'WOMAN', label: 'Женское' }, { value: 'MAN', label: 'Мужское' }]} />
         </div>
-        <div className="mt-3"><TextArea label="Description" value={description} onChange={setDescription} hint="One bullet point per line" /></div>
+        <div className="mt-3"><TextArea label="Описание" value={description} onChange={setDescription} hint="Каждый пункт — с новой строки" /></div>
+        <details className="mt-4 text-xs">
+          <summary className="cursor-pointer text-muted-foreground">Дополнительно</summary>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <TextField label="Адрес в ссылке" value={slug} onChange={(v) => { setSlugTouched(true); setSlug(v.toLowerCase()); }} hint="Заполняется сам из названия" />
+            <TextField label="Метка" value={label} onChange={setLabel} maxLength={24} hint="Над названием, например FW26" />
+            <TextField label="Порядок" type="number" value={sortOrder} onChange={setSortOrder} hint="Меньше — выше в каталоге" />
+          </div>
+        </details>
       </Card>
 
-      <Card title="Photos"><MediaPicker orgId={org.id} selected={mediaIds} onChange={setMediaIds} /></Card>
+      <Card title="Фото"><MediaPicker orgId={org.id} selected={mediaIds} onChange={setMediaIds} /></Card>
 
-      <Card title="Options" actions={options.length < 3 ? <Button type="button" variant="outline" size="sm" onClick={() => changeOptions([...options, { name: '', valuesText: '' }])}>Add option</Button> : undefined}>
-        <p className="mb-3 text-[11px] text-muted-foreground">“Size”, “Color” and “Fabric” are shown as the size picker, colour swatches and material on the storefront. For a colour you can add a swatch: <code>Black #111111</code>.</p>
+      <Card title="Размеры, цвета и другие варианты" actions={options.length < 3 ? <Button type="button" variant="outline" size="sm" onClick={() => changeOptions([...options, { name: '', valuesText: '' }])}>+ Добавить</Button> : undefined}>
+        <p className="mb-3 text-[11px] text-muted-foreground">«Размер», «Цвет» и «Ткань» показываются в магазине как выбор размера, образцы цвета и материал. К цвету можно добавить образец: <code>Чёрный #111111</code>.</p>
         <div className="flex flex-col gap-4">
           {options.map((o, i) => (
             <div key={i} className="grid items-start gap-3 sm:grid-cols-[10rem_1fr_auto]">
-              <TextField label="Name" value={o.name} onChange={(v) => changeOptions(options.map((x, j) => (j === i ? { ...x, name: v } : x)))} maxLength={40} />
-              <TextArea label="Values (one per line)" hint="Renaming or removing a value resets that variant’s price and stock." rows={3} value={o.valuesText} onChange={(v) => changeOptions(options.map((x, j) => (j === i ? { ...x, valuesText: v } : x)))} />
-              <Button type="button" variant="ghost" size="sm" className="mt-5" onClick={() => changeOptions(options.filter((_, j) => j !== i))}>Remove</Button>
+              <TextField label="Название" value={o.name} onChange={(v) => changeOptions(options.map((x, j) => (j === i ? { ...x, name: v } : x)))} maxLength={40} />
+              <TextArea label="Значения (по одному в строке)" hint="Если переименовать или удалить значение, цена и остаток этого варианта сбросятся." rows={3} value={o.valuesText} onChange={(v) => changeOptions(options.map((x, j) => (j === i ? { ...x, valuesText: v } : x)))} />
+              <Button type="button" variant="ghost" size="sm" className="mt-5" onClick={() => changeOptions(options.filter((_, j) => j !== i))}>Убрать</Button>
             </div>
           ))}
         </div>
       </Card>
 
-      <Card title={`Variants (${variants.length})`}>
-        {variants.length > MAX_VARIANTS && <p role="alert" className="mb-2 text-xs text-destructive">Too many combinations: at most {MAX_VARIANTS} variants per product.</p>}
+      <Card title={`Цены и остатки (${variants.length})`}>
+        {variants.length > MAX_VARIANTS && <p role="alert" className="mb-2 text-xs text-destructive">Слишком много сочетаний: не больше {MAX_VARIANTS} вариантов на товар.</p>}
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="text-left text-muted-foreground"><tr><th className="pr-2 font-normal">Variant</th><th className="pr-2 font-normal">SKU</th><th className="pr-2 font-normal">Price</th><th className="pr-2 font-normal">Compare at</th><th className="pr-2 font-normal">Stock</th><th className="font-normal">On sale</th></tr></thead>
+            <thead className="text-left text-muted-foreground"><tr><th className="pr-2 font-normal">Вариант</th><th className="pr-2 font-normal">Цена</th><th className="pr-2 font-normal">Старая цена</th><th className="pr-2 font-normal">Остаток, шт</th><th className="pr-2 font-normal">Продаётся</th><th className="font-normal">Артикул</th></tr></thead>
             <tbody>
               {variants.map((v, i) => (
                 <tr key={comboKey(v.options)}>
-                  <td className="py-1 pr-2 font-bold">{Object.values(v.options).join(' / ') || 'Default'}</td>
-                  <td className="py-1 pr-2"><Input aria-label="SKU" value={v.sku} onChange={(e) => patchVariant(i, { sku: e.target.value })} className="h-8 w-28" /></td>
-                  <td className="py-1 pr-2"><Input aria-label="Price" inputMode="decimal" value={v.price} onChange={(e) => patchVariant(i, { price: e.target.value })} className="h-8 w-24" /></td>
-                  <td className="py-1 pr-2"><Input aria-label="Compare at price" inputMode="decimal" value={v.compare} onChange={(e) => patchVariant(i, { compare: e.target.value })} className="h-8 w-24" /></td>
-                  <td className="py-1 pr-2"><Input aria-label="Stock" inputMode="numeric" value={v.stock} onChange={(e) => patchVariant(i, { stock: e.target.value })} className="h-8 w-20" /></td>
-                  <td className="py-1"><input type="checkbox" aria-label="On sale" checked={v.isActive} onChange={(e) => patchVariant(i, { isActive: e.target.checked })} /></td>
+                  <td className="py-1 pr-2 font-bold">{Object.values(v.options).join(' / ') || 'Обычный'}</td>
+                  <td className="py-1 pr-2"><Input aria-label="Цена" inputMode="decimal" value={v.price} onChange={(e) => patchVariant(i, { price: e.target.value })} className="h-8 w-24" /></td>
+                  <td className="py-1 pr-2"><Input aria-label="Старая цена" placeholder="—" inputMode="decimal" value={v.compare} onChange={(e) => patchVariant(i, { compare: e.target.value })} className="h-8 w-24" /></td>
+                  <td className="py-1 pr-2"><Input aria-label="Остаток" inputMode="numeric" value={v.stock} onChange={(e) => patchVariant(i, { stock: e.target.value })} className="h-8 w-20" /></td>
+                  <td className="py-1 pr-2"><input type="checkbox" aria-label="Продаётся" checked={v.isActive} onChange={(e) => patchVariant(i, { isActive: e.target.checked })} /></td>
+                  <td className="py-1"><Input aria-label="Артикул" placeholder="—" value={v.sku} onChange={(e) => patchVariant(i, { sku: e.target.value })} className="h-8 w-28" /></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="mt-2 text-[11px] text-muted-foreground">Prices are in {org.currency}. Changing an option’s name starts its variants over.</p>
+        <p className="mt-2 text-[11px] text-muted-foreground">Цены в {org.currency}. «Старая цена» — зачёркнутая цена для скидки, можно не заполнять.</p>
       </Card>
 
-      <Card title="Size guide and collections">
+      <Card title="Таблица размеров и коллекции">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Select label="Size chart" value={sizeChartId} onChange={setSizeChartId} options={[{ value: '', label: 'None' }, ...(charts.data ?? []).map((c) => ({ value: c.id, label: c.name }))]} />
+          <Select label="Таблица размеров" value={sizeChartId} onChange={setSizeChartId} options={[{ value: '', label: 'Нет' }, ...(charts.data ?? []).map((c) => ({ value: c.id, label: c.name }))]} />
           <fieldset className="flex flex-col gap-1">
-            <legend className="label-xs mb-1">Collections</legend>
-            {(collections.data ?? []).length === 0 && <span className="text-xs text-muted-foreground">No collections yet.</span>}
+            <legend className="label-xs mb-1">Коллекции</legend>
+            {(collections.data ?? []).length === 0 && <span className="text-xs text-muted-foreground">Коллекций пока нет.</span>}
             {(collections.data ?? []).map((c) => (
               <Check key={c.id} label={c.title} checked={collectionIds.includes(c.id)} onChange={(on) => setCollectionIds(on ? [...collectionIds, c.id] : collectionIds.filter((x) => x !== c.id))} />
             ))}
@@ -210,11 +215,11 @@ export function ProductForm({ product }: { product: ProductDto | null }) {
 
       <ErrorLine error={error} />
       <div className="mt-3 flex items-center gap-3">
-        <Button type="submit" disabled={busy}>{busy ? 'Saving…' : product ? 'Save changes' : 'Create product'}</Button>
-        <Button asChild variant="ghost"><Link href={`/dashboard/${org.slug}/products`}>Cancel</Link></Button>
+        <Button type="submit" disabled={busy}>{busy ? 'Сохраняем…' : product ? 'Сохранить' : 'Добавить товар'}</Button>
+        <Button asChild variant="ghost"><Link href={`/dashboard/${org.slug}/products`}>Отмена</Link></Button>
         {product && (
           <span className="ml-auto">
-            <ActionButton variant="destructive" confirm="Delete this product? Past orders keep their details." run={async () => { await api(`/organizations/${org.id}/products/${product.id}`, { method: 'DELETE' }); router.push(`/dashboard/${org.slug}/products`); }}>Delete</ActionButton>
+            <ActionButton variant="destructive" confirm="Удалить товар? В прошлых заказах он останется." run={async () => { await api(`/organizations/${org.id}/products/${product.id}`, { method: 'DELETE' }); router.push(`/dashboard/${org.slug}/products`); }}>Удалить</ActionButton>
           </span>
         )}
       </div>

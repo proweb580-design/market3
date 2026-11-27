@@ -63,9 +63,9 @@ export function toStoreProduct(p: ProductRow, currency: string, collections: str
   const price = priced.reduce((min, v) => (v.priceMinor < min ? v.priceMinor : min), priced[0]?.priceMinor ?? 0n);
   const inStock = (valueId?: string) => active.some((v) => v.stock > 0 && (!valueId || v.optionValues.some((l) => l.optionValueId === valueId)));
 
-  const size = optionNamed(p, 'size');
-  const color = optionNamed(p, 'color', 'colour');
-  const fabric = optionNamed(p, 'fabric', 'material');
+  const size = optionNamed(p, 'size', 'размер');
+  const color = optionNamed(p, 'color', 'colour', 'цвет');
+  const fabric = optionNamed(p, 'fabric', 'material', 'ткань', 'материал');
   return {
     slug: p.slug,
     title: p.title,

@@ -47,7 +47,7 @@ function CollectionForm({ collection }: { collection: CollectionDto | null }) {
   async function save() {
     setError(null);
     const parsed = collectionInputSchema.safeParse({ slug, title, description: description.trim() || null, imageId: image[0] ?? null, sortOrder: Number(sortOrder) || 0, isPublished: published, productIds });
-    if (!parsed.success) return setError(parsed.error.issues.map((i) => `${i.path.join('.') || 'form'}: ${i.message}`).slice(0, 3).join(' · '));
+    if (!parsed.success) return setError(parsed.error.issues.map((i) => `${i.path.join('.') || 'форма'}: ${i.message}`).slice(0, 3).join(' · '));
     setBusy(true);
     try {
       await api(collection ? `/organizations/${org.id}/collections/${collection.id}` : `/organizations/${org.id}/collections`, { method: collection ? 'PUT' : 'POST', body: parsed.data });
@@ -60,31 +60,36 @@ function CollectionForm({ collection }: { collection: CollectionDto | null }) {
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); void save(); }}>
-      <Card title="Details">
+      <Card title="Основное">
         <div className="grid gap-3 sm:grid-cols-2">
-          <TextField label="Title" value={title} onChange={(v) => { setTitle(v); if (!slugTouched) setSlug(slugify(v)); }} maxLength={80} />
-          <TextField label="Address (slug)" value={slug} onChange={(v) => { setSlugTouched(true); setSlug(v.toLowerCase()); }} />
-          <TextField label="Sort order" type="number" value={sortOrder} onChange={setSortOrder} />
-          <div className="pt-5"><Check label="Published" checked={published} onChange={setPublished} /></div>
+          <TextField label="Название" value={title} onChange={(v) => { setTitle(v); if (!slugTouched) setSlug(slugify(v)); }} maxLength={80} />
+          <div className="pt-5"><Check label="Показывать в магазине" checked={published} onChange={setPublished} /></div>
         </div>
-        <div className="mt-3"><TextArea label="Description" rows={3} value={description} onChange={setDescription} /></div>
+        <div className="mt-3"><TextArea label="Описание" rows={3} value={description} onChange={setDescription} /></div>
+        <details className="mt-4 text-xs">
+          <summary className="cursor-pointer text-muted-foreground">Дополнительно</summary>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <TextField label="Адрес в ссылке" value={slug} onChange={(v) => { setSlugTouched(true); setSlug(v.toLowerCase()); }} hint="Заполняется сам из названия" />
+            <TextField label="Порядок" type="number" value={sortOrder} onChange={setSortOrder} hint="Меньше — выше" />
+          </div>
+        </details>
       </Card>
-      <Card title="Cover image"><MediaPicker orgId={org.id} selected={image} onChange={setImage} multiple={false} /></Card>
-      <Card title={`Products (${productIds.length})`}>
+      <Card title="Обложка"><MediaPicker orgId={org.id} selected={image} onChange={setImage} multiple={false} /></Card>
+      <Card title={`Товары в коллекции (${productIds.length})`}>
         {productIds.length > 0 && (
           <ol className="mb-3 flex flex-col gap-1 text-xs">
             {productIds.map((id, i) => (
               <li key={id} className="flex items-center gap-2">
                 <span className="w-5 text-muted-foreground">{i + 1}.</span>
                 <span className="flex-1 truncate">{titleOf.get(id) ?? id}</span>
-                {i > 0 && <button type="button" aria-label="Move up" onClick={() => move(i, -1)}>↑</button>}
-                {i < productIds.length - 1 && <button type="button" aria-label="Move down" onClick={() => move(i, 1)}>↓</button>}
-                <button type="button" aria-label="Remove" onClick={() => setProductIds(productIds.filter((x) => x !== id))}>✕</button>
+                {i > 0 && <button type="button" aria-label="Выше" onClick={() => move(i, -1)}>↑</button>}
+                {i < productIds.length - 1 && <button type="button" aria-label="Ниже" onClick={() => move(i, 1)}>↓</button>}
+                <button type="button" aria-label="Убрать" onClick={() => setProductIds(productIds.filter((x) => x !== id))}>✕</button>
               </li>
             ))}
           </ol>
         )}
-        <p className="label-xs mb-1 text-muted-foreground">Add products</p>
+        <p className="label-xs mb-1 text-muted-foreground">Добавить товары</p>
         <ul className="flex max-h-56 flex-col gap-1 overflow-y-auto">
           {(products.data?.items ?? []).filter((p) => !productIds.includes(p.id)).map((p) => (
             <li key={p.id}><button type="button" className="text-xs hover:underline" onClick={() => setProductIds([...productIds, p.id])}>+ {p.title}</button></li>
@@ -93,9 +98,9 @@ function CollectionForm({ collection }: { collection: CollectionDto | null }) {
       </Card>
       <ErrorLine error={error} />
       <div className="mt-3 flex items-center gap-3">
-        <Button type="submit" disabled={busy}>{busy ? 'Saving…' : collection ? 'Save changes' : 'Create collection'}</Button>
-        <Button asChild variant="ghost"><Link href={`/dashboard/${org.slug}/collections`}>Cancel</Link></Button>
-        {collection && <span className="ml-auto"><ActionButton variant="destructive" confirm="Delete this collection? Its products stay in the catalogue." run={async () => { await api(`/organizations/${org.id}/collections/${collection.id}`, { method: 'DELETE' }); router.push(`/dashboard/${org.slug}/collections`); }}>Delete</ActionButton></span>}
+        <Button type="submit" disabled={busy}>{busy ? 'Сохраняем…' : collection ? 'Сохранить' : 'Создать коллекцию'}</Button>
+        <Button asChild variant="ghost"><Link href={`/dashboard/${org.slug}/collections`}>Отмена</Link></Button>
+        {collection && <span className="ml-auto"><ActionButton variant="destructive" confirm="Удалить коллекцию? Товары останутся в каталоге." run={async () => { await api(`/organizations/${org.id}/collections/${collection.id}`, { method: 'DELETE' }); router.push(`/dashboard/${org.slug}/collections`); }}>Удалить</ActionButton></span>}
       </div>
     </form>
   );
@@ -109,6 +114,6 @@ function Edit({ id }: { id: string }) {
 
 export default function CollectionPage() {
   const { id } = useParams<{ id: string }>();
-  if (id === 'new') return (<><PageHead title="New collection" /><CollectionForm collection={null} /></>);
+  if (id === 'new') return (<><PageHead title="Новая коллекция" /><CollectionForm collection={null} /></>);
   return <Edit id={id} />;
 }

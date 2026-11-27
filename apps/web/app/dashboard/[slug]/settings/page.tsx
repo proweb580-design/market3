@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { PERMISSIONS } from '@repo/shared';
 import { Button } from '@repo/ui/components/ui/button';
 import { api } from '../../../../lib/api';
-import { ActionButton, Async, Card, Check, ErrorLine, PageHead, TextField, errText, useLoad } from '../../kit';
+import { ActionButton, Async, Card, ErrorLine, PageHead, TextField, errText, useLoad } from '../../kit';
 import { useOrg } from '../../org-context';
 
 function General() {
@@ -18,7 +17,7 @@ function General() {
     setMessage(null);
     try {
       await api(`/organizations/${org.id}`, { method: 'PATCH', body: { name: name.trim() } });
-      setMessage({ ok: true, text: 'Saved. Reload the page to see the new name everywhere.' });
+      setMessage({ ok: true, text: 'Сохранено. Обновите страницу, чтобы новое название появилось везде.' });
     } catch (e) {
       setMessage({ ok: false, text: errText(e) });
     } finally {
@@ -27,12 +26,12 @@ function General() {
   }
 
   return (
-    <Card title="Store">
+    <Card title="Магазин">
       <form onSubmit={(e) => { e.preventDefault(); void save(); }} className="flex max-w-sm flex-col gap-3">
-        <TextField label="Name" value={name} onChange={setName} maxLength={80} />
-        <p className="text-[11px] text-muted-foreground">Address: <b>/s/{org.slug}</b> · Currency: <b>{org.currency}</b> (they can’t be changed once orders exist).</p>
+        <TextField label="Название" value={name} onChange={setName} maxLength={80} />
+        <p className="text-[11px] text-muted-foreground">Адрес: <b>/s/{org.slug}</b> · Валюта: <b>{org.currency}</b> (после первых заказов их не изменить).</p>
         {message && <p role={message.ok ? 'status' : 'alert'} className={message.ok ? 'text-xs' : 'text-xs text-destructive'}>{message.text}</p>}
-        <Button type="submit" disabled={busy || name.trim().length < 2} className="self-start">{busy ? 'Saving…' : 'Save'}</Button>
+        <Button type="submit" disabled={busy || name.trim().length < 2} className="self-start">{busy ? 'Сохраняем…' : 'Сохранить'}</Button>
       </form>
     </Card>
   );
@@ -60,21 +59,21 @@ function TelegramBot() {
   }
 
   return (
-    <Card title="Telegram bot">
+    <Card title="Telegram-бот магазина">
       <Async state={status}>
         {(s) => (
           <div className="flex flex-col items-start gap-3 text-xs">
             {s.connected ? (
               <>
-                <p>Connected{s.bot?.username ? ` as @${s.bot.username}` : ''}. Your store opens from this bot as a Mini App.</p>
-                <ActionButton variant="outline" confirm="Disconnect your bot? The store will use the platform bot." run={async () => { await api(`/organizations/${org.id}/integrations/telegram`, { method: 'DELETE' }); await status.reload(); }}>Disconnect</ActionButton>
+                <p>Подключён{s.bot?.username ? <> — <b>@{s.bot.username}</b></> : ''}. Покупатели открывают магазин прямо из этого бота.</p>
+                <ActionButton variant="outline" confirm="Отключить бота? Магазин будет открываться через бота платформы." run={async () => { await api(`/organizations/${org.id}/integrations/telegram`, { method: 'DELETE' }); await status.reload(); }}>Отключить</ActionButton>
               </>
             ) : (
               <>
-                <p className="text-muted-foreground">{s.usingPlatformBot ? 'Your store currently opens from the platform bot.' : 'No bot connected.'} To use your own bot, create it in @BotFather and paste its token. The token is stored encrypted and never shown again (needs a plan with the Mini App).</p>
+                <p className="text-muted-foreground">{s.usingPlatformBot ? 'Сейчас магазин открывается через бота платформы.' : 'Бот не подключён.'} Чтобы подключить свой: создайте бота в @BotFather (/newbot), скопируйте токен и вставьте его сюда. Токен хранится в зашифрованном виде (нужен тариф с Telegram-магазином).</p>
                 <form onSubmit={(e) => { e.preventDefault(); void connect(); }} className="flex w-full max-w-md items-end gap-2">
-                  <div className="flex-1"><TextField label="Bot token" value={token} onChange={setToken} type="password" /></div>
-                  <Button type="submit" disabled={busy || !token}>{busy ? 'Connecting…' : 'Connect'}</Button>
+                  <div className="flex-1"><TextField label="Токен бота" value={token} onChange={setToken} type="password" /></div>
+                  <Button type="submit" disabled={busy || !token}>{busy ? 'Подключаем…' : 'Подключить'}</Button>
                 </form>
                 <ErrorLine error={error} />
               </>
@@ -115,30 +114,30 @@ function SupportBotCard() {
   }
 
   return (
-    <Card title="Support bot">
+    <Card title="Бот поддержки">
       <Async state={status}>
         {(s) => (
           <div className="flex flex-col items-start gap-3 text-xs">
             {s.connected && s.bot ? (
               <>
                 {s.bot.chatId != null ? (
-                  <p>@{s.bot.username} posts support messages to <b>{s.bot.chatTitle ?? 'your group'}</b>. Anyone there can press “Take” or “Resolved”; the Support page shows the same status.</p>
+                  <p>@{s.bot.username} присылает обращения покупателей в группу <b>{s.bot.chatTitle ?? 'вашей команды'}</b>. Там можно нажать «Взять» или «Решено» — статус совпадает с разделом «Обращения».</p>
                 ) : (
                   <>
-                    <p>@{s.bot.username} is connected. Now add it to your team’s Telegram group and send this message there:</p>
+                    <p>@{s.bot.username} подключён. Теперь добавьте его в Telegram-группу команды и отправьте туда это сообщение:</p>
                     <code className="select-all rounded bg-muted px-2 py-1">/bind@{s.bot.username} {s.bot.bindCode}</code>
-                    <Button variant="outline" onClick={() => void status.reload()}>I sent it — check</Button>
+                    <Button variant="outline" onClick={() => void status.reload()}>Отправил — проверить</Button>
                   </>
                 )}
-                {!s.bot.webhook && <p className="text-muted-foreground">Telegram can’t reach this API (it needs a public HTTPS address), so the bot won’t receive commands here.</p>}
-                <ActionButton variant="outline" confirm="Disconnect the support bot? Messages will still appear on the Support page." run={async () => { await api(path, { method: 'DELETE' }); await status.reload(); }}>Disconnect</ActionButton>
+                {!s.bot.webhook && <p className="text-muted-foreground">Telegram не может достучаться до сервера (нужен публичный HTTPS-адрес), поэтому бот пока не получает команды.</p>}
+                <ActionButton variant="outline" confirm="Отключить бота поддержки? Обращения останутся в разделе «Обращения»." run={async () => { await api(path, { method: 'DELETE' }); await status.reload(); }}>Отключить</ActionButton>
               </>
             ) : (
               <>
-                <p className="text-muted-foreground">Create a separate bot in @BotFather for support (not your store bot) and paste its token. Buyer messages will then arrive in your team’s Telegram group, where the owner or a manager takes and resolves them. Until then they appear on the Support page and as direct messages to members who linked Telegram.</p>
+                <p className="text-muted-foreground">Создайте в @BotFather отдельного бота для поддержки (не бота магазина) и вставьте его токен. Обращения покупателей будут приходить в Telegram-группу команды. Пока бот не подключён, они видны в разделе «Обращения».</p>
                 <form onSubmit={(e) => { e.preventDefault(); void connect(); }} className="flex w-full max-w-md items-end gap-2">
-                  <div className="flex-1"><TextField label="Support bot token" value={token} onChange={setToken} type="password" /></div>
-                  <Button type="submit" disabled={busy || !token}>{busy ? 'Connecting…' : 'Connect'}</Button>
+                  <div className="flex-1"><TextField label="Токен бота поддержки" value={token} onChange={setToken} type="password" /></div>
+                  <Button type="submit" disabled={busy || !token}>{busy ? 'Подключаем…' : 'Подключить'}</Button>
                 </form>
                 <ErrorLine error={error} />
               </>
@@ -150,73 +149,13 @@ function SupportBotCard() {
   );
 }
 
-interface Key { id: string; name: string; prefix: string; scopes: string[]; lastUsedAt: string | null; expiresAt: string | null; revokedAt: string | null }
-
-const ORG_SCOPES = Object.entries(PERMISSIONS).filter(([, p]) => p.scope === 'ORGANIZATION').map(([key, p]) => ({ key, description: p.description }));
-const READ_ONLY = ['catalog.read', 'orders.read'];
-
-function ApiKeys() {
-  const org = useOrg();
-  const keys = useLoad<Key[]>(`/organizations/${org.id}/api-keys`);
-  const [name, setName] = useState('');
-  const [scopes, setScopes] = useState<string[]>(READ_ONLY);
-  const [secret, setSecret] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function create() {
-    setBusy(true);
-    setError(null);
-    setSecret(null);
-    try {
-      const k = await api<{ secret: string }>(`/organizations/${org.id}/api-keys`, { method: 'POST', body: { name: name.trim(), scopes } });
-      setSecret(k.secret);
-      setName('');
-      await keys.reload();
-    } catch (e) {
-      setError(errText(e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <Card title="API keys">
-      <p className="mb-3 text-[11px] text-muted-foreground">For integrations (needs a plan with API access). A key can only do what you tick here, and only inside this store.</p>
-      <Async state={keys}>
-        {(rows) => (
-          <ul className="mb-4 divide-y divide-border text-xs">
-            {rows.filter((k) => !k.revokedAt).map((k) => (
-              <li key={k.id} className="flex items-center justify-between gap-3 py-2">
-                <span><b>{k.name}</b> <span className="text-muted-foreground">pk_{k.prefix}… · {k.scopes.length} permissions · {k.lastUsedAt ? `used ${new Date(k.lastUsedAt).toLocaleDateString()}` : 'never used'}</span></span>
-                <ActionButton variant="outline" confirm="Revoke this key? Integrations using it stop working immediately." run={async () => { await api(`/organizations/${org.id}/api-keys/${k.id}`, { method: 'DELETE' }); await keys.reload(); }}>Revoke</ActionButton>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Async>
-      <form onSubmit={(e) => { e.preventDefault(); void create(); }} className="flex flex-col gap-3">
-        <div className="max-w-sm"><TextField label="New key name" value={name} onChange={setName} maxLength={60} /></div>
-        <fieldset className="grid gap-1 sm:grid-cols-2">
-          <legend className="label-xs mb-1">Permissions</legend>
-          {ORG_SCOPES.map((s) => <Check key={s.key} label={`${s.key} — ${s.description}`} checked={scopes.includes(s.key)} onChange={(on) => setScopes(on ? [...scopes, s.key] : scopes.filter((x) => x !== s.key))} />)}
-        </fieldset>
-        <ErrorLine error={error} />
-        {secret && <p role="status" className="break-all text-xs">Copy the key now — it is shown only once: <b>{secret}</b></p>}
-        <Button type="submit" disabled={busy || name.trim().length < 2 || scopes.length === 0} className="self-start">{busy ? 'Creating…' : 'Create key'}</Button>
-      </form>
-    </Card>
-  );
-}
-
 export default function SettingsPage() {
   return (
     <>
-      <PageHead title="Settings" />
+      <PageHead title="Настройки" />
       <General />
       <TelegramBot />
       <SupportBotCard />
-      <ApiKeys />
     </>
   );
 }
