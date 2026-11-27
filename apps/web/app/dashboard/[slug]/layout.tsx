@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { ErrorLine, Loading, useLoad } from '../kit';
 import { LibraryProvider } from '../media-lib';
 import { OrgProvider, type Org } from '../org-context';
+import { SignOutButton } from '../owner-login';
 
 interface Me {
   organizations: { id: string; slug: string; name: string; role: { key: string; name: string } }[];
@@ -56,7 +57,7 @@ export default function OrgLayout({ children }: { children: ReactNode }) {
     return (
       <main className="px-6 py-10 text-sm">
         <p>Магазин не найден, или у вас нет к нему доступа.</p>
-        <Link href="/account" className="mt-4 inline-block underline">← В аккаунт</Link>
+        <SignOutButton className="mt-4 underline" />
       </main>
     );
   }

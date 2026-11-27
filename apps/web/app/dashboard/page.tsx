@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { ErrorLine, Loading, useLoad } from './kit';
+import { SignOutButton } from './owner-login';
 
 interface Me {
   organizations: { slug: string }[];
@@ -28,8 +28,8 @@ export default function DashboardHome() {
       ) : (
         <>
           <p>У этого аккаунта нет доступа к магазину.</p>
-          <p className="mt-2 text-xs text-muted-foreground">Войдите под аккаунтом владельца или попросите владельца прислать приглашение (раздел «Сотрудники»).</p>
-          <Link href="/account" className="mt-4 inline-block text-xs underline">← В аккаунт</Link>
+          <p className="mt-2 text-xs text-muted-foreground">Выйдите и войдите под логином владельца, или попросите владельца прислать приглашение (раздел «Сотрудники»).</p>
+          <SignOutButton className="mt-4 text-xs underline" />
         </>
       )}
     </main>
