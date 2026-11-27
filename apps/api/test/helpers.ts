@@ -66,6 +66,7 @@ export async function createTestApp(envOverrides: Record<string, string> = {}, o
         CORS_ORIGINS: 'http://localhost:3000',
         DATABASE_URL: TEST_DB ?? 'postgresql://nobody:nothing@127.0.0.1:1/none',
         THROTTLE_LIMIT: '100000',
+        PLAN_LIMITS: 'true',
         ...envOverrides,
       }),
     )

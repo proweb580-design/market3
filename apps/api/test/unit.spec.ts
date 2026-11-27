@@ -7,6 +7,9 @@ import { ApiKeyRateLimiter } from '../src/modules/auth/rate-limiter.js';
 import { parseSort } from '../src/common/pagination.js';
 import { randomToken, safeEqualHex, sha256 } from '../src/common/crypto.js';
 import { addInterval } from '../src/modules/billing/period.js';
+import { EntitlementsService } from '../src/modules/billing/entitlements.service.js';
+import type { Env } from '../src/config/env.js';
+import type { PrismaService } from '../src/infra/prisma/prisma.service.js';
 import { createTestApp, ISSUER, AUDIENCE } from './helpers.js';
 
 const sub = '3f2b8a52-6a53-4f6c-9d9a-0a3b6f3c1c11';
@@ -106,5 +109,26 @@ describe('global rate limit', () => {
     } finally {
       await t.close();
     }
+  });
+});
+
+describe('EntitlementsService plan switch', () => {
+  // Free plan: no Telegram, 10 products; the store already has 10.
+  const db = {
+    subscription: { findFirst: async () => null },
+    plan: { findUnique: async () => ({ id: 'p', code: 'FREE', name: 'Free', features: [{ featureKey: 'products.max', enabled: true, limitValue: 10 }] }) },
+    product: { count: async () => 10 },
+  } as unknown as PrismaService;
+  const ent = (on: boolean) => new EntitlementsService(db, { PLAN_LIMITS: on } as Env);
+
+  it('single-owner mode (PLAN_LIMITS off): every feature on, no limits', async () => {
+    await expect(ent(false).assertFeature('o', 'telegram_mini_app')).resolves.toBeUndefined();
+    await expect(ent(false).assertLimit('o', 'products.max')).resolves.toBeUndefined();
+    expect((await ent(false).forOrganization('o')).plan?.code).toBe('FREE');
+  });
+
+  it('platform mode (PLAN_LIMITS on): the plan gates features and caps limits', async () => {
+    await expect(ent(true).assertFeature('o', 'telegram_mini_app')).rejects.toMatchObject({ status: 402 });
+    await expect(ent(true).assertLimit('o', 'products.max')).rejects.toMatchObject({ status: 402 });
   });
 });

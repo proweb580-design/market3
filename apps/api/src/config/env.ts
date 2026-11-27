@@ -39,6 +39,11 @@ const envSchema = z
     STRIPE_API_BASE_URL: z.url().optional(),
     /** Where Stripe Checkout sends the buyer back (the web app). */
     PUBLIC_WEB_URL: z.url().default('http://localhost:3000'),
+    /**
+     * Plan limits and paid features. Off (default) = one owner's own store: every feature on, no limits,
+     * whatever the subscription says. Turn on to run the platform as a paid service for many brands.
+     */
+    PLAN_LIMITS: z.stringbool().default(false),
 
     // Telegram Mini App.
     /** Platform bot (from @BotFather): opens any store. Brands may connect their own bot instead. Server-only. */

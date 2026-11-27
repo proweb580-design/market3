@@ -1,5 +1,6 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { PLAN_FEATURES, type PlanFeatureKey } from '@repo/shared';
+import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../infra/prisma/prisma.service.js';
 import { LIVE_STATUSES } from './period.js';
 
@@ -27,7 +28,10 @@ export class PlanRestrictionException extends HttpException {
  */
 @Injectable()
 export class EntitlementsService {
-  constructor(private readonly db: PrismaService) {}
+  constructor(
+    private readonly db: PrismaService,
+    @Inject(ENV) private readonly env: Env,
+  ) {}
 
   async forOrganization(organizationId: string): Promise<Entitlements> {
     const sub = await this.db.subscription.findFirst({
@@ -39,6 +43,8 @@ export class EntitlementsService {
     const features: Entitlements['features'] = {};
     for (const key of Object.keys(PLAN_FEATURES)) features[key] = { enabled: false, limit: 0 };
     for (const f of plan?.features ?? []) features[f.featureKey] = { enabled: f.enabled, limit: f.enabled ? f.limitValue : 0 };
+    // Single-owner mode: the plan is shown as is, but nothing is gated or capped by it.
+    if (!this.env.PLAN_LIMITS) for (const key of Object.keys(features)) features[key] = { enabled: true, limit: null };
     return {
       plan: plan ? { id: plan.id, code: plan.code, name: plan.name } : null,
       subscription: sub
@@ -84,7 +90,7 @@ export class EntitlementsService {
    */
   async assertLimit(organizationId: string, key: LimitKey, adding = 1, ent?: Entitlements) {
     const e = ent ?? (await this.forOrganization(organizationId));
-    const limit = e.features[key]?.limit ?? 0;
+    const limit = e.features[key] ? e.features[key].limit : 0; // null = unlimited; a missing feature = 0
     if (limit === null) return;
     const used = await this.usage(organizationId, key);
     if (used + adding > limit) {
