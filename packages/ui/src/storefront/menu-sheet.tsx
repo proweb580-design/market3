@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '../components/ui/sheet';
 import { useOverlay, useStore } from './store-context';
 import { ThemeToggle } from './theme-toggle';
+import { TelegramIconLink } from './telegram-cta';
 
 /** Burger menu. Not opened in the reference video — designed in the same visual language. */
 export function MenuSheet() {
@@ -29,13 +30,7 @@ export function MenuSheet() {
           ))}
         </nav>
         <div className="mt-auto flex items-center justify-between border-t border-border px-6 py-5">
-          <div className="label-xs flex gap-4 text-muted-foreground">
-            {store.footer.socials.map((s) => (
-              <a key={s.label} href={s.href} target="_blank" rel="noreferrer" className="hover:text-foreground">
-                {s.label}
-              </a>
-            ))}
-          </div>
+          <div>{variant === 'web' && store.telegramBot && <TelegramIconLink bot={store.telegramBot} className="size-9" />}</div>
           {variant === 'web' && (
             <div className="flex items-center gap-4">
               <Link href="/login" onClick={close} className="label-xs hover:opacity-60">

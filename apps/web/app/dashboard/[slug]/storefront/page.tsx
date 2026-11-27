@@ -95,7 +95,7 @@ function Editor({ initial }: { initial: Doc }) {
   const [badges] = useState(initial.settings.paymentBadges.join(', '));
   const [menu, setMenu] = useState(linksToLines(initial.settings.footer.menu, 'path'));
   const [help, setHelp] = useState(linksToLines(initial.settings.footer.help, 'path'));
-  const [socials, setSocials] = useState(linksToLines(initial.settings.footer.socials, 'href'));
+  const [socials] = useState(linksToLines(initial.settings.footer.socials, 'href')); // no longer edited or shown; kept as saved
   const [dropAt, setDropAt] = useState(initial.sections.drop.endsAt.slice(0, 16));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -149,11 +149,11 @@ function Editor({ initial }: { initial: Doc }) {
       </Block>
 
       <Block title="Подвал сайта">
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2">
           <TextArea label="Меню" rows={4} value={menu} onChange={setMenu} hint="По одной в строке: Название | /collections/new" />
           <TextArea label="Помощь" rows={4} value={help} onChange={setHelp} hint="Название | /pages/shipping" />
-          <TextArea label="Соцсети" rows={4} value={socials} onChange={setSocials} hint="Instagram | https://instagram.com/…" />
         </div>
+        <p className="text-[11px] text-muted-foreground">Внизу сайта показывается значок Telegram — он открывает магазин в боте из Настроек.</p>
         <fieldset className="flex flex-col gap-2">
           <legend className="label-xs mb-1">Преимущества магазина (до 4)</legend>
           {doc.settings.trust.map((t, i) => (

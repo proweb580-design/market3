@@ -99,6 +99,8 @@ export interface StoreConfig {
   paymentBadges: string[];
   playlist: Track[];
   lookbook: { title: string; subtitle: string; items: LookbookItem[] } | null;
+  /** Username (without @) of the store's own Telegram bot that opens it as a Mini App; null when none is connected. */
+  telegramBot: string | null;
   footer: {
     menu: { label: string; path: string }[];
     help: { label: string; path: string }[];

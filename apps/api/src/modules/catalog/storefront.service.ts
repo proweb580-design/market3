@@ -41,13 +41,14 @@ export class StorefrontService {
     const organizationId = org.id;
     // One parallel batch: collection tiles are read with everything else and picked by slug below,
     // rather than in a second round trip once the sections are known.
-    const [ent, sectionRows, testimonials, tracks, lookbook, published] = await Promise.all([
+    const [ent, sectionRows, testimonials, tracks, lookbook, published, bot] = await Promise.all([
       this.entitlements.forOrganization(organizationId),
       this.db.homeSection.findMany({ where: { organizationId, isEnabled: true } }),
       this.db.testimonial.findMany({ where: { organizationId, isPublished: true }, orderBy: { position: 'asc' } }),
       this.db.playlistTrack.findMany({ where: { organizationId, isPublished: true }, orderBy: { position: 'asc' }, include: { coverFile: true, audioFile: true } }),
       this.db.lookbook.findFirst({ where: { organizationId, slug: 'main', isPublished: true }, include: { items: { orderBy: { position: 'asc' }, include: { mediaFile: true } } } }),
       this.db.collection.findMany({ where: { organizationId, isPublished: true }, include: { image: true } }),
+      this.db.integration.findFirst({ where: { organizationId, kind: 'TELEGRAM_BOT', provider: 'telegram', status: 'ACTIVE' }, select: { publicConfig: true } }),
     ]);
     const has = (feature: string) => ent.features[feature]?.enabled === true;
 
@@ -104,6 +105,7 @@ export class StorefrontService {
               })),
             }
           : null,
+      telegramBot: (bot?.publicConfig as { username?: string } | null)?.username ?? null,
       footer: settings.footer,
     };
   }

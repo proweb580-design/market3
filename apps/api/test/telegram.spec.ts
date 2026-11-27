@@ -220,6 +220,8 @@ describe.skipIf(!TEST_DB)('Telegram Mini App sign-in, sessions, linking and bran
       expect(JSON.stringify(res.body)).not.toContain(BRAND_BOT);
       expect(bot.setWebhook).toHaveBeenCalledWith(BRAND_BOT, expect.stringMatching(/^https:\/\/api\.example\.com\/api\/v1\/telegram\/webhook\/[0-9a-f-]{36}$/), expect.any(String));
       expect(bot.setChatMenuButton).toHaveBeenCalledWith(BRAND_BOT, '🛍 Магазин', `https://mini.example.com/${org.slug}`);
+      // The storefront learns the bot's username, for its "open in Telegram" links.
+      expect((await t.http().get(`/api/v1/storefront/${org.slug}`).expect(200)).body.telegramBot).toBe('brand_bot');
       expect(bot.describeBot).toHaveBeenCalledWith(BRAND_BOT, expect.objectContaining({ commands: [{ command: 'start', description: 'Открыть магазин' }] }));
 
       const row = await t.db.integration.findFirstOrThrow({ where: { organizationId: org.id } });
