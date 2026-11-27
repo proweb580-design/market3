@@ -42,7 +42,7 @@ export function TelegramBanner({ bot, name }: { bot: string; name: string }) {
           href={miniAppUrl(bot)}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-foreground px-6 text-sm font-semibold text-background transition-opacity hover:opacity-85"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-foreground px-6 text-sm font-semibold text-background transition-opacity hover:opacity-85"
         >
           Открыть в Telegram <ArrowRight className="size-4" aria-hidden />
         </a>
