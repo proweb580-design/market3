@@ -10,8 +10,10 @@ export interface BotApi {
   deleteWebhook(token: string): Promise<void>;
   setChatMenuButton(token: string, text: string, webAppUrl: string): Promise<void>;
   sendMessage(token: string, chatId: number, text: string, button?: { text: string; webAppUrl: string }): Promise<void>;
-  /** A photo (by HTTPS URL) with a caption and rows of Mini App buttons. */
+  /** A photo (by HTTPS URL) with an HTML caption and rows of Mini App buttons. */
   sendPhoto(token: string, chatId: number, photoUrl: string, caption: string, rows: WebAppButton[][]): Promise<void>;
+  /** What an empty chat shows before /start, the bot's profile line, and its command menu. */
+  describeBot(token: string, info: { shortDescription: string; description: string; commands: { command: string; description: string }[] }): Promise<void>;
   /** A message with one row of callback buttons; returns its message_id. */
   sendButtons(token: string, chatId: number, text: string, buttons: CallbackButton[]): Promise<number>;
   editButtons(token: string, chatId: number, messageId: number, text: string, buttons: CallbackButton[]): Promise<void>;
@@ -76,8 +78,15 @@ export class HttpBotApi implements BotApi {
       chat_id: chatId,
       photo: photoUrl,
       caption,
+      parse_mode: 'HTML',
       reply_markup: { inline_keyboard: rows.map((r) => r.map((b) => ({ text: b.text, web_app: { url: b.webAppUrl } }))) },
     });
+  }
+
+  async describeBot(token: string, info: { shortDescription: string; description: string; commands: { command: string; description: string }[] }) {
+    await this.call(token, 'setMyShortDescription', { short_description: info.shortDescription.slice(0, 120) });
+    await this.call(token, 'setMyDescription', { description: info.description.slice(0, 512) });
+    await this.call(token, 'setMyCommands', { commands: info.commands });
   }
 
   async sendButtons(token: string, chatId: number, text: string, buttons: CallbackButton[]) {

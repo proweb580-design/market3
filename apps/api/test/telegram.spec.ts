@@ -64,6 +64,7 @@ describe.skipIf(!TEST_DB)('Telegram Mini App sign-in, sessions, linking and bran
     setChatMenuButton: vi.fn<BotApi['setChatMenuButton']>(async () => undefined),
     sendMessage: vi.fn<BotApi['sendMessage']>(async () => undefined),
     sendPhoto: vi.fn<BotApi['sendPhoto']>(async () => undefined),
+    describeBot: vi.fn<BotApi['describeBot']>(async () => undefined),
     sendButtons: vi.fn<BotApi['sendButtons']>(async () => 777),
     editButtons: vi.fn<BotApi['editButtons']>(async () => undefined),
     answerCallback: vi.fn<BotApi['answerCallback']>(async () => undefined),
@@ -219,6 +220,7 @@ describe.skipIf(!TEST_DB)('Telegram Mini App sign-in, sessions, linking and bran
       expect(JSON.stringify(res.body)).not.toContain(BRAND_BOT);
       expect(bot.setWebhook).toHaveBeenCalledWith(BRAND_BOT, expect.stringMatching(/^https:\/\/api\.example\.com\/api\/v1\/telegram\/webhook\/[0-9a-f-]{36}$/), expect.any(String));
       expect(bot.setChatMenuButton).toHaveBeenCalledWith(BRAND_BOT, '🛍 Магазин', `https://mini.example.com/${org.slug}`);
+      expect(bot.describeBot).toHaveBeenCalledWith(BRAND_BOT, expect.objectContaining({ commands: [{ command: 'start', description: 'Открыть магазин' }] }));
 
       const row = await t.db.integration.findFirstOrThrow({ where: { organizationId: org.id } });
       expect(row.secretEncrypted).not.toContain(BRAND_BOT.split(':')[1]);
@@ -266,12 +268,13 @@ describe.skipIf(!TEST_DB)('Telegram Mini App sign-in, sessions, linking and bran
       expect(bot.sendMessage).toHaveBeenCalledWith(token, 555, expect.stringMatching(new RegExp(`^Здравствуйте, Ann![^]*${org.slug.replace(/^org-/, 'Org org-')}`)), { text: '🛍 Открыть магазин', webAppUrl: storeUrl });
       expect(bot.sendPhoto).not.toHaveBeenCalled();
       // With a hero photo: the photo (demo paths resolved against the Mini App host) with Mini App buttons.
-      await t.db.homeSection.create({ data: { organizationId: org.id, type: 'HERO', config: { panels: [{ type: 'art', from: '#000', to: '#111', alt: '' }, { type: 'image', src: '/demo/hero-1.webp', alt: '' }] } } });
+      await t.db.homeSection.create({ data: { organizationId: org.id, type: 'HERO', config: { title: 'FW<26>', panels: [{ type: 'art', from: '#000', to: '#111', alt: '' }, { type: 'image', src: '/demo/hero-1.webp', alt: '' }] } } });
       await t.http().post(path).set('X-Telegram-Bot-Api-Secret-Token', secret).send(update).expect(200);
-      expect(bot.sendPhoto).toHaveBeenCalledWith(token, 555, 'https://mini.example.com/demo/hero-1.webp', expect.stringContaining('Ann'), [
+      expect(bot.sendPhoto).toHaveBeenCalledWith(token, 555, 'https://mini.example.com/demo/hero-1.webp', expect.stringContaining('<b>Здравствуйте, Ann!</b>'), [
         [{ text: '🛍 Открыть магазин', webAppUrl: storeUrl }],
         [{ text: '♡ Избранное', webAppUrl: `${storeUrl}/wishlist` }],
       ]);
+      expect(bot.sendPhoto.mock.calls[0]![3]).toContain('Коллекция <b>FW&lt;26&gt;</b>'); // store text is HTML-escaped
       await t.http().post(`/api/v1/telegram/webhook/${randomUUID()}`).set('X-Telegram-Bot-Api-Secret-Token', secret).send(update).expect(404);
 
       await owner.del(`/organizations/${org.id}/integrations/telegram`).expect(204);

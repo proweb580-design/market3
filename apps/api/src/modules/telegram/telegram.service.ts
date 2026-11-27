@@ -271,7 +271,7 @@ export class TelegramService {
     });
     if (taken) throw new ConflictException('This bot is already in use (another store, or your support bot)');
 
-    const org = await this.db.organization.findUniqueOrThrow({ where: { id: tenant.organizationId }, select: { slug: true } });
+    const org = await this.db.organization.findUniqueOrThrow({ where: { id: tenant.organizationId }, select: { slug: true, name: true } });
     const secrets: BotSecrets = { botToken, webhookSecret: randomToken(24) };
     const publicConfig: Record<string, unknown> = { botId: me.id, username: me.username, webhook: false, menuButton: false };
     const row = await this.db.integration.upsert({
@@ -293,6 +293,13 @@ export class TelegramService {
         .then(() => (publicConfig.menuButton = true))
         .catch((e: unknown) => this.logger.warn(`setChatMenuButton failed: ${String(e)}`));
     }
+    await this.bot
+      .describeBot(botToken, {
+        shortDescription: `${org.name} — магазин прямо в Telegram 🛍`,
+        description: `${org.name} — магазин прямо в Telegram.\n\n🛍 Каталог и новые коллекции\n♡ Избранное и корзина\n📦 Оформление и статус заказов\n\nНажмите «Старт», чтобы открыть магазин.`,
+        commands: [{ command: 'start', description: 'Открыть магазин' }],
+      })
+      .catch((e: unknown) => this.logger.warn(`describeBot failed: ${String(e)}`));
     await this.db.integration.update({ where: { id: row.id }, data: { publicConfig: publicConfig as object } });
     await this.audit.record(req, { action: 'telegram.bot_connected', organizationId: tenant.organizationId, entityType: 'integration', entityId: row.id, metadata: { username: me.username } });
     return { connected: true, bot: publicConfig, usingPlatformBot: false };
@@ -328,35 +335,53 @@ export class TelegramService {
     return { ok: true };
   }
 
-  /** /start: a greeting, then the store's first hero photo with Mini App buttons; plain text when there is no usable photo. */
+  /** /start: the store's hero photo with an HTML caption and Mini App buttons (store, two collections, wishlist); plain text without a usable photo. */
   private async sendWelcome(token: string, chatId: number, organizationId: string, org: { slug: string; name: string }, firstName?: string) {
     const url = this.storeUrl(org.slug);
-    const greeting = `Здравствуйте${firstName ? `, ${firstName}` : ''}! 👋
+    const open = { text: '🛍 Открыть магазин', webAppUrl: url };
+    const plain = `Здравствуйте${firstName ? `, ${firstName}` : ''}! 👋\n\nЭто ${org.name}. Каталог, корзина, избранное и заказы — в мини-приложении, прямо в Telegram.`;
+    const fallback = () => this.bot.sendMessage(token, chatId, plain, isHttps(url) ? open : undefined).catch((e: unknown) => this.logger.warn(`sendMessage failed: ${String(e)}`));
 
-Это ${org.name}. Каталог, корзина, избранное и заказы — в мини-приложении, прямо в Telegram.`;
-    const fallback = () =>
-      this.bot.sendMessage(token, chatId, greeting, isHttps(url) ? { text: '🛍 Открыть магазин', webAppUrl: url } : undefined).catch((e: unknown) => this.logger.warn(`sendMessage failed: ${String(e)}`));
-
-    const photo = isHttps(url) ? await this.heroPhoto(organizationId) : null;
+    if (!isHttps(url)) {
+      this.logger.warn('PUBLIC_MINI_APP_URL is not HTTPS: /start is sent without the photo and the Mini App button');
+      return fallback();
+    }
+    const { photo, title, collections } = await this.welcomeContent(organizationId);
     if (!photo) return fallback();
-    await this.bot
-      .sendPhoto(token, chatId, photo, greeting, [[{ text: '🛍 Открыть магазин', webAppUrl: url }], [{ text: '♡ Избранное', webAppUrl: `${url}/wishlist` }]])
-      .catch((e: unknown) => {
-        this.logger.warn(`sendPhoto failed, sending text: ${String(e)}`);
-        return fallback();
-      });
+
+    const caption = [
+      `👋 <b>Здравствуйте${firstName ? `, ${escapeHtml(firstName)}` : ''}!</b>`,
+      '',
+      `Добро пожаловать в <b>${escapeHtml(org.name)}</b>.${title ? ` Коллекция <b>${escapeHtml(title)}</b> уже в магазине.` : ''}`,
+      '',
+      '🛍 Каталог и корзина',
+      '♡ Избранное',
+      '📦 Оформление и статус заказов',
+      '',
+      '<i>Всё в мини-приложении — прямо в Telegram.</i>',
+    ].join('\n');
+    const rows = [[open], collections.map((c) => ({ text: `✨ ${c.title}`, webAppUrl: `${url}/collections/${c.slug}` })), [{ text: '♡ Избранное', webAppUrl: `${url}/wishlist` }]].filter((r) => r.length);
+    await this.bot.sendPhoto(token, chatId, photo, caption, rows).catch((e: unknown) => {
+      this.logger.warn(`sendPhoto failed, sending text: ${String(e)}`);
+      return fallback();
+    });
   }
 
-  /** Absolute HTTPS URL of the first photo in the store's hero section (demo photos live on the Mini App's own host). */
-  private async heroPhoto(organizationId: string) {
-    const hero = await this.db.homeSection.findFirst({ where: { organizationId, type: 'HERO', isEnabled: true }, select: { config: true } });
-    const panels = (hero?.config as { panels?: { type: string; src?: string }[] } | null)?.panels ?? [];
-    const src = panels.find((p) => p.type === 'image' && p.src)?.src;
-    if (!src) return null;
-    const abs = src.startsWith('/') ? `${trimSlash(this.env.PUBLIC_MINI_APP_URL)}${src}` : src;
-    return isHttps(abs) ? abs : null;
+  /** The store's first hero photo (absolute HTTPS; demo photos live on the Mini App host), hero title and first two collection tiles. */
+  private async welcomeContent(organizationId: string) {
+    const sections = await this.db.homeSection.findMany({ where: { organizationId, type: { in: ['HERO', 'COLLECTIONS'] }, isEnabled: true }, select: { type: true, config: true } });
+    const hero = sections.find((s) => s.type === 'HERO')?.config as { title?: string; panels?: { type: string; src?: string }[] } | undefined;
+    const slugs = ((sections.find((s) => s.type === 'COLLECTIONS')?.config as { slugs?: string[] } | undefined)?.slugs ?? []).slice(0, 2);
+    const found = slugs.length ? await this.db.collection.findMany({ where: { organizationId, slug: { in: slugs }, isPublished: true }, select: { slug: true, title: true } }) : [];
+    const collections = slugs.flatMap((slug) => found.filter((c) => c.slug === slug));
+
+    const src = hero?.panels?.find((p) => p.type === 'image' && p.src)?.src;
+    const abs = src?.startsWith('/') ? `${trimSlash(this.env.PUBLIC_MINI_APP_URL)}${src}` : src;
+    return { photo: isHttps(abs) ? abs! : null, title: hero?.title?.trim() || null, collections };
   }
 }
+
+const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 function displayName(u: TelegramWebAppUser) {
   return [u.first_name, u.last_name].filter(Boolean).join(' ').slice(0, 80) || u.username || 'Telegram user';
